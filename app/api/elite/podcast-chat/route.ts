@@ -8,6 +8,7 @@ import { checkChatLimits, bumpChatUsage } from "@/lib/ai/chat-limits";
 import { canAccess, requiredPlanFor } from "@/lib/access-rules";
 import { parseBody, z } from "@/lib/validation";
 import { enforceRateLimit } from "@/lib/ratelimit";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const maxDuration = 30;
 
@@ -91,7 +92,7 @@ Avsnitt: ${episode.title}
 Podd: ${episode.showName ?? "okänd"}
 Publicerat: ${episode.publishedAt ?? "okänt"}
 Nämnda lag: ${teams}
-Länk: https://nanofotboll.se/podcast/${episode.id}
+Länk: ${getSiteUrl()}/podcast/${episode.id}
 
 ## Hur du svarar
 - Använd ALLTID ett verktyg innan du svarar. getEpisodeSummary för översikt, searchEpisode för specifika namn/ämnen.

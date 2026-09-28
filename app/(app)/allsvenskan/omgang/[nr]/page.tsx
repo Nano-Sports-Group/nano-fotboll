@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { fetchRoundFixtures } from "@/lib/db/fixtures";
 import { AppBreadcrumbs } from "@/components/ui/AppBreadcrumbs";
 import { jsonLd } from "@/lib/json-ld";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 300;
 
@@ -22,11 +23,11 @@ export async function generateMetadata({
   return {
     title: `Allsvenskan Omgång ${nr} 2026 – Resultat & Spelschema`,
     description: `Alla matcher i Allsvenskan omgång ${nr} 2026: avsparkstider, resultat och matchdetaljer.`,
-    alternates: { canonical: `https://nanofotboll.se/allsvenskan/omgang/${nr}` },
+    alternates: { canonical: `${getSiteUrl()}/allsvenskan/omgang/${nr}` },
     openGraph: {
       type: "website",
       locale: "sv_SE",
-      url: `https://nanofotboll.se/allsvenskan/omgang/${nr}`,
+      url: `${getSiteUrl()}/allsvenskan/omgang/${nr}`,
       title: `Allsvenskan Omgång ${nr} 2026`,
       description: `Alla matcher i Allsvenskan omgång ${nr} 2026.`,
     },
@@ -58,7 +59,7 @@ export default async function OmgangPage({
               "@type": "SportsEvent",
               name: f.name,
               startDate: f.starting_at,
-              url: `https://nanofotboll.se/match/${f.id}`,
+              url: `${getSiteUrl()}/match/${f.id}`,
             })),
           }),
         }}

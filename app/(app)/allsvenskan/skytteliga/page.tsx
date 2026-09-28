@@ -13,9 +13,7 @@ const TITLE =
     ? "SHL Poängliga 2026/27"
     : "Allsvenskan Skytteliga 2026 – Toppskytt & Målkung";
 const CANONICAL =
-  VERTICAL === "hockey"
-    ? `${getSiteUrl()}${leagueHref("/skytteliga")}`
-    : "https://nanofotboll.se/allsvenskan/skytteliga";
+  `${getSiteUrl()}${leagueHref("/skytteliga")}`;
 
 export const metadata: Metadata = {
   title: TITLE,

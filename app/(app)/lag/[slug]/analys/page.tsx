@@ -20,6 +20,7 @@ import { PaywallGate } from "@/components/PaywallGate";
 import { getUserPlan } from "@/lib/user-plan";
 import { ProductEventTracker } from "@/components/analytics/ProductEventTracker";
 import { AppBreadcrumbs } from "@/components/ui/AppBreadcrumbs";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 120;
 
@@ -34,7 +35,7 @@ export async function generateMetadata({
   return {
     title: `${name} — Analys | Nano Fotboll`,
     description: `Nano Fotbolls egna analyser om ${name}: form, nyhetsläge och statistik i sammanhang.`,
-    alternates: { canonical: `https://nanofotboll.se/lag/${slug}/analys` },
+    alternates: { canonical: `${getSiteUrl()}/lag/${slug}/analys` },
   };
 }
 

@@ -13,7 +13,7 @@ const TITLE =
     ? "SHL U21 2026/27 – speltid och poäng"
     : "Allsvenskans främsta U21-talanger 2026 – speltid & poäng";
 const CANONICAL =
-  VERTICAL === "hockey" ? `${getSiteUrl()}${leagueHref("/talanger")}` : "https://nanofotboll.se/allsvenskan/talanger";
+  `${getSiteUrl()}${leagueHref("/talanger")}`;
 
 export const metadata: Metadata = {
   title: TITLE,

@@ -10,6 +10,7 @@ import ComposeDrawer from "@/components/forum/ComposeDrawer";
 import { usePullRefresh } from "@/hooks/usePullRefresh";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import type { ForumPost } from "@/lib/types";
+import { getSiteHost } from "@/lib/site-url";
 
 interface Props {
   teamSlug: string;
@@ -116,7 +117,7 @@ export default function ForumClient({ teamSlug, sport, initialPosts, articlePref
             onPost={handlePost}
             initialContent={
               articlePrefill
-                ? `${articlePrefill.title}\nnanofotboll.se/artikel/${articlePrefill.slug}\n\n`
+                ? `${articlePrefill.title}\n${getSiteHost()}/artikel/${articlePrefill.slug}\n\n`
                 : undefined
             }
           />

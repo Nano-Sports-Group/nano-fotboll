@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { loadTeamSection } from "@/lib/team-hub/loadTeamSection";
 import { TeamSection } from "@/components/team-hub/TeamSection";
 import { ProductEventTracker } from "@/components/analytics/ProductEventTracker";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 3600;
 
@@ -15,7 +16,7 @@ export async function generateMetadata({
   return {
     title: `${hub.team.name} — Trupp | Nano Fotboll`,
     description: `Spelartrupp och nyckelspelare för ${hub.team.name} i Allsvenskan.`,
-    alternates: { canonical: `https://nanofotboll.se/lag/${slug}/trupp` },
+    alternates: { canonical: `${getSiteUrl()}/lag/${slug}/trupp` },
   };
 }
 

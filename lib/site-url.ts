@@ -6,8 +6,11 @@
 
 const FALLBACK =
   process.env.NEXT_PUBLIC_VERTICAL === "hockey"
-    ? "https://nanohockey.se"
-    : "https://nanofotboll.se";
+    ? "https://hockey.nanosport.se"
+    : "https://fotboll.nanosport.se";
+
+/** Publik kontaktadress. Mejlen tas emot i Workspace på nanosportsgroup.se (aliasdomän). */
+export const CONTACT_EMAIL = "hello@nanosport.se";
 
 function normalize(raw: string): string {
   const trimmed = raw.trim().replace(/\/$/, "");
@@ -26,6 +29,11 @@ export function getSiteUrl(): string {
       : "") ||
     "";
   return normalize(fromEnv || FALLBACK);
+}
+
+/** Host utan schema, t.ex. "fotboll.nanosport.se" — för text som visas för läsaren. */
+export function getSiteHost(): string {
+  return getSiteUrl().replace(/^https?:\/\//, "");
 }
 
 /** Join origin + path. Path may be empty, absolute path, or full URL (returned as-is). */

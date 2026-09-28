@@ -20,6 +20,7 @@ import { buildMatchTimeline } from "@/lib/match/events";
 import { jsonLd } from "@/lib/json-ld";
 import { getWebsiteSettings } from "@/lib/website-settings.server";
 import { resolveShareMetadata, toNextMetadata } from "@/lib/website-settings";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 60;
 
@@ -344,7 +345,7 @@ export default async function MatchPage({ params }: PageProps) {
     "@type": "SportsEvent",
     name: `${homeName} – ${awayName}`,
     sport: "Soccer",
-    url: `https://nanofotboll.se/match/${fid}`,
+    url: `${getSiteUrl()}/match/${fid}`,
     ...(kickoff ? { startDate: kickoff } : {}),
     homeTeam: { "@type": "SportsTeam", name: homeName },
     awayTeam: { "@type": "SportsTeam", name: awayName },

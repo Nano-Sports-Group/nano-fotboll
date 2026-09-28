@@ -17,6 +17,7 @@ import { getPostMatchAnalysis } from "@/lib/supabase";
 import { getUserPlan } from "@/lib/user-plan";
 import { BlurPaywall } from "@/components/BlurPaywall";
 import { jsonLd } from "@/lib/json-ld";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 60;
 
@@ -32,12 +33,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: analysis.title,
     description: analysis.summary,
-    alternates: { canonical: `https://nanofotboll.se/analys/${analysis.id}` },
+    alternates: { canonical: `${getSiteUrl()}/analys/${analysis.id}` },
     openGraph: {
       type: "article",
       title: analysis.title,
       description: analysis.summary,
-      url: `https://nanofotboll.se/analys/${analysis.id}`,
+      url: `${getSiteUrl()}/analys/${analysis.id}`,
       publishedTime: analysis.publishedAt,
     },
     twitter: { card: "summary", title: analysis.title },
@@ -71,7 +72,7 @@ export default async function AnalysPage({ params }: PageProps) {
     datePublished: analysis.publishedAt,
     author: { "@type": "Organization", name: "Nano Fotboll AI" },
     publisher: { "@type": "Organization", name: "Nano Fotboll" },
-    url: `https://nanofotboll.se/analys/${analysis.id}`,
+    url: `${getSiteUrl()}/analys/${analysis.id}`,
   };
 
   return (

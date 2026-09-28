@@ -5,6 +5,7 @@ import { Clock3, Mail, ShieldCheck } from "lucide-react";
 import { ProductEventTracker } from "@/components/analytics/ProductEventTracker";
 import { NewsletterSignupForm } from "@/components/newsletter/NewsletterSignupForm";
 import { getNewsletterTeamBySlug } from "@/lib/newsletter/service";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 60;
 
@@ -19,7 +20,7 @@ export async function generateMetadata({
   return {
     title: `${team.name} Lagbrief`,
     description: `Det viktigaste om ${team.name}, utvalt och förklarat av Nano Fotboll.`,
-    alternates: { canonical: `https://nanofotboll.se/brev/${team.slug}` },
+    alternates: { canonical: `${getSiteUrl()}/brev/${team.slug}` },
   };
 }
 

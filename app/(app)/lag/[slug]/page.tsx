@@ -38,6 +38,7 @@ import { AppBreadcrumbs } from "@/components/ui/AppBreadcrumbs";
 import { jsonLd } from "@/lib/json-ld";
 import { getWebsiteSettings } from "@/lib/website-settings.server";
 import { resolveShareMetadata, toNextMetadata } from "@/lib/website-settings";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 60;
 
@@ -152,11 +153,11 @@ export default async function TeamHubPage({ params }: { params: Promise<{ slug: 
     "@type": "SportsTeam",
     name: hub.team.name,
     sport: "Soccer",
-    url: `https://nanofotboll.se/lag/${hub.team.slug}`,
+    url: `${getSiteUrl()}/lag/${hub.team.slug}`,
     memberOf: {
       "@type": "SportsOrganization",
       name: "Allsvenskan",
-      url: "https://nanofotboll.se/allsvenskan",
+      url: `${getSiteUrl()}/allsvenskan`,
     },
     ...(hub.team.logo_url ? { logo: hub.team.logo_url, image: hub.team.logo_url } : {}),
   };

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Container } from "./primitives";
+import { CONTACT_EMAIL } from "@/lib/site-url";
 
 export function LandingFooter() {
   return (
@@ -12,7 +13,7 @@ export function LandingFooter() {
 
           <nav className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-white/55">
             <a
-              href="mailto:hej@nanofotboll.se"
+              href={`mailto:${CONTACT_EMAIL}`}
               className="transition-colors hover:text-white/70"
             >
               Kontakt

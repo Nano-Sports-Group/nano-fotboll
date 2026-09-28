@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { fetchTeamsWithSlugs, fetchH2HFixtures, type SMTeam } from "@/lib/db/fixtures";
 import { AppBreadcrumbs } from "@/components/ui/AppBreadcrumbs";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 3600;
 
@@ -47,11 +48,11 @@ export async function generateMetadata({
   return {
     title: `${a.name} – ${b.name}: Inbördes möten, statistik & H2H`,
     description: `Alla inbördes möten mellan ${a.name} och ${b.name} i Allsvenskan — resultat, statistik och nästa match.`,
-    alternates: { canonical: `https://nanofotboll.se/allsvenskan/moten/${matchup}` },
+    alternates: { canonical: `${getSiteUrl()}/allsvenskan/moten/${matchup}` },
     openGraph: {
       type: "website",
       locale: "sv_SE",
-      url: `https://nanofotboll.se/allsvenskan/moten/${matchup}`,
+      url: `${getSiteUrl()}/allsvenskan/moten/${matchup}`,
       title: `${a.name} – ${b.name} | Inbördes möten`,
       description: `H2H-statistik och alla möten mellan ${a.name} och ${b.name}.`,
     },
