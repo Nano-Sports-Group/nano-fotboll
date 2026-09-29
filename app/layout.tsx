@@ -34,9 +34,12 @@ const SEO_KEYWORDS = vertical.seoKeywords;
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getWebsiteSettings();
+  // Smart App Banner i Safari — bara när appen finns i App Store (id per Vercel-projekt).
+  const appStoreId = process.env.NEXT_PUBLIC_APP_STORE_ID?.trim();
   return {
     ...rootMetadataFromSettings(settings, SITE),
     keywords: [...SEO_KEYWORDS],
+    ...(appStoreId ? { itunes: { appId: appStoreId } } : {}),
   };
 }
 

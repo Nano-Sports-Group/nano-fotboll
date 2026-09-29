@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AppStoreBadge } from "./AppStoreBadge";
 import { ArrowRight } from "lucide-react";
 import { Container, Label, Reveal, Section } from "./primitives";
 import { FOUNDER_OFFER, PRICING, TRIAL_DAYS } from "@/lib/pricing";
@@ -76,6 +77,9 @@ export function FinalCta({
               >
                 {waitlistMode ? "Håll platsen" : "Välj ditt lag"} <ArrowRight className="h-5 w-5" />
               </Link>
+              <div className="mt-4 flex justify-center">
+                <AppStoreBadge />
+              </div>
               <p className="mt-6 text-xs text-white/55">
                 Allsvenskan 2026 · Tidig version · Uppdateras varje omgång
               </p>

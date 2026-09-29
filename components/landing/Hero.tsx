@@ -7,6 +7,7 @@ import Image from "next/image";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
 import { Container, Label, Reveal } from "./primitives";
+import { AppStoreBadge } from "./AppStoreBadge";
 import { getTeamAccent } from "@/lib/team-colors";
 import { primaryCtaHref, primaryCtaLabel } from "@/lib/waitlist/mode";
 import { useFavoriteTeam } from "@/hooks/useFavoriteTeam";
@@ -174,6 +175,7 @@ export function Hero({
                   Se appen <ChevronDown className="h-4 w-4 text-white/50" />
                 </a>
               </div>
+              <AppStoreBadge className="-ml-3 -mt-5 mb-3" />
             </Reveal>
 
             {clubs.length > 0 ? (
