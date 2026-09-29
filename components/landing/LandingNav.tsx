@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, ArrowRight } from "lucide-react";
-import { motion, useScroll, useMotionValueEvent } from "motion/react";
+import { motion, useScroll, useMotionValueEvent, useReducedMotion } from "motion/react";
 import { Container } from "./primitives";
 import { BottomSheet } from "./BottomSheet";
 import { NanoLogo } from "@/components/brand/NanoLogo";
@@ -19,13 +19,14 @@ export function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { scrollY } = useScroll();
+  const reduced = useReducedMotion();
 
   useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 8));
 
   return (
     <>
       <motion.header
-        initial={{ y: -64, opacity: 0 }}
+        initial={reduced ? false : { y: -64, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
         className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-300 ${
@@ -36,10 +37,11 @@ export function LandingNav() {
           <nav className="flex h-16 items-center justify-between">
             <Link
               href="/"
-              className="flex h-12 items-center font-heading text-2xl tracking-widest text-white transition-colors duration-200 hover:text-pitch-ink"
+              aria-label="Nano Fotboll, till startsidan"
+              className="flex h-12 min-w-11 items-center font-heading text-2xl tracking-widest text-white transition-colors duration-200 hover:text-pitch-ink"
             >
               <NanoLogo size="lg" decorative />
-              <span className="ml-2">NANO FOTBOLL</span>
+              <span aria-hidden className="ml-2 hidden sm:inline">NANO FOTBOLL</span>
             </Link>
 
             <div className="hidden items-center gap-2 md:flex">
@@ -57,13 +59,13 @@ export function LandingNav() {
             <div className="flex items-center gap-2">
               <Link
                 href="/sign-in"
-                className="hidden h-12 items-center rounded-xl border border-white/15 px-5 text-sm text-white/60 transition-all duration-200 hover:border-white/35 hover:text-white md:inline-flex"
+                className="inline-flex h-11 items-center rounded-xl px-3 text-sm font-medium text-white/80 transition-colors duration-150 hover:text-white md:h-12 md:border md:border-white/15 md:px-5 md:hover:border-white/35"
               >
                 Logga in
               </Link>
               <Link
                 href="/onboarding"
-                className="inline-flex h-11 items-center gap-1.5 rounded-xl bg-pitch px-4 text-sm font-bold text-white transition-transform duration-200 hover:scale-[1.03] active:scale-[0.97] md:h-12 md:px-5"
+                className="inline-flex h-11 items-center gap-1.5 rounded-xl bg-pitch px-4 text-sm font-bold text-white transition-transform duration-100 ease-out hover:brightness-110 active:scale-[0.97] motion-reduce:active:scale-100 md:h-12 md:px-5"
               >
                 Börja gratis
               </Link>

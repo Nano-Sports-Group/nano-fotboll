@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
 import { Container, Label, Reveal } from "./primitives";
@@ -107,7 +108,7 @@ export function Hero({
   const headlineAccent = copy?.headlineAccent ?? "Varje dag.";
   const body =
     copy?.body ??
-    "Nyheter, rykten, siffror och snack om din klubb — vi läser hundratals svenska källor varje dygn, sorterar bort bruset och sammanfattar det som betyder något. 60 sekunder om dagen, så vet du allt.";
+    "Nyheter, rykten, siffror och snack om din klubb. Vi läser hundratals svenska källor varje dygn, sorterar bort bruset och sammanfattar det som betyder något. 60 sekunder om dagen, så vet du allt.";
   // Redaktionell copy vinner när den finns; annars styr läget etiketten.
   const ctaLabel = copy?.ctaLabel ?? primaryCtaLabel(waitlistMode);
   const ctaHref = primaryCtaHref(waitlistMode);
@@ -115,13 +116,26 @@ export function Hero({
 
   return (
     <section ref={ref} className="relative overflow-hidden pb-16 pt-28 md:pb-24 md:pt-40">
-      {/* Ambient glöd */}
+      {/* Arenan i kvällsljus som atmosfär, inte innehåll: nedtonad och övertonad mot svart
+         så att rubrik och brödtext behåller full kontrast. alt="" = dekorativ. */}
+      <Image
+        src="/landing/hero-stadium-night.jpg"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="pointer-events-none object-cover object-[50%_38%] opacity-60"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/55 via-black/70 to-black"
+      />
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 90% 55% at 50% -10%, rgba(45,83,73,0.10) 0%, transparent 70%)",
+            "radial-gradient(ellipse 90% 55% at 50% -10%, rgba(45,83,73,0.14) 0%, transparent 70%)",
         }}
       />
 
@@ -135,13 +149,13 @@ export function Hero({
                efter hydrering (uppmätt 9,1s). Statisk markup målas direkt. */}
             {pulse ? <PulseStrip pulse={pulse} /> : <Label>Allsvenskan · Live · AI-analys · Forum</Label>}
 
-            <h1 className="mb-6 mt-4 font-heading text-[clamp(3.75rem,11vw,8.5rem)] leading-[0.92] tracking-wide text-balance">
+            <h1 className="mb-6 mt-4 font-heading text-[clamp(3.75rem,11vw,8.5rem)] leading-[0.92] tracking-display text-balance">
               Din klubb.
               <br />
               <span className="text-pitch-ink">{headlineAccent}</span>
             </h1>
 
-            <p className="mb-8 max-w-[480px] text-[17px] leading-[1.65] text-white/65 md:mb-10 md:text-xl">
+            <p className="mb-8 max-w-[480px] text-[17px] leading-[1.6] text-white/75 md:mb-10 md:text-xl">
               {body}
             </p>
 
@@ -149,13 +163,13 @@ export function Hero({
               <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <Link
                   href={ctaHref}
-                  className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-pitch px-8 text-[17px] font-bold text-white transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-pitch px-8 text-[17px] font-bold text-white transition-transform duration-100 ease-out hover:brightness-110 active:scale-[0.97] motion-reduce:active:scale-100"
                 >
                   {ctaLabel} <ArrowRight className="h-5 w-5" />
                 </Link>
                 <a
                   href="#upplevelsen"
-                  className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl border border-white/20 px-8 text-[17px] text-white transition-all duration-200 hover:border-white/45 active:scale-[0.97]"
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/[0.04] px-8 text-[17px] text-white backdrop-blur-md transition-[transform,border-color] duration-100 ease-out hover:border-white/45 active:scale-[0.97] motion-reduce:active:scale-100"
                 >
                   Se appen <ChevronDown className="h-4 w-4 text-white/50" />
                 </a>
