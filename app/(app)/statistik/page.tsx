@@ -30,6 +30,7 @@ import {
   getMostCardsFromDb,
   getAllPlayerStatsFromDb,
 } from "@/lib/statistik";
+import { getSiteUrl } from "@/lib/site-url";
 
 // Data hämtas från Supabase (synkad av athopia-os från Sportmonks).
 async function getStandings(seasonId: string) {
@@ -70,8 +71,8 @@ function StatistikBreadcrumb() {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Hem", item: "https://nanofotboll.se" },
-        { "@type": "ListItem", position: 2, name: "Statistik", item: "https://nanofotboll.se/statistik" },
+        { "@type": "ListItem", position: 1, name: "Hem", item: `${getSiteUrl()}` },
+        { "@type": "ListItem", position: 2, name: "Statistik", item: `${getSiteUrl()}/statistik` },
       ],
     })}} />
   );

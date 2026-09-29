@@ -14,7 +14,7 @@ const TITLE =
     ? "SHL xP-tabell 2026/27 – Förväntade poäng"
     : "Allsvenskan xP-tabell 2026 – Förväntade poäng utifrån xG";
 const CANONICAL =
-  VERTICAL === "hockey" ? `${getSiteUrl()}${leagueHref("/xp-tabell")}` : "https://nanofotboll.se/allsvenskan/xp-tabell";
+  `${getSiteUrl()}${leagueHref("/xp-tabell")}`;
 
 export const metadata: Metadata = {
   title: TITLE,

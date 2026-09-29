@@ -14,9 +14,7 @@ const TITLE =
     ? "SHL Resultat 2026/27 – Alla Matchresultat"
     : "Allsvenskan Resultat 2026 – Alla Matchresultat";
 const CANONICAL =
-  VERTICAL === "hockey"
-    ? `${getSiteUrl()}${leagueHref("/resultat")}`
-    : "https://nanofotboll.se/allsvenskan/resultat";
+  `${getSiteUrl()}${leagueHref("/resultat")}`;
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -68,7 +66,7 @@ export default async function AllsvenskanResultatPage() {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: vertical.leagueName, item: VERTICAL === "hockey" ? `${getSiteUrl()}${vertical.leaguePath}` : "https://nanofotboll.se/allsvenskan" },
+          { "@type": "ListItem", position: 1, name: vertical.leagueName, item: `${getSiteUrl()}${vertical.leaguePath}` },
           { "@type": "ListItem", position: 2, name: "Resultat", item: CANONICAL },
         ],
       })}} />

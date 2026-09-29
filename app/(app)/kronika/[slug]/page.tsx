@@ -12,6 +12,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BrandBadge } from "@/components/brand/BrandBadge";
 import { createServerClient } from "@/lib/supabase";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 300;
 
@@ -61,7 +62,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: `${column.title} — Nano Fotboll Krönika`,
     description: column.excerpt ?? undefined,
-    alternates: { canonical: `https://nanofotboll.se/kronika/${slug}` },
+    alternates: { canonical: `${getSiteUrl()}/kronika/${slug}` },
     openGraph: { type: "article", title: column.title, description: column.excerpt ?? undefined },
   };
 }

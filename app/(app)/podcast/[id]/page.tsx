@@ -22,6 +22,7 @@ import {
 } from "@/lib/podcast/spotify";
 import { AppBreadcrumbs } from "@/components/ui/AppBreadcrumbs";
 import { jsonLd } from "@/lib/json-ld";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 300;
 
@@ -73,7 +74,7 @@ function EpisodeJsonLd({ ep }: { ep: EpisodeRow }) {
     name: ep.title,
     partOfSeries: { "@type": "PodcastSeries", name: ep.show_name ?? "Podcast" },
     datePublished: ep.published_at,
-    url: `https://nanofotboll.se/podcast/${ep.id}`,
+    url: `${getSiteUrl()}/podcast/${ep.id}`,
   };
 
   return (

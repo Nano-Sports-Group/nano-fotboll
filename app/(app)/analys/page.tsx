@@ -12,17 +12,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { getPostMatchAnalyses } from "@/lib/supabase";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Matchanalyser | Nano Fotboll",
   description: "AI-genererade matchanalyser för Allsvenskan — xG, pressure och form jämfört med senaste matcherna.",
-  alternates: { canonical: "https://nanofotboll.se/analys" },
+  alternates: { canonical: `${getSiteUrl()}/analys` },
   openGraph: {
     type: "website",
     locale: "sv_SE",
-    url: "https://nanofotboll.se/analys",
+    url: `${getSiteUrl()}/analys`,
     title: "Matchanalyser | Nano Fotboll",
     description: "AI-genererade matchanalyser för Allsvenskan.",
   },

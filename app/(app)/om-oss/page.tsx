@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { jsonLd } from "@/lib/json-ld";
+import { getSiteUrl, CONTACT_EMAIL } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: "Om Nano Fotboll – Svensk fotbollsintelligens för Allsvenskan",
   description: "Lär dig mer om Nano Fotboll — AI-driven nyhetsplattform för Allsvenskan med signalscoring, djupstatistik och lagforum.",
-  alternates: { canonical: "https://nanofotboll.se/om-oss" },
+  alternates: { canonical: `${getSiteUrl()}/om-oss` },
   robots: { index: true, follow: true },
 };
 
@@ -16,15 +17,15 @@ export default function OmOssPage() {
         "@context": "https://schema.org",
         "@type": "Organization",
         name: "Nano Fotboll",
-        url: "https://nanofotboll.se",
+        url: `${getSiteUrl()}`,
         foundingDate: "2026",
         description: "AI-driven nyhetsplattform för Allsvenskan med signalscoring, djupstatistik och lagforum.",
         contactPoint: {
           "@type": "ContactPoint",
-          email: "hej@nanofotboll.se",
+          email: CONTACT_EMAIL,
           contactType: "editorial",
         },
-        publishingPrinciples: "https://nanofotboll.se/om-oss",
+        publishingPrinciples: `${getSiteUrl()}/om-oss`,
         inLanguage: "sv",
       })}} />
 
@@ -58,7 +59,7 @@ export default function OmOssPage() {
         <h2 className="font-semibold text-2xl text-foreground mb-3 text-balance">Kontakt</h2>
         <p className="text-muted-foreground leading-relaxed">
           Frågor, rättelser eller samarbetsförfrågningar skickas till{" "}
-          <a href="mailto:hej@nanofotboll.se" className="text-pitch-ink hover:underline">hej@nanofotboll.se</a>.
+          <a href={`mailto:${CONTACT_EMAIL}`} className="text-pitch-ink hover:underline">{CONTACT_EMAIL}</a>.
         </p>
       </section>
 

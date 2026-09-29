@@ -13,9 +13,7 @@ const TITLE =
     ? "SHL Spelschema 2026/27 – Alla Omgångar & Datum"
     : "Allsvenskan Spelschema 2026 – Alla Omgångar & Datum";
 const CANONICAL =
-  VERTICAL === "hockey"
-    ? `${getSiteUrl()}${leagueHref("/spelschema")}`
-    : "https://nanofotboll.se/allsvenskan/spelschema";
+  `${getSiteUrl()}${leagueHref("/spelschema")}`;
 
 export const metadata: Metadata = {
   title: TITLE,

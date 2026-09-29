@@ -44,9 +44,7 @@ const TABELL_DESCRIPTION =
     ? "Aktuell SHL-tabell 2026/27 med poäng, målskillnad och form. Uppdateras när intaget är på."
     : "Aktuell Allsvenskan-tabell 2026 med poäng, målskillnad och form för alla 16 lag. Uppdateras automatiskt efter varje match.";
 const TABELL_CANONICAL =
-  VERTICAL === "hockey"
-    ? `${getSiteUrl()}${leagueHref("/tabell")}`
-    : "https://nanofotboll.se/allsvenskan/tabell";
+  `${getSiteUrl()}${leagueHref("/tabell")}`;
 
 export const metadata: Metadata = {
   title: TABELL_TITLE,

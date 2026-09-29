@@ -18,11 +18,12 @@ import { getDailyEpisodeForShareCached } from "@/lib/team-hub/queries";
 import { getUserPlan } from "@/lib/user-plan";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getSiteUrl } from "@/lib/site-url";
 import { jsonLd } from "@/lib/json-ld";
 
 export const revalidate = 60;
 
-const SITE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://nanofotboll.se";
+const SITE = getSiteUrl();
 const DAILY_UPGRADE_URL = "/prenumerera?utm_source=daily&utm_medium=player&utm_campaign=daily_pro";
 
 function episodeDescription(title: string, episodeDate: string) {

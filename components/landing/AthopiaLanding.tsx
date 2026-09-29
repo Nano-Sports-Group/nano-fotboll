@@ -9,6 +9,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { LandingNav } from "./LandingNav";
 import { Hero, type HeroPulse, type ClubChip, type LandingHeroCopy } from "./Hero";
+import { SportCards } from "./SportCards";
 import { LandingFooter } from "./LandingFooter";
 import { MobileDock } from "./MobileDock";
 
@@ -78,6 +79,7 @@ export default function AthopiaLanding({
       <LandingNav />
       <main id="main" tabIndex={-1} className="focus:outline-none">
         <Hero pulse={pulse} clubs={clubs} copy={heroCopy} waitlistMode={waitlistMode} />
+        <SportCards />
         {sportSlot}
         <DemoVignettes />
         <ExperienceSection />

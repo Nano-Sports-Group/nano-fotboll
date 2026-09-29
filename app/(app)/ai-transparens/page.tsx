@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { resolveEditorialResponsibility } from "@/lib/editorial-responsibility";
+import { CONTACT_EMAIL } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: "AI-transparens | Nano Fotboll",
@@ -74,8 +75,8 @@ export default function AiTransparensPage() {
               {editorial.label}
             </span>
             . Kontakt:{" "}
-            <a href="mailto:hej@nanofotboll.se" className="text-pitch-ink hover:underline">
-              hej@nanofotboll.se
+            <a href={`mailto:${CONTACT_EMAIL}`} className="text-pitch-ink hover:underline">
+              {CONTACT_EMAIL}
             </a>
             .
           </p>

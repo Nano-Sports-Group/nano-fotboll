@@ -11,6 +11,10 @@
  *   den som redan blivit inbjuden måste kunna logga in. Inloggade som hamnar på
  *   /vaenta skickas till /mitt-lag, samma mönster som / redan använder.
  * - Allt annat är öppet (publik nyhetswebb).
+ * - nanosport.se (huvuddomänen, ADR-001) visar BARA landningssidan. Inloggade skickas till
+ *   appen på fotboll.nanosport.se, och varje annan väg — även /sign-in — 308:as dit, så att
+ *   sessionen alltid skapas på samma värd som appen. Full inloggningsdetektering på
+ *   huvuddomänen kräver Clerk-produktion på nanosport.se (cookie på hela domänen).
  *
  * clerkMiddleware() körs via Vercel Fluid Compute (Node.js runtime).
  * ─────────────────────────────────────────────────────────────────────────────
@@ -38,8 +42,27 @@ const UTM_CAMPAIGN_RE = /^[a-z0-9_-]{3,64}$/;
 
 const isSignUpRoute = createRouteMatcher(["/sign-up(.*)"]);
 
+const APEX_HOSTS = new Set(["nanosport.se", "www.nanosport.se"]);
+/** Det landningssidan själv behöver på huvuddomänen. Statiska filer och /_next matchas aldrig av proxyn. */
+const APEX_OWN = /^\/(?:$|api\/|monitoring)/;
+
+function appOrigin(): string {
+  return (process.env.NEXT_PUBLIC_SITE_URL || "https://fotboll.nanosport.se").replace(/\/$/, "");
+}
+
 export default clerkMiddleware(async (auth, req) => {
   const waitlistMode = isWaitlistMode();
+
+  if (APEX_HOSTS.has(req.nextUrl.hostname)) {
+    const { pathname, search } = req.nextUrl;
+    if (!APEX_OWN.test(pathname)) {
+      return NextResponse.redirect(`${appOrigin()}${pathname}${search}`, 308);
+    }
+    if (pathname === "/") {
+      const { userId } = await auth();
+      if (userId) return NextResponse.redirect(`${appOrigin()}/mitt-lag`);
+    }
+  }
 
   if (waitlistMode && isSignUpRoute(req)) {
     return NextResponse.redirect(new URL("/vaenta", req.url));

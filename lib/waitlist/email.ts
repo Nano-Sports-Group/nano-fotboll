@@ -15,9 +15,9 @@
  */
 
 import "server-only";
-import { getSiteUrl } from "@/lib/site-url";
+import { CONTACT_EMAIL, getSiteHost, getSiteUrl } from "@/lib/site-url";
 
-const FROM = process.env.WAITLIST_EMAIL_FROM ?? "Nano Fotboll <hej@nanofotboll.se>";
+const FROM = process.env.WAITLIST_EMAIL_FROM ?? `Nano <${CONTACT_EMAIL}>`;
 
 export type SendResult =
   | { sent: true }
@@ -33,7 +33,7 @@ function wrap(bodyHtml: string): string {
 <div style="max-width:520px;margin:0 auto">
 <p style="font-size:18px;font-weight:600;margin:0 0 24px">Nano Fotboll</p>
 ${bodyHtml}
-<p style="margin-top:32px;font-size:12px;color:#6b6b6b">Du får det här mejlet för att du skrev upp dig på nanofotboll.se. Om det inte var du kan du ignorera det.</p>
+<p style="margin-top:32px;font-size:12px;color:#6b6b6b">Du får det här mejlet för att du skrev upp dig på ${getSiteHost()}. Om det inte var du kan du ignorera det.</p>
 </div></body></html>`;
 }
 

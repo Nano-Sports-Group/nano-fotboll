@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CONTACT_EMAIL } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: "Integritetspolicy | Nano Fotboll",
@@ -37,7 +38,7 @@ export default function IntegritetspolicyPage() {
           <h2 className="font-semibold text-2xl text-foreground mb-3 text-balance">Dina rättigheter</h2>
           <p>
             Du har rätt att begära tillgång till, rättelse eller radering av dina personuppgifter.
-            Kontakta oss på <a href="mailto:hej@nanofotboll.se" className="text-pitch-ink hover:underline">hej@nanofotboll.se</a>.
+            Kontakta oss på <a href={`mailto:${CONTACT_EMAIL}`} className="text-pitch-ink hover:underline">{CONTACT_EMAIL}</a>.
           </p>
         </section>
 

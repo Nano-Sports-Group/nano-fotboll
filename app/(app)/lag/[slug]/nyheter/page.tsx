@@ -5,6 +5,7 @@ import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import type { Article } from "@/lib/types";
 import { Newspaper } from "lucide-react";
 import { SPORT } from "@/lib/vertical";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const dynamic = 'force-dynamic';
 
@@ -73,7 +74,7 @@ export async function generateMetadata({
   return {
     title: `${name} Nyheter – Allsvenskan 2026`,
     description: `Senaste nyheterna om ${name} i Allsvenskan 2026 — matcher, transferer och matchanalyser.`,
-    alternates: { canonical: `https://nanofotboll.se/lag/${slug}/nyheter` },
+    alternates: { canonical: `${getSiteUrl()}/lag/${slug}/nyheter` },
   };
 }
 

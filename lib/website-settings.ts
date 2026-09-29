@@ -9,7 +9,7 @@
  */
 
 import type { Metadata } from "next";
-import { getSiteUrl } from "@/lib/site-url";
+import { CONTACT_EMAIL, getSiteUrl } from "@/lib/site-url";
 
 export const WEBSITE_CONFIG_KEY = "website";
 
@@ -68,7 +68,7 @@ export const DEFAULT_WEBSITE_SETTINGS: WebsiteSettings = {
     titleTemplate: "%s | Nano Fotboll",
     twitterHandle: "@athopia_se",
     locale: "sv_SE",
-    contactEmail: "hej@nanofotboll.se",
+    contactEmail: CONTACT_EMAIL,
   },
   seo: {
     defaultTitle: "Nano Fotboll — Allsvenskan 2026: tabell, resultat & statistik",
@@ -103,7 +103,7 @@ export const HOCKEY_DEFAULT_WEBSITE_SETTINGS: WebsiteSettings = {
     siteName: "Nano Hockey",
     tagline: "SHL, varje dag.",
     titleTemplate: "%s | Nano Hockey",
-    contactEmail: "hej@nanohockey.se",
+    contactEmail: CONTACT_EMAIL,
   },
   seo: {
     defaultTitle: "Nano Hockey — SHL 2026/27: tabell, resultat och statistik",
@@ -407,7 +407,7 @@ export function previewHost(siteUrl: string): string {
   try {
     return new URL(siteUrl).host.replace(/^www\./, "");
   } catch {
-    return "nanofotboll.se";
+    return "fotboll.nanosport.se";
   }
 }
 

@@ -16,7 +16,7 @@ import { getSiteUrl } from "@/lib/site-url";
 export const revalidate = 60;
 
 const LEAGUE_CANONICAL =
-  VERTICAL === "hockey" ? `${getSiteUrl()}${leagueHref()}` : "https://nanofotboll.se/allsvenskan";
+  `${getSiteUrl()}${leagueHref()}`;
 
 export const metadata: Metadata = {
   title: vertical.leagueTitle,

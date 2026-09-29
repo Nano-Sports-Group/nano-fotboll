@@ -14,6 +14,7 @@ import { useFavoriteTeam } from "@/hooks/useFavoriteTeam";
 import { usePushPermission, useServiceWorker } from "@/hooks/usePwa";
 import { createClient } from "@/lib/supabase-browser";
 import { trackEvent } from "@/lib/track";
+import { getSiteHost } from "@/lib/site-url";
 
 interface Team {
   id: string;
@@ -472,7 +473,7 @@ export function OnboardingClient({ presetTeam = null }: { presetTeam?: string | 
                   ) : null}
                   {!isSubscribed && pushDenied ? (
                     <p className="mt-3 text-xs text-muted-foreground">
-                      Notiser är blockerade för nanofotboll.se. Slå på dem i webbläsarens
+                      Notiser är blockerade för {getSiteHost()}. Slå på dem i webbläsarens
                       inställningar om du ändrar dig.
                     </p>
                   ) : null}
