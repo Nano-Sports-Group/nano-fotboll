@@ -32,7 +32,8 @@ async function getTeamPodcasts(teamName: string): Promise<Podcast[]> {
     const supabase = createServerClient();
     const { data } = await supabase
       .from("podcasts")
-      .select("*")
+      .select("*, rss_sources!inner(sport)")
+      .eq("rss_sources.sport", SPORT)
       .ilike("title", `%${teamName}%`)
       .gte("published_at", contentCutoffIso())
       .order("published_at", { ascending: false })

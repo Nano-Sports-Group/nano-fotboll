@@ -13,13 +13,17 @@ import { Mic, Headphones } from "lucide-react";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import { PodcastSearch } from "./PodcastSearch";
 import { contentCutoffIso } from "@/lib/content-window";
+import { SPORT, vertical } from "@/lib/vertical";
+
+const HOCKEY = vertical.id === "hockey";
 
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Allsvenskan-poddar",
-  description:
-    "Allsvenskans poddar samlade: Studio Allsvenskan, Lundh, klubbpoddarna och fler — sök avsnitt per lag och ämne.",
+  title: `${vertical.leagueName}-poddar`,
+  description: HOCKEY
+    ? "SHL-poddarna samlade: TV4 Hockey, Klubben Hockey, lokaltidningarnas lagpoddar och fler — sök avsnitt per lag och ämne."
+    : "Allsvenskans poddar samlade: Studio Allsvenskan, Lundh, klubbpoddarna och fler — sök avsnitt per lag och ämne.",
 };
 
 type EpisodeRow = {
@@ -36,7 +40,8 @@ async function getLatest(): Promise<{ episodes: EpisodeRow[]; shows: string[] }>
     const db = createServerClient();
     const { data } = await db
       .from("podcasts")
-      .select("id, title, show_name, published_at, mentioned_teams")
+      .select("id, title, show_name, published_at, mentioned_teams, rss_sources!inner(sport)")
+      .eq("rss_sources.sport", SPORT)
       .gte("published_at", contentCutoffIso())
       .order("published_at", { ascending: false })
       .limit(40);
@@ -67,7 +72,7 @@ export default async function PodcastIndexPage() {
           <Headphones className="w-5 h-5" />
           <span className="text-xs font-semibold uppercase tracking-wide">Poddintelligens</span>
         </div>
-        <h1 className="text-3xl font-bold text-foreground text-balance">Allsvenskan-poddar</h1>
+        <h1 className="text-3xl font-bold text-foreground text-balance">{vertical.leagueName}-poddar</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Allt som sägs i {shows.length > 0 ? `${shows.length} poddar` : "poddarna"} — samlat,
           taggat per lag och sökbart. PRO får sammanfattning och kan fråga om avsnittet.

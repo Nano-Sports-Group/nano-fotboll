@@ -23,6 +23,7 @@ import {
 import { AppBreadcrumbs } from "@/components/ui/AppBreadcrumbs";
 import { jsonLd } from "@/lib/json-ld";
 import { getSiteUrl } from "@/lib/site-url";
+import { SPORT, vertical } from "@/lib/vertical";
 
 export const revalidate = 300;
 
@@ -43,7 +44,8 @@ async function getEpisode(id: string): Promise<EpisodeRow | null> {
     const supabase = createServerClient();
     const { data } = await supabase
       .from("podcasts")
-      .select("id, title, show_name, published_at, duration_seconds, mentioned_teams, metadata, audio_url, is_transcribed")
+      .select("id, title, show_name, published_at, duration_seconds, mentioned_teams, metadata, audio_url, is_transcribed, rss_sources!inner(sport)")
+      .eq("rss_sources.sport", SPORT)
       .eq("id", id)
       .maybeSingle();
     return data as EpisodeRow | null;
@@ -198,7 +200,7 @@ export default async function PodcastEpisodePage({
         />
 
         <p className="text-xs text-muted-foreground/80 border-t border-border pt-6">
-          Nano Fotboll länkar till originalkällan och använder Spotifys officiella spelare när det finns.
+          {vertical.productName} länkar till originalkällan och använder Spotifys officiella spelare när det finns.
           Vi publicerar inte transkript eller strömmar ljudfiler direkt. Se{" "}
           <Link href="/podcast" className="text-pitch-ink hover:underline">
             alla avsnitt

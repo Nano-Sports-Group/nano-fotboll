@@ -6,6 +6,7 @@ import { excerptAround } from "@/lib/podcast/rights";
 import { getUserPlan } from "@/lib/user-plan";
 import { canAccess } from "@/lib/access-rules";
 import { contentCutoffIso } from "@/lib/content-window";
+import { SPORT } from "@/lib/vertical";
 
 interface Clip {
   episodeId: string;
@@ -66,7 +67,8 @@ export async function GET(req: Request) {
     const [{ data: episodes }, clipResult] = await Promise.all([
       supabase
         .from("podcasts")
-        .select("id, title, show_name, published_at, mentioned_teams, metadata")
+        .select("id, title, show_name, published_at, mentioned_teams, metadata, rss_sources!inner(sport)")
+        .eq("rss_sources.sport", SPORT)
         .or(`title.ilike.%${q}%,show_name.ilike.%${q}%`)
         .gte("published_at", contentCutoffIso())
         .order("published_at", { ascending: false })

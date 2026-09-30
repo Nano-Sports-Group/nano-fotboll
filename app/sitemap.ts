@@ -128,7 +128,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const { data: podcasts } = await supabase
       .from("podcasts")
-      .select("id, published_at")
+      .select("id, published_at, rss_sources!inner(sport)")
+      .eq("rss_sources.sport", SPORT)
       .order("published_at", { ascending: false })
       .limit(2000);
     podcastRoutes = (podcasts ?? []).map((p) => ({

@@ -744,7 +744,8 @@ export const getPodcasts = unstable_cache(
       const supabase = createServerClient();
       const { data } = await supabase
         .from("podcasts")
-        .select("*")
+        .select("*, rss_sources!inner(sport)")
+        .eq("rss_sources.sport", SPORT)
         .gte("published_at", contentCutoffIso())
         .order("published_at", { ascending: false })
         .limit(limit);
@@ -761,7 +762,7 @@ export async function getPodcast(id: string): Promise<Podcast | null> {
   if (!isSupabaseConfigured()) return null;
   try {
     const supabase = createServerClient();
-    const { data } = await supabase.from("podcasts").select("*").eq("id", id).maybeSingle();
+    const { data } = await supabase.from("podcasts").select("*, rss_sources!inner(sport)").eq("rss_sources.sport", SPORT).eq("id", id).maybeSingle();
     return data ? mapPodcast(data) : null;
   } catch (e) { captureDbError(e);
     return null;
@@ -799,7 +800,8 @@ async function fetchPodcastSignalsForEntities(
     const supabase = createServerClient();
     const { data: pods } = await supabase
       .from("podcasts")
-      .select("id, title, show_name, published_at, entity_ids, mentioned_teams, metadata, audio_url")
+      .select("id, title, show_name, published_at, entity_ids, mentioned_teams, metadata, audio_url, rss_sources!inner(sport)")
+      .eq("rss_sources.sport", SPORT)
       .gte("published_at", contentCutoffIso())
       .order("published_at", { ascending: false })
       .limit(24);

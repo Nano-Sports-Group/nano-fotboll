@@ -17,6 +17,7 @@ import {
   parseAthopiaSummary,
   type AthopiaPodcastSummary,
 } from "@/lib/podcast/summary";
+import { SPORT } from "@/lib/vertical";
 
 function getDb() {
   return createClient(
@@ -53,11 +54,12 @@ export async function loadPodcastEpisode(episodeId: string): Promise<PodcastEpis
   const db = getDb();
   const { data } = await db
     .from("podcasts")
-    .select("id, title, show_name, published_at, mentioned_teams, metadata, is_transcribed")
+    .select("id, title, show_name, published_at, mentioned_teams, metadata, is_transcribed, rss_sources!inner(sport)")
+    .eq("rss_sources.sport", SPORT)
     .eq("id", episodeId)
     .maybeSingle();
   if (!data) return null;
-  const row = data as PodcastRow;
+  const row = data as unknown as PodcastRow;
   const meta = asMetadataRecord(row.metadata);
   const topics = Array.isArray(meta.topics)
     ? meta.topics.filter((t): t is string => typeof t === "string")
