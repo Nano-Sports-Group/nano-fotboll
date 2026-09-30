@@ -192,7 +192,7 @@ export async function POST(req: NextRequest) {
         .select("author_id")
         .eq("id", parent_id)
         .maybeSingle();
-      const parentAuthorId = (parentPost as any)?.author_id;
+      const parentAuthorId = (parentPost as { author_id: string | null } | null)?.author_id;
       if (parentAuthorId && parentAuthorId !== user.id) {
         try {
           await supabase.from("notifications").insert({
@@ -200,7 +200,7 @@ export async function POST(req: NextRequest) {
             type: "reply",
             actor_id: user.id,
             actor_name: user.fullName ?? user.username ?? "Anonym",
-            post_id: (post as any).id,
+            post_id: (post as { id: string }).id,
           });
         } catch {}
       }

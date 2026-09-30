@@ -92,13 +92,9 @@ export async function GET(req: Request) {
     newsQ,
   ]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let summary: FeedItem | null =
-    isPro && (sumData as any[])?.[0]
-      ? toItem((sumData as any[])[0], "summary")
-      : null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let topNews: FeedItem[] = ((newsData as any[]) ?? []).map((a) =>
+  const sumRows = (sumData ?? []) as Record<string, unknown>[];
+  let summary: FeedItem | null = isPro && sumRows[0] ? toItem(sumRows[0], "summary") : null;
+  let topNews: FeedItem[] = ((newsData ?? []) as Record<string, unknown>[]).map((a) =>
     toItem(a, "news"),
   );
 

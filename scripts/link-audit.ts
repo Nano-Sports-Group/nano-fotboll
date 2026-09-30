@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from 'fs'
+import { readFileSync, readdirSync, statSync, writeFileSync } from 'fs'
 import { join } from 'path'
 
 const APP_DIR = './app'
@@ -129,7 +129,7 @@ async function main() {
     issues
   }
 
-  require('fs').writeFileSync(
+  writeFileSync(
     'scripts/link-audit-report.json',
     JSON.stringify(report, null, 2)
   )

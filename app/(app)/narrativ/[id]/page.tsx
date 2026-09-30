@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
+import { createServerClient, isSupabaseConfigured, mapNarrative } from "@/lib/supabase";
 import { SPORT } from "@/lib/vertical";
 import type { Narrative } from "@/lib/types";
 import { TrendBadge } from "@/components/ui/TrendBadge";
@@ -16,19 +16,9 @@ async function getNarrative(id: string): Promise<(Narrative & { articleIds: stri
     const supabase = createServerClient();
     const { data } = await supabase.from("narratives").select("*").eq("id", id).eq("sport", SPORT).maybeSingle();
     if (!data) return null;
-    const row = data as any;
-    const score = Number(row.score ?? row.importance_score ?? 0);
+    const row = data as Record<string, unknown>;
     return {
-      id: String(row.id),
-      topic: String(row.topic ?? row.title ?? ""),
-      score: Number.isFinite(score) ? score : 0,
-      description: row.description ?? null,
-      body: row.generated_text ?? null,
-      sourceCount: Number(row.source_count ?? 0),
-      trend: (row.trend ?? "stable") as Narrative["trend"],
-      sentimentScore: row.sentiment_score ?? null,
-      entities: [],
-      createdAt: String(row.created_at ?? new Date().toISOString()),
+      ...mapNarrative(row),
       updatedAt: String(row.updated_at ?? row.last_updated_at ?? row.created_at ?? new Date().toISOString()),
       articleIds: Array.isArray(row.article_ids) ? (row.article_ids as string[]) : [],
     };

@@ -137,7 +137,34 @@ function fallbackSlugify(name: string): string {
   return name.toLowerCase().replace(/\s+/g, "-").replace(/[åä]/g, "a").replace(/ö/g, "o");
 }
 
-function fixtureToSMFixture(row: any, slugMap: Record<number, string> = {}): SMFixture {
+/** Formerna frågorna nedan väljer — DB → SM-kontraktets gräns. Allt valfritt: saknad data döljs, fylls aldrig i. */
+interface TeamRow {
+  sportmonks_id?: number | null;
+  id?: number | null;
+  name?: string | null;
+  short_code?: string | null;
+  logo?: string | null;
+  image_path?: string | null;
+}
+interface FixtureRow {
+  sportmonks_id?: number | null;
+  id?: number | null;
+  home_team?: TeamRow | null;
+  away_team?: TeamRow | null;
+  kickoff?: string | null;
+  starting_at?: string | null;
+  status?: string | null;
+  home_score?: number | null;
+  away_score?: number | null;
+  league?: { name?: string | null; logo?: string | null } | null;
+  minute?: number | null;
+}
+interface PlayerRow {
+  fullname?: string | null;
+  firstname?: string | null;
+}
+
+function fixtureToSMFixture(row: FixtureRow, slugMap: Record<number, string> = {}): SMFixture {
   const homeTeam = row.home_team ?? { sportmonks_id: 0, name: "Hemmalag", short_code: null, logo: "" };
   const awayTeam = row.away_team ?? { sportmonks_id: 0, name: "Bortalag", short_code: null, logo: "" };
 
@@ -190,7 +217,7 @@ function fixtureToSMFixture(row: any, slugMap: Record<number, string> = {}): SMF
   };
 }
 
-function teamToSMTeam(row: any, slugMap: Record<number, string> = {}): SMTeam {
+function teamToSMTeam(row: TeamRow, slugMap: Record<number, string> = {}): SMTeam {
   const smId = Number(row.sportmonks_id ?? row.id ?? 0);
   const name = String(row.name ?? "");
   return {
@@ -369,7 +396,7 @@ export const fetchTeamsWithSlugs = unstable_cache(
         getTeamSlugMap(),
       ]);
       return (teams ?? [])
-        .map((t: any) => teamToSMTeam(t, slugMap))
+        .map((t: TeamRow) => teamToSMTeam(t, slugMap))
         .filter((t) => t.id && t.name)
         .sort((a, b) => a.name.localeCompare(b.name, "sv"));
     } catch (e) {
@@ -502,14 +529,14 @@ export const fetchStandingsFull = unstable_cache(
       const [{ data: teamsData }, slugMap, prevPositions] = await Promise.all([
         teamIds.length
           ? db.from("teams").select("sportmonks_id,name,short_code,logo").in("sportmonks_id", teamIds)
-          : Promise.resolve({ data: [] as any[] }),
+          : Promise.resolve({ data: [] as TeamRow[] }),
         getTeamSlugMap(),
         fetchPreviousPositions(db, Number(season.sportmonks_id)),
       ]);
       const teamById = new Map((teamsData ?? []).map((t) => [Number(t.sportmonks_id), t]));
 
       return (data ?? []).map((row, i) => {
-        const team = teamById.get(Number(row.team_id)) as any;
+        const team = teamById.get(Number(row.team_id)) as TeamRow | undefined;
         const form = typeof row.form === "string"
           ? row.form.split("").filter((c: string) => ["W", "D", "L"].includes(c)).slice(-5)
           : [];
@@ -596,8 +623,8 @@ export const fetchTopScorers = unstable_cache(
       ]);
 
       return (data ?? []).map((row, i) => {
-        const player = row.players as any;
-        const team = row.teams as any;
+        const player = row.players as PlayerRow | null;
+        const team = row.teams as TeamRow | null;
         return {
           rank: i + 1,
           player_id: Number(row.player_id ?? 0),
@@ -645,8 +672,8 @@ export const fetchTopAssists = unstable_cache(
       ]);
 
       return (data ?? []).map((row, i) => {
-        const player = row.players as any;
-        const team = row.teams as any;
+        const player = row.players as PlayerRow | null;
+        const team = row.teams as TeamRow | null;
         return {
           rank: i + 1,
           player_id: Number(row.player_id ?? 0),
@@ -682,22 +709,6 @@ export async function searchTeams(query: string): Promise<SMTeam[]> {
   }
 }
 
-/** Spelarstatistik från player_match_stats. */
-export async function fetchPlayerStats(playerId: number): Promise<any | null> {
-  if (!isSupabaseConfigured()) return null;
-  try {
-    const db = createServerClient();
-    const { data } = await db
-      .from("player_season_stats")
-      .select("*, players(*)")
-      .eq("player_id", playerId)
-      .maybeSingle();
-    return data ?? null;
-  } catch (e) {
-    Sentry.captureException(e);
-    return null;
-  }
-}
 
 /** Helper: omvandla fixture till visningsvänlig form (bakåtkompatibel). */
 export function parseFixtureScore(fixture: SMFixture) {

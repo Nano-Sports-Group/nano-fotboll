@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PodcastCard } from "@/components/ui/PodcastCard";
-import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
+import { createServerClient, isSupabaseConfigured, mapPodcast } from "@/lib/supabase";
 import type { Podcast } from "@/lib/types";
 import { Mic } from "lucide-react";
 import { SPORT } from "@/lib/vertical";
@@ -8,19 +8,6 @@ import { contentCutoffIso } from "@/lib/content-window";
 
 export const dynamic = 'force-dynamic';
 
-function mapPodcast(row: any): Podcast {
-  return {
-    id: String(row.id),
-    showName: String(row.show_name ?? "Podcast"),
-    title: String(row.title ?? ""),
-    audioUrl: String(row.audio_url ?? ""),
-    durationSeconds: Number(row.duration_seconds ?? 0),
-    publishedAt: String(row.published_at ?? new Date().toISOString()),
-    imageUrl: row.image_url ?? null,
-    hasTranscript: !!(row.transcript_html ?? row.has_transcript),
-    entities: Array.isArray(row.entities) ? row.entities : [],
-  };
-}
 
 async function getTeamName(slug: string): Promise<string> {
   if (!isSupabaseConfigured()) return slug;

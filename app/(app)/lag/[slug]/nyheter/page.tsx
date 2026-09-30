@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArticleCard } from "@/components/ui/ArticleCard";
-import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
+import { createServerClient, isSupabaseConfigured, mapArticle } from "@/lib/supabase";
 import type { Article } from "@/lib/types";
 import { Newspaper } from "lucide-react";
 import { SPORT } from "@/lib/vertical";
@@ -10,24 +10,6 @@ import { contentCutoffIso } from "@/lib/content-window";
 
 export const dynamic = 'force-dynamic';
 
-function mapArticle(row: any): Article {
-  return {
-    id: String(row.id),
-    slug: String(row.slug),
-    title: String(row.title ?? ""),
-    summary: String(row.summary ?? ""),
-    content: row.content ?? null,
-    sourceUrl: row.source_url ?? null,
-    sourceName: String(row.source_name ?? "Okänd källa"),
-    sourceType: row.source_type ?? null,
-    imageUrl: row.image_url ?? null,
-    publishedAt: String(row.published_at ?? new Date().toISOString()),
-    updatedAt: row.updated_at ?? null,
-    importanceScore: row.importance_score ?? null,
-    sentimentScore: row.sentiment_score ?? null,
-    entities: Array.isArray(row.entities) ? row.entities : [],
-  };
-}
 
 async function getTeam(slug: string): Promise<{ id: string; name: string } | null> {
   if (!isSupabaseConfigured()) return null;

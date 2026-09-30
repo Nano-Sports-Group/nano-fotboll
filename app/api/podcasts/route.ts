@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     : 40;
   const db = createServerClient();
 
-  let query = db
+  const query = db
     .from("podcasts")
     .select(
       "id,title,show_name,published_at,duration_seconds,mentioned_teams,metadata,audio_url,rss_sources!inner(sport)",

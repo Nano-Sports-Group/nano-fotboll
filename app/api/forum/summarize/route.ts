@@ -49,8 +49,9 @@ export async function POST(req: NextRequest) {
       .select("name")
       .eq("slug", teamSlug)
       .eq("type", "team")
+      .eq("sport", SPORT)
       .maybeSingle();
-    const teamName = (entity as any)?.name ?? teamSlug;
+    const teamName = (entity as { name: string } | null)?.name ?? teamSlug;
 
     // Fetch posts from last 4 hours
     const since = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
@@ -86,7 +87,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ skipped: true, reason: "daily_budget_cap_reached", spentToday });
     }
 
-    const postsText = (posts as any[])
+    const postsText = (posts as { label: string | null; content: string; like_count: number; reply_count: number }[])
       .map((p, i) => {
         const label = p.label ? `[${p.label}] ` : "";
         return `${i + 1}. ${label}${p.content} (👍${p.like_count} 💬${p.reply_count})`;
@@ -118,7 +119,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Anthropic call failed" }, { status: 502 });
     }
 
-    const result = await response.json() as any;
+    const result = (await response.json()) as {
+      content?: { text?: string }[];
+      usage?: { input_tokens?: number; output_tokens?: number };
+    };
     const summary: string = result.content?.[0]?.text?.trim() ?? "";
 
     if (!summary) return NextResponse.json({ error: "Empty summary" }, { status: 500 });

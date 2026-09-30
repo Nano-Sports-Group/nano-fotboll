@@ -18,7 +18,8 @@ export async function getFollowedTeams(userId: string): Promise<DashTeam[]> {
       .eq('sport', SPORT)
       .order('created_at', { ascending: true })
     if (!data) return []
-    return (data as any[])
+    type FollowRow = { entities: { id: string; name: string; slug: string; metadata: Record<string, unknown> | null } | null }
+    return (data as unknown as FollowRow[])
       .map((r) => {
         const e = r.entities
         if (!e) return null
@@ -44,14 +45,16 @@ export async function getTeamBySlug(slug: string): Promise<DashTeam | null> {
       .from('entities')
       .select('id, name, slug, metadata')
       .eq('type', 'team')
+      .eq('sport', SPORT)
       .eq('slug', slug)
       .maybeSingle()
     if (!data) return null
-    const meta = ((data as any).metadata ?? {}) as Record<string, unknown>
+    const row = data as { id: string; name: string; slug: string; metadata: Record<string, unknown> | null }
+    const meta = row.metadata ?? {}
     return {
-      id: String((data as any).id),
-      name: String((data as any).name),
-      slug: String((data as any).slug),
+      id: String(row.id),
+      name: String(row.name),
+      slug: String(row.slug),
       logo_url: (meta.logo_url as string | null) ?? null,
     }
   } catch {
@@ -109,7 +112,8 @@ async function fetchTeamNews(teamSlug: string): Promise<DashArticle[]> {
       .contains('entity_ids', [String(team.id)])
       .order('published_at', { ascending: false })
       .limit(5)
-    return ((data ?? []) as any[]).map((r) => {
+    type NewsRow = { id: string; title: string; slug: string | null; summary: string | null; published_at: string; rights_status: string | null; is_athopia_generated: boolean | null }
+    return ((data ?? []) as NewsRow[]).map((r) => {
       const rights = r.rights_status ?? (r.is_athopia_generated ? 'owned' : 'link_only')
       return {
         id: r.id,
@@ -166,7 +170,7 @@ export const getStandings = unstable_cache(
       return full.slice(0, 16).map((r) => ({
         position: r.position,
         team_name: r.team.name,
-        team_slug: String((r.team as any).short_code ?? r.team.name).toLowerCase().replace(/\s+/g, '-'),
+        team_slug: String(r.team.short_code ?? r.team.name).toLowerCase().replace(/\s+/g, '-'),
         played: r.played,
         points: r.points,
         goal_diff: r.goal_diff,
@@ -192,7 +196,7 @@ export const getTeamStats = unstable_cache(
         .order('played_at', { ascending: false })
         .limit(5)
       if (!data?.length) return []
-      return [...data].reverse().map((r: any) => ({
+      return [...data].reverse().map((r) => ({
         label: String(r.matchday_label ?? ''),
         goals_for: Number(r.goals_for ?? 0),
         goals_against: Number(r.goals_against ?? 0),

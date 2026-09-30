@@ -42,7 +42,7 @@ async function getTeamStats(): Promise<Map<string, TeamStats>> {
       .order("created_at", { ascending: false })
       .limit(500);
 
-    for (const row of (data ?? []) as any[]) {
+    for (const row of (data ?? []) as { team_slug: string | null; created_at: string; hot_score: number | null }[]) {
       const slug = row.team_slug as string;
       if (!slug) continue;
       const existing = map.get(slug);
@@ -70,14 +70,14 @@ async function getFollowedSlugs(userId: string | null): Promise<string[]> {
       .eq("clerk_user_id", userId)
       .eq("sport", SPORT)
       .maybeSingle();
-    const ids: string[] = (data as any)?.followed_team_ids ?? [];
+    const ids: string[] = (data as { followed_team_ids: string[] | null } | null)?.followed_team_ids ?? [];
     if (!ids.length) return [];
     // Resolve UUIDs → slugs via entities
     const { data: entities } = await supabase
       .from("entities")
       .select("id, slug")
       .in("id", ids);
-    return ((entities ?? []) as any[]).map((e) => e.slug as string).filter(Boolean);
+    return ((entities ?? []) as { slug: string | null }[]).map((e) => e.slug).filter((s): s is string => !!s);
   } catch {
     return [];
   }

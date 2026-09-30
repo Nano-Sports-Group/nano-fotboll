@@ -155,20 +155,31 @@ function dedupeByStoryCluster<T>(
   return order.map((key) => bestByKey.get(key)!).filter(Boolean);
 }
 
-function mapEntity(row: any): Entity {
+/** Rad från PostgREST: okänd form tills en mapper har smalnat av den (DB → domän-gränsen). */
+type DbRow = Record<string, unknown>;
+const optStr = (v: unknown): string | null => (v == null ? null : String(v));
+const optNum = (v: unknown): number | null => {
+  if (v == null || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+const optBool = (v: unknown): boolean | null => (typeof v === "boolean" ? v : null);
+
+function mapEntity(row: DbRow): Entity {
   return {
     id: String(row.id ?? row.entity_id ?? row.slug ?? row.name),
     name: String(row.name ?? ""),
     type: (row.type ?? "team") as Entity["type"],
     slug: String(row.slug ?? ""),
-    imageUrl: row.image_url ?? row.imageUrl ?? null,
+    imageUrl: optStr(row.image_url ?? row.imageUrl),
   };
 }
 
-function mapArticle(row: any): Article {
+/** DB-rad → Article. Enda vägen: rättighetsgrinden (canPublishBody) ligger här. */
+export function mapArticle(row: DbRow): Article {
   const slug = row.slug ? String(row.slug) : "";
-  const sourceUrl = row.source_url ?? row.sourceUrl ?? row.url ?? null;
-  const isAthopiaGenerated = row.is_athopia_generated ?? row.isAthopiaGenerated ?? null;
+  const sourceUrl = optStr(row.source_url ?? row.sourceUrl ?? row.url);
+  const isAthopiaGenerated = optBool(row.is_athopia_generated ?? row.isAthopiaGenerated);
   const rightsStatus = resolveRightsStatus(row);
   const contentOrigin = resolveContentOrigin(row);
   const canBody = canPublishBody(rightsStatus);
@@ -177,20 +188,20 @@ function mapArticle(row: any): Article {
     slug,
     title: String(row.title ?? ""),
     summary: canBody ? String(row.summary ?? "") : "",
-    content: canBody ? (row.content ?? null) : null,
+    content: canBody ? optStr(row.content) : null,
     sourceUrl,
-    url: row.url ?? sourceUrl,
+    url: optStr(row.url) ?? sourceUrl,
     sourceName: String(row.source_name ?? row.sourceName ?? "Okänd källa"),
-    sourceType: row.source_type ?? row.sourceType ?? null,
-    imageUrl: row.image_url ?? row.imageUrl ?? null,
+    sourceType: optStr(row.source_type ?? row.sourceType) as Article["sourceType"],
+    imageUrl: optStr(row.image_url ?? row.imageUrl),
     publishedAt: String(row.published_at ?? row.publishedAt ?? new Date().toISOString()),
-    updatedAt: row.updated_at ?? row.updatedAt ?? null,
-    importanceScore: row.importance_score ?? row.importanceScore ?? null,
-    feedScore: row.feed_score ?? row.feedScore ?? null,
-    pushPriority: row.push_priority ?? row.pushPriority ?? null,
-    newsTag: row.news_tag ?? row.newsTag ?? null,
-    eventType: row.event_type ?? row.eventType ?? null,
-    sentimentScore: row.sentiment_score ?? row.sentimentScore ?? null,
+    updatedAt: optStr(row.updated_at ?? row.updatedAt),
+    importanceScore: optNum(row.importance_score ?? row.importanceScore),
+    feedScore: optNum(row.feed_score ?? row.feedScore),
+    pushPriority: optNum(row.push_priority ?? row.pushPriority) as Article["pushPriority"],
+    newsTag: optStr(row.news_tag ?? row.newsTag) as Article["newsTag"],
+    eventType: optStr(row.event_type ?? row.eventType) as Article["eventType"],
+    sentimentScore: optNum(row.sentiment_score ?? row.sentimentScore),
     entities: Array.isArray(row.entities) ? row.entities.map(mapEntity) : [],
     contentOrigin,
     rightsStatus,
@@ -198,24 +209,24 @@ function mapArticle(row: any): Article {
   };
 }
 
-function mapNarrative(row: any): Narrative {
+export function mapNarrative(row: DbRow): Narrative {
   const score = Number(row.score ?? row.importance_score ?? 0);
   return {
     id: String(row.id),
     topic: String(row.topic ?? row.title ?? ""),
     score: Number.isFinite(score) ? score : 0,
-    description: row.description ?? null,
-    body: row.generated_text ?? row.body ?? null,
+    description: optStr(row.description),
+    body: optStr(row.generated_text ?? row.body),
     sourceCount: Number(row.source_count ?? row.sourceCount ?? 0),
     trend: (row.trend ?? "stable") as Narrative["trend"],
-    sentimentScore: row.sentiment_score ?? row.sentimentScore ?? null,
+    sentimentScore: optNum(row.sentiment_score ?? row.sentimentScore),
     entities: Array.isArray(row.entities) ? row.entities.map(mapEntity) : [],
     createdAt: String(row.created_at ?? row.createdAt ?? new Date().toISOString()),
     updatedAt: String(row.updated_at ?? row.updatedAt ?? new Date().toISOString()),
   };
 }
 
-function mapEntityInsight(row: any): EntityInsight {
+function mapEntityInsight(row: DbRow): EntityInsight {
   return {
     id: String(row.id),
     entityId: String(row.entity_id),
@@ -224,7 +235,7 @@ function mapEntityInsight(row: any): EntityInsight {
     insightType: (row.insight_type ?? "stat_news_fusion") as EntityInsight["insightType"],
     title: String(row.title ?? ""),
     summary: String(row.summary ?? ""),
-    body: row.body ?? null,
+    body: optStr(row.body),
     confidence: Number(row.confidence ?? 0),
     severity: (row.severity ?? "info") as EntityInsight["severity"],
     sourceArticleIds: Array.isArray(row.source_article_ids) ? row.source_article_ids.map(String) : [],
@@ -234,7 +245,7 @@ function mapEntityInsight(row: any): EntityInsight {
   };
 }
 
-function mapTeamDailyPulse(row: any): TeamDailyPulse {
+function mapTeamDailyPulse(row: DbRow): TeamDailyPulse {
   return {
     id: String(row.id),
     teamEntityId: String(row.team_entity_id),
@@ -244,7 +255,7 @@ function mapTeamDailyPulse(row: any): TeamDailyPulse {
     headline: String(row.headline ?? ""),
     dek: String(row.dek ?? ""),
     body: String(row.body ?? ""),
-    editorialNote: row.editorial_note ?? null,
+    editorialNote: optStr(row.editorial_note),
     matchContextLabel: (row.match_context_label ?? "normal") as TeamDailyPulse["matchContextLabel"],
     tone: (row.tone ?? "measured") as TeamDailyPulse["tone"],
     sourceArticleIds: Array.isArray(row.source_article_ids) ? row.source_article_ids.map(String) : [],
@@ -255,7 +266,7 @@ function mapTeamDailyPulse(row: any): TeamDailyPulse {
   };
 }
 
-function mapPodcast(row: any): Podcast {
+export function mapPodcast(row: DbRow): Podcast {
   return {
     id: String(row.id),
     showName: String(row.show_name ?? row.showName ?? "Podcast"),
@@ -263,13 +274,13 @@ function mapPodcast(row: any): Podcast {
     audioUrl: String(row.audio_url ?? row.audioUrl ?? ""),
     durationSeconds: Number(row.duration_seconds ?? row.durationSeconds ?? 0),
     publishedAt: String(row.published_at ?? row.publishedAt ?? new Date().toISOString()),
-    imageUrl: row.image_url ?? row.imageUrl ?? null,
+    imageUrl: optStr(row.image_url ?? row.imageUrl),
     hasTranscript: !!(row.transcript_html ?? row.has_transcript ?? row.hasTranscript),
     entities: Array.isArray(row.entities) ? row.entities.map(mapEntity) : [],
   };
 }
 
-function mapPodcastChunk(row: any): PodcastChunk {
+function mapPodcastChunk(row: DbRow): PodcastChunk {
   return {
     id: String(row.id),
     podcastId: String(row.podcast_id ?? row.podcastId ?? ""),
@@ -392,8 +403,8 @@ export const getHotArticles = unstable_cache(
         if (u) clickByUrl.set(u, (clickByUrl.get(u) ?? 0) + 1);
       }
 
-      const scored = rows.map((r: any) => {
-        const clicksN = clickByUrl.get(r.url) ?? 0;
+      const scored = (rows as DbRow[]).map((r) => {
+        const clicksN = clickByUrl.get(String(r.url ?? "")) ?? 0;
         // feed_score 0–1 + klickboost (log-dämpad så en viral artikel ej dränker allt)
         const hot = Number(r.feed_score ?? 0) + Math.log1p(clicksN) * 0.35;
         return { row: r, hot };
@@ -504,21 +515,21 @@ async function fetchFilteredArticles(filters: ArticleFilters = {}): Promise<{ ar
     }
 
     const { data, count } = await q;
-    const rows = data ?? [];
+    const rows = (data ?? []) as DbRow[];
 
     // news_feed exponerar entity_ids (uuid[]) men inte entities — utan denna
     // resolvning var lag-chipsen på /nyheter alltid tomma.
-    const allIds = [...new Set(rows.flatMap((r: any) => (r.entity_ids as string[] | null) ?? []))];
+    const allIds = [...new Set(rows.flatMap((r) => (r.entity_ids as string[] | null) ?? []))];
     if (allIds.length > 0) {
       const { data: ents } = await supabase
         .from("entities")
         .select("id, name, slug, type")
         .in("id", allIds.slice(0, 300));
-      const byId = new Map((ents ?? []).map((e: any) => [String(e.id), e]));
-      for (const r of rows as any[]) {
+      const byId = new Map((ents ?? []).map((e) => [String(e.id), e as DbRow]));
+      for (const r of rows) {
         r.entities = ((r.entity_ids as string[] | null) ?? [])
           .map((id) => byId.get(String(id)))
-          .filter((e: any) => e && e.type === "team" && e.slug);
+          .filter((e): e is DbRow => !!e && e.type === "team" && !!e.slug);
       }
     }
 
@@ -526,12 +537,12 @@ async function fetchFilteredArticles(filters: ArticleFilters = {}): Promise<{ ar
     // flera källor) innan render — annars visas samma story flera gånger.
     const deduped = dedupeByStoryCluster(
       rows,
-      (r: any) => ({
-        clusterId: r.story_cluster_id ?? null,
-        title: r.title ?? null,
-        publishedAt: r.published_at ?? null,
+      (r) => ({
+        clusterId: optStr(r.story_cluster_id),
+        title: optStr(r.title),
+        publishedAt: optStr(r.published_at),
       }),
-      (r: any) => Number(r.feed_score ?? r.importance_score ?? 0)
+      (r) => Number(r.feed_score ?? r.importance_score ?? 0)
     );
 
     return { articles: deduped.map(mapArticle), total: count ?? 0 };
@@ -718,7 +729,7 @@ export async function getEntities(type?: Entity["type"]): Promise<Entity[]> {
     let q = supabase.from("entities").select("*").order("name", { ascending: true }).limit(100);
     if (type) q = q.eq("type", type);
     // Visa bara Allsvenskan-lag (ej landslag, Camp Sweden, etc.)
-    if (type === "team") q = (q as any).eq("sport", SPORT).eq("metadata->>league", vertical.leagueEntity);
+    if (type === "team") q = q.eq("sport", SPORT).eq("metadata->>league", vertical.leagueEntity);
     const { data } = await q;
     return (data ?? []).map(mapEntity);
   } catch (e) { captureDbError(e);
@@ -932,27 +943,27 @@ export async function getTeamPushPopups(teamEntityIds: string[], limit = 5): Pro
 
     // Dedupe: samma story kan ligga i flera rader (en per push-batch)
     const seen = new Set<string>();
-    const unique = (data ?? []).filter((row: any) => {
+    const unique = ((data ?? []) as DbRow[]).filter((row) => {
       const key = String(row.story_key ?? row.title ?? row.id);
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
 
-    return unique.map((row: any) => ({
+    return unique.map((row) => ({
       id: String(row.id),
-      articleId: row.article_id ?? null,
+      articleId: optStr(row.article_id),
       storyKey: String(row.story_key ?? ""),
       sport: String(row.sport ?? SPORT),
-      teamEntityId: row.team_entity_id ?? null,
+      teamEntityId: optStr(row.team_entity_id),
       title: String(row.title ?? ""),
       body: String(row.body ?? ""),
-      url: row.url ?? null,
-      importanceScore: row.importance_score ?? null,
-      feedScore: row.feed_score ?? null,
-      eventType: row.event_type ?? null,
-      newsTag: row.news_tag ?? null,
-      sourceName: row.source_name ?? null,
+      url: optStr(row.url),
+      importanceScore: optNum(row.importance_score),
+      feedScore: optNum(row.feed_score),
+      eventType: optStr(row.event_type),
+      newsTag: optStr(row.news_tag),
+      sourceName: optStr(row.source_name),
       createdAt: String(row.created_at ?? new Date().toISOString()),
     }));
   } catch (e) { captureDbError(e);

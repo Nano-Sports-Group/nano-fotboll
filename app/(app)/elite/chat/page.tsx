@@ -1,7 +1,7 @@
 'use client'
 
 import { useChat } from '@ai-sdk/react'
-import { isToolUIPart, getToolName, isTextUIPart } from 'ai'
+import { DefaultChatTransport, isToolUIPart, getToolName, isTextUIPart } from 'ai'
 import { useEffect, useRef, useState } from 'react'
 import { Send, Loader2, Bot } from 'lucide-react'
 
@@ -21,10 +21,9 @@ export default function EliteChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // ponytail: ai@7 UseChatOptions union type doesn't expose transport directly — cast needed
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // Ett vanligt { url }-objekt saknar sendMessages() — chatten kunde aldrig skicka. Transporten är en klass.
   const { messages, sendMessage, status, error } = useChat({
-    transport: { url: '/api/elite/chat' } as any,
+    transport: new DefaultChatTransport({ api: '/api/elite/chat' }),
     onFinish: () => {
       fetch('/api/elite/usage').then(r => r.json()).then(setUsage).catch(() => null)
     },

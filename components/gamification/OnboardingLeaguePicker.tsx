@@ -1,55 +1,47 @@
 'use client'
 
-import { useState } from 'react'
-import { useUser } from '@clerk/nextjs'
-import { createClient } from '@/lib/supabase-browser'
+import { useEffect, useState } from 'react'
 import { getTeamAccent } from '@/lib/team-colors'
 
-const ALLSVENSKAN_TEAMS = [
-  { slug: 'aik', name: 'AIK' },
-  { slug: 'malmo-ff', name: 'Malmö FF' },
-  { slug: 'ifk-goteborg', name: 'IFK Göteborg' },
-  { slug: 'djurgarden', name: 'Djurgårdens IF' },
-  { slug: 'hammarby', name: 'Hammarby IF' },
-  { slug: 'ifk-norrkoping', name: 'IFK Norrköping' },
-  { slug: 'bk-hacken', name: 'BK Häcken' },
-  { slug: 'kalmar-ff', name: 'Kalmar FF' },
-  { slug: 'if-elfsborg', name: 'IF Elfsborg' },
-  { slug: 'vasteras-sk', name: 'Västerås SK' },
-  { slug: 'sirius', name: 'IK Sirius' },
-  { slug: 'brommapojkarna', name: 'IF Brommapojkarna' },
-  { slug: 'hif', name: 'Helsingborgs IF' },
-  { slug: 'orebro-sk', name: 'Örebro SK' },
-  { slug: 'gif-sundsvall', name: 'GIF Sundsvall' },
-  { slug: 'halmstad-bk', name: 'Halmstads BK' },
-]
+type League = { id: string; team_slug: string; team_name: string }
 
+/** Lagen kommer från servern (vertikalens nuvarande lag) — inte en hårdkodad lista. */
 export function OnboardingLeaguePicker({ onComplete }: { onComplete: () => void }) {
-  const { user } = useUser()
+  const [leagues, setLeagues] = useState<League[] | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    fetch('/api/gamification/league')
+      .then((r) => r.json() as Promise<{ leagues?: League[] }>)
+      .then((d) => { if (alive) setLeagues(d.leagues ?? []) })
+      .catch(() => { if (alive) setLeagues([]) })
+    return () => { alive = false }
+  }, [])
 
   async function joinLeague() {
-    if (!selected || !user) return
+    if (!selected) return
     setSaving(true)
-
-    const supabase = createClient()
-
-    const { data: league } = await (supabase as any)
-      .from('fan_leagues')
-      .select('id')
-      .eq('team_slug', selected)
-      .single()
-
-    if (league) {
-      await (supabase as any).from('user_league_memberships').upsert({
-        clerk_user_id: user.id,
-        league_id: league.id,
-      }, { onConflict: 'clerk_user_id' })
+    setError(null)
+    try {
+      const res = await fetch('/api/gamification/league', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamSlug: selected }),
+      })
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string }
+        setError(body.error ?? 'Kunde inte gå med i ligan. Försök igen.')
+        return
+      }
+      onComplete()
+    } catch {
+      setError('Ingen anslutning. Försök igen.')
+    } finally {
+      setSaving(false)
     }
-
-    setSaving(false)
-    onComplete()
   }
 
   return (
@@ -63,24 +55,30 @@ export function OnboardingLeaguePicker({ onComplete }: { onComplete: () => void 
         </div>
 
         <div className="grid grid-cols-3 gap-2 max-h-72 overflow-y-auto">
-          {ALLSVENSKAN_TEAMS.map(team => (
+          {leagues === null && <p className="col-span-3 text-sm text-white/50">Hämtar lag…</p>}
+          {leagues?.length === 0 && (
+            <p className="col-span-3 text-sm text-white/50">Fan-ligor finns inte för den här sporten än.</p>
+          )}
+          {leagues?.map(team => (
             <button
-              key={team.slug}
-              onClick={() => setSelected(team.slug)}
+              key={team.team_slug}
+              onClick={() => setSelected(team.team_slug)}
               className={`rounded-lg border p-3 text-center transition-all ${
-                selected === team.slug
+                selected === team.team_slug
                   ? 'border-pitch bg-pitch/10 text-white'
                   : 'border-white/10 text-white/50 hover:border-white/30 hover:text-white'
               }`}
             >
               <div
                 className="w-2 h-2 rounded-full mx-auto mb-1"
-                style={{ backgroundColor: getTeamAccent(team.slug) }}
+                style={{ backgroundColor: getTeamAccent(team.team_slug) }}
               />
-              <span className="text-xs font-semibold">{team.name}</span>
+              <span className="text-xs font-semibold">{team.team_name}</span>
             </button>
           ))}
         </div>
+
+        {error && <p role="alert" className="text-sm text-red-400">{error}</p>}
 
         <button
           onClick={joinLeague}

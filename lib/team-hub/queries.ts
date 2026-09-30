@@ -419,7 +419,7 @@ export async function getTeamNewsPersonalized(
 
     let q = supabase
       .from("articles")
-      .select("id, title, slug, summary, published_at, news_tag")
+      .select("id, title, slug, summary, published_at, news_tag, rights_status, is_athopia_generated")
       .eq("sport", SPORT)
       .eq("status", "published")
       .contains("entity_ids", [String(team.id)])
@@ -432,7 +432,12 @@ export async function getTeamNewsPersonalized(
     }
 
     const { data } = await q;
-    return ((data ?? []) as any[]).map((r) => ({ ...r, image_url: null })) as DashArticle[];
+    type Row = { id: string; title: string; slug: string | null; summary: string | null; published_at: string; news_tag: string | null; rights_status: string | null; is_athopia_generated: boolean | null };
+    // Rättighetsgrinden: tredjeparts teaser visas aldrig ordagrant (CLAUDE.md §5).
+    return ((data ?? []) as Row[]).map(({ rights_status, is_athopia_generated, ...r }) => {
+      const rights = rights_status ?? (is_athopia_generated ? "owned" : "link_only");
+      return { ...r, summary: rights === "owned" || rights === "licensed" ? r.summary : null, image_url: null, rights_status: rights };
+    }) as DashArticle[];
   } catch {
     return [];
   }
