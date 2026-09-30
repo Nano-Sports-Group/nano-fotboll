@@ -187,7 +187,7 @@ export default async function XpTabellPage() {
       </div>
 
       <div className="mt-6 flex gap-4 text-sm">
-        <Link href="/allsvenskan/tabell" className="text-pitch-ink hover:underline">Vanliga tabellen →</Link>
+        <Link href={`${vertical.leaguePath}/tabell`} className="text-pitch-ink hover:underline">Vanliga tabellen →</Link>
         <Link href="/statistik" className="text-pitch-ink hover:underline">All statistik →</Link>
       </div>
     </div>

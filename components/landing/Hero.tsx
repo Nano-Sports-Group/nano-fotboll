@@ -1,5 +1,7 @@
 "use client";
 
+import { vertical } from "@/lib/vertical";
+
 import { useRef } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -78,7 +80,7 @@ function PulseStrip({ pulse }: { pulse: HeroPulse }) {
         </Link>
       )}
       {hasLeader && (
-        <Link href="/allsvenskan/tabell" className="text-white/55 transition-colors hover:text-white/75">
+        <Link href={`${vertical.leaguePath}/tabell`} className="text-white/55 transition-colors hover:text-white/75">
           Serieledare: <span className="text-white/80">{pulse.leaderName}</span> · {pulse.leaderPoints} p
         </Link>
       )}

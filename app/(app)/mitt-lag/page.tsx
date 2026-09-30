@@ -152,7 +152,7 @@ export default async function MittLagPage({
 
       {hub.position != null && (
         <Link
-          href="/allsvenskan/tabell"
+          href={`${vertical.leaguePath}/tabell`}
           className="mb-5 flex items-center justify-between gap-4 rounded-2xl border border-border bg-card px-5 py-4 hover:border-pitch/40 transition-colors"
         >
           <div>

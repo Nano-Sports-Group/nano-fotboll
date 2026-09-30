@@ -108,8 +108,8 @@ export default async function AllsvenskanResultatPage() {
       )}
 
       <div className="mt-6 flex gap-4 text-sm">
-        <Link href="/allsvenskan/tabell" className="text-pitch-ink hover:underline">Tabell →</Link>
-        <Link href="/allsvenskan/spelschema" className="text-pitch-ink hover:underline">Spelschema →</Link>
+        <Link href={`${vertical.leaguePath}/tabell`} className="text-pitch-ink hover:underline">Tabell →</Link>
+        <Link href={`${vertical.leaguePath}/spelschema`} className="text-pitch-ink hover:underline">Spelschema →</Link>
       </div>
     </div>
   );

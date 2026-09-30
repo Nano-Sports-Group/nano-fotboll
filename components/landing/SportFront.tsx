@@ -1,3 +1,4 @@
+import { vertical } from "@/lib/vertical";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -105,7 +106,7 @@ export async function SportFront({ articles }: { articles: LandingArticle[] }) {
         {/* Tabell-snapshot */}
         {top.length > 0 && (
           <div className={matchList ? "lg:col-span-2" : "lg:col-span-5"}>
-            <SectionHeading title="Tabellen" href="/allsvenskan/tabell" linkLabel="Hela tabellen" />
+            <SectionHeading title="Tabellen" href={`${vertical.leaguePath}/tabell`} linkLabel="Hela tabellen" />
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
               {top.map((row: SMStandingRow) => (
                 <Link

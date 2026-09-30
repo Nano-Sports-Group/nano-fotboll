@@ -108,10 +108,10 @@ export const HOCKEY_DEFAULT_WEBSITE_SETTINGS: WebsiteSettings = {
   seo: {
     defaultTitle: "Nano Hockey — SHL 2026/27: tabell, resultat och statistik",
     defaultDescription:
-      "SHL 2026/27 — tabell, resultat, spelschema och nyheter för alla 14 lag. Samma supporter-yta som Nano Fotboll, med hockeyns egna siffror när de finns.",
+      "SHL 2026/27 — tabell, resultat, spelschema och nyheter för alla 14 lag. Följ ditt lag varje dag, inte bara på matchdag.",
     homeTitle: "SHL 2026/27 – Tabell, Resultat, Matcher och Statistik | Nano Hockey",
     homeDescription:
-      "SHL 2026/27: tabell, resultat, spelschema och nyhetsflöde för alla 14 lag. Intaget är pausat tills datan är på.",
+      "SHL 2026/27: tabell, resultat, spelschema och nyhetsflöde för alla 14 lag.",
   },
   sharing: {
     ...DEFAULT_WEBSITE_SETTINGS.sharing,

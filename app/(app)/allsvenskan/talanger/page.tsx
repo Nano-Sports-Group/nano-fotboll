@@ -173,8 +173,8 @@ export default async function TalangerPage() {
       )}
 
       <div className="mt-6 flex gap-4 text-sm">
-        <Link href="/allsvenskan/skytteliga" className="text-pitch-ink hover:underline">Skytteligan →</Link>
-        <Link href="/allsvenskan/xp-tabell" className="text-pitch-ink hover:underline">xP-tabellen →</Link>
+        <Link href={`${vertical.leaguePath}/skytteliga`} className="text-pitch-ink hover:underline">Skytteligan →</Link>
+        <Link href={`${vertical.leaguePath}/xp-tabell`} className="text-pitch-ink hover:underline">xP-tabellen →</Link>
       </div>
     </div>
   );
