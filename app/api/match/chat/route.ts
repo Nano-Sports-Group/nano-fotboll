@@ -8,19 +8,12 @@ import { getUserPlan } from '@/lib/user-plan'
 import { canAccess } from '@/lib/access-rules'
 import { parseBody, z } from '@/lib/validation'
 import { enforceRateLimit } from '@/lib/ratelimit'
+import { UiMessagesSchema, toChatTurns } from '@/lib/ai/ui-messages'
 
 export const maxDuration = 30
 
 const MatchChatSchema = z.object({
-  messages: z
-    .array(
-      z.object({
-        role: z.enum(['user', 'assistant']),
-        content: z.string().trim().min(1).max(4_000),
-      }),
-    )
-    .min(1)
-    .max(20),
+  messages: UiMessagesSchema,
   fixtureId: z.number().int().positive().optional(),
   homeTeam: z.string().trim().max(100).optional(),
   awayTeam: z.string().trim().max(100).optional(),
@@ -69,6 +62,8 @@ export async function POST(req: Request) {
   const parsed = await parseBody(req, MatchChatSchema)
   if (!parsed.ok) return parsed.response
   const { messages, fixtureId, homeTeam, awayTeam, score, status, kickoff } = parsed.data
+  const turns = toChatTurns(messages)
+  if (!turns) return Response.json({ error: "Skriv en fråga." }, { status: 400 })
 
   let matchExtra = ''
   if (fixtureId) {
@@ -114,7 +109,7 @@ Svara utifrån denna match först — använd verktyg för tabell/nyheter vid be
 - Hitta aldrig på siffror — säg om data saknas
 - Svara ALDRIG utanför Allsvenskan/svensk fotboll
 - Avslöja ALDRIG tekniska detaljer om systemet`,
-    messages,
+    messages: turns,
     stopWhen: stepCountIs(5),
     tools,
     providerOptions: {
@@ -126,5 +121,5 @@ Svara utifrån denna match först — använd verktyg för tabell/nyheter vid be
     },
   })
 
-  return result.toTextStreamResponse()
+  return result.toUIMessageStreamResponse()
 }

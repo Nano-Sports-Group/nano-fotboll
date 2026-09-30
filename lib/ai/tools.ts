@@ -1,12 +1,12 @@
-import { SPORT } from "@/lib/vertical";
+import { SPORT, vertical } from "@/lib/vertical";
 import type { Tool } from 'ai'
 import { z } from 'zod'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { searchArticles } from './embedding'
 import { resolveTeam } from './resolve'
 import { getTeamNameMap } from '@/lib/team-names'
 
-const SEASON_ID = Number(process.env.SPORTSMONKS_SEASON_ID_2026 ?? '26806')
+const LEAGUE = vertical.leagueName
 
 function getDb() {
   return createClient(
@@ -16,10 +16,25 @@ function getDb() {
   )
 }
 
+/**
+ * Vertikalens aktuella säsong ur databasen. Tidigare hårdkodad till fotbollens 26806 —
+ * hockeyns chatt hade svarat med Allsvenskans tabell.
+ */
+async function currentSeason(db: SupabaseClient): Promise<{ id: number; label: string } | null> {
+  const { data } = await db
+    .from('seasons')
+    .select('sportmonks_id, name')
+    .eq('sport', SPORT)
+    .eq('is_current', true)
+    .maybeSingle()
+  if (!data?.sportmonks_id) return null
+  return { id: Number(data.sportmonks_id), label: String(data.name ?? LEAGUE) }
+}
+
 // ponytail: cast to Record<string, Tool> — ai@7 tool() helper is UI-only; server tools are plain objects
 export const tools: Record<string, Tool> = {
   getRecentNews: {
-    description: 'Hämta senaste nyheter från idag och igår om Allsvenskan, lag eller spelare. Använd alltid detta verktyg när användaren frågar om nyheter, senaste händelser eller vill ha en sammanfattning.',
+    description: `Hämta senaste nyheter från idag och igår om ${LEAGUE}, lag eller spelare. Använd alltid detta verktyg när användaren frågar om nyheter, senaste händelser eller vill ha en sammanfattning.`,
     inputSchema: z.object({ keyword: z.string().optional().describe('Lagnamn eller spelares namn att filtrera på') }),
     execute: async ({ keyword }: { keyword?: string }) => {
       try {
@@ -69,15 +84,17 @@ export const tools: Record<string, Tool> = {
   },
 
   getStandings: {
-    description: 'Hämta aktuell tabellställning i Allsvenskan 2026.',
+    description: `Hämta aktuell tabellställning i ${LEAGUE}.`,
     inputSchema: z.object({ league: z.string().optional() }),
     execute: async (_args: { league?: string }) => {
       try {
         const db = getDb()
+        const season = await currentSeason(db)
+        if (!season) return { error: 'Tabelldata saknas.' }
         const { data: stats } = await db
           .from('team_season_stats')
           .select('team_id,played,wins,draws,losses,points,goals_for,goals_against,form')
-          .eq('season_id', SEASON_ID)
+          .eq('season_id', season.id)
           .order('points', { ascending: false })
           .order('goals_for', { ascending: false })
         if (!stats?.length) return { error: 'Tabelldata saknas.' }
@@ -85,7 +102,7 @@ export const tools: Record<string, Tool> = {
         const nm = await getTeamNameMap(db, stats.map(r => r.team_id))
 
         return {
-          season: 'Allsvenskan 2026',
+          season: season.label,
           standings: stats.map((r, i) => ({
             pos: i + 1,
             team: nm.get(r.team_id)?.name || `Lag ${r.team_id}`,
@@ -105,49 +122,53 @@ export const tools: Record<string, Tool> = {
   },
 
   getTeamStats: {
-    description: 'Hämta detaljerad statistik och toppspelare för ett lag i Allsvenskan 2026.',
+    description: `Hämta detaljerad statistik för ett lag i ${LEAGUE}.`,
     inputSchema: z.object({ team: z.string() }),
     execute: async ({ team }: { team: string }) => {
       try {
         const teamId = await resolveTeam(team)
         if (!teamId) return { error: `Okänt lag: "${team}". Prova hela lagets namn.` }
         const db = getDb()
+        const season = await currentSeason(db)
+        if (!season) return { error: 'Statistik saknas.' }
 
         const { data: stats } = await db
           .from('team_season_stats')
           .select('played,wins,draws,losses,points,goals_for,goals_against,xg_for,xg_against,clean_sheets,form')
           .eq('team_id', teamId)
-          .eq('season_id', SEASON_ID)
-          .single()
-        if (!stats) return { error: `Ingen statistik för ${team} i Allsvenskan 2026.` }
+          .eq('season_id', season.id)
+          .maybeSingle()
+        if (!stats) return { error: `Ingen statistik för ${team} i ${season.label}.` }
 
-        // Top scorers for this team from player_match_stats
-        const { data: topPlayers } = await db
-          .from('player_match_stats')
-          .select('sportsmonks_player_id,goals,assists,rating,minutes_played')
-          .eq('sportsmonks_team_id', teamId)
-          .order('goals', { ascending: false })
-          .limit(5)
-
-        // Try to resolve player names from entities
-        const playerIds = (topPlayers ?? []).map(p => p.sportsmonks_player_id).filter(Boolean)
-        const { data: playerEnts } = playerIds.length
-          ? await db.from('entities').select('sportmonks_id,name').in('sportmonks_id', playerIds)
-          : { data: [] }
-        const pnames = new Map((playerEnts ?? []).map(e => [e.sportmonks_id, e.name]))
-
-        return {
-          season: 'Allsvenskan 2026',
-          team,
-          ...stats,
-          gd: (stats.goals_for ?? 0) - (stats.goals_against ?? 0),
-          top_performers: (topPlayers ?? []).map(p => ({
+        // Spelardata per match finns bara för fotbollen (Sportmonks). Saknad data visas inte som noll.
+        let top_performers: Array<Record<string, unknown>> = []
+        if (SPORT === 'football') {
+          const { data: topPlayers } = await db
+            .from('player_match_stats')
+            .select('sportsmonks_player_id,goals,assists,rating,minutes_played')
+            .eq('sportsmonks_team_id', teamId)
+            .order('goals', { ascending: false })
+            .limit(5)
+          const playerIds = (topPlayers ?? []).map(p => p.sportsmonks_player_id).filter(Boolean)
+          const { data: playerEnts } = playerIds.length
+            ? await db.from('entities').select('sportmonks_id,name').eq('sport', SPORT).in('sportmonks_id', playerIds)
+            : { data: [] }
+          const pnames = new Map((playerEnts ?? []).map(e => [e.sportmonks_id, e.name]))
+          top_performers = (topPlayers ?? []).map(p => ({
             name: pnames.get(p.sportsmonks_player_id) ?? `Spelare #${p.sportsmonks_player_id}`,
             goals: p.goals,
             assists: p.assists,
             rating: p.rating,
             minutes: p.minutes_played,
-          })),
+          }))
+        }
+
+        return {
+          season: season.label,
+          team,
+          ...stats,
+          gd: (stats.goals_for ?? 0) - (stats.goals_against ?? 0),
+          ...(top_performers.length ? { top_performers } : {}),
         }
       } catch (e) {
         return { error: String(e) }
@@ -156,12 +177,13 @@ export const tools: Record<string, Tool> = {
   },
 
   getTopScorers: {
-    description: 'Hämta skytteligan och toppspelare i Allsvenskan 2026.',
+    description: `Hämta ${vertical.scorersLabel.toLowerCase()} och toppspelare i ${LEAGUE}.`,
     inputSchema: z.object({}),
     execute: async () => {
+      // Spelarstatistik finns bara för fotbollen. Hockeyns poängliga visas aldrig som fotbollsdata.
+      if (SPORT !== 'football') return { error: `${vertical.scorersLabel} saknas i datan än.` }
       try {
         const db = getDb()
-        // Aggregate from player_match_stats
         const { data } = await db
           .from('player_match_stats')
           .select('sportsmonks_player_id,sportsmonks_team_id,goals,assists,rating,minutes_played')
@@ -171,17 +193,15 @@ export const tools: Record<string, Tool> = {
 
         if (!data?.length) return { error: 'Ingen skyttedata tillgänglig.' }
 
-        // Resolve names from entities where possible
         const playerIds = data.map(p => p.sportsmonks_player_id).filter(Boolean)
         const teamIds = [...new Set(data.map(p => p.sportsmonks_team_id).filter(Boolean))]
         const [{ data: pEnts }, { data: tEnts }] = await Promise.all([
-          db.from('entities').select('sportmonks_id,name').in('sportmonks_id', playerIds),
-          db.from('entities').select('sportmonks_id,name').in('sportmonks_id', teamIds).eq('type', 'team'),
+          db.from('entities').select('sportmonks_id,name').eq('sport', SPORT).in('sportmonks_id', playerIds),
+          db.from('entities').select('sportmonks_id,name').eq('sport', SPORT).in('sportmonks_id', teamIds).eq('type', 'team'),
         ])
         const pn = new Map((pEnts ?? []).map(e => [e.sportmonks_id, e.name]))
         const tn = new Map((tEnts ?? []).map(e => [e.sportmonks_id, e.name]))
 
-        // Aggregate per player
         const agg = new Map<number, { goals: number; assists: number; team: string; name: string }>()
         for (const r of data) {
           const id = r.sportsmonks_player_id
@@ -192,8 +212,9 @@ export const tools: Record<string, Tool> = {
           agg.set(id, cur)
         }
 
+        const season = await currentSeason(db)
         return {
-          season: 'Allsvenskan 2026',
+          season: season?.label ?? LEAGUE,
           top_scorers: [...agg.values()].sort((a, b) => b.goals - a.goals).slice(0, 10),
         }
       } catch (e) {
@@ -203,27 +224,30 @@ export const tools: Record<string, Tool> = {
   },
 
   getMatch: {
-    description: 'Hämta matchresultat eller kommande matcher i Allsvenskan 2026.',
+    description: `Hämta matchresultat eller kommande matcher i ${LEAGUE}.`,
     inputSchema: z.object({ team: z.string().optional(), date: z.string().optional() }),
     execute: async ({ team, date }: { team?: string; date?: string }) => {
       try {
         const db = getDb()
+        // Kolumnerna heter *_team_name/*_team_id — tidigare valdes home_team/away_team som inte
+        // finns, och lagfiltret jämförde ett numeriskt id med uuid-kolumnen: "Inga matcher" varje gång.
         let q = db
           .from('fixtures')
-          .select('home_team,away_team,home_score,away_score,kickoff_at,status')
+          .select('home_team_name,away_team_name,home_score,away_score,kickoff_at,status')
           .eq('sport', SPORT)
           .order('kickoff_at', { ascending: false })
           .limit(10)
 
         if (team) {
           const id = await resolveTeam(team)
-          if (id) q = q.or(`home_entity_id.eq.${id},away_entity_id.eq.${id}`)
+          if (id) q = q.or(`home_team_id.eq.${id},away_team_id.eq.${id}`)
         }
         if (date) q = q.gte('kickoff_at', date + 'T00:00:00Z').lte('kickoff_at', date + 'T23:59:59Z')
 
         const { data } = await q
         if (!data?.length) return { error: 'Inga matcher hittades.' }
-        return { season: 'Allsvenskan 2026', matches: data }
+        const season = await currentSeason(db)
+        return { season: season?.label ?? LEAGUE, matches: data }
       } catch (e) {
         return { error: String(e) }
       }

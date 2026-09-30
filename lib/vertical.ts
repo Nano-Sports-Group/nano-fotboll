@@ -121,9 +121,9 @@ export const HOCKEY: VerticalPack = {
     { href: "/lag/brynas-if", label: "Brynäs" },
   ],
   scorersLabel: "Poängliga",
-  // /podcast öppnad 2026-09-30: 16 verifierade hockeypoddar. /daily och /ai öppnas när hockeyns
-  // Daily och AI-chatt har innehåll — en tom yta visas aldrig.
-  hiddenRoutes: ["/analys", "/daily", "/ai", "/kronika", "/brev", "/narrativ", "/allsvenskan/xp-tabell", "/allsvenskan/talanger", "/statistik"],
+  // Öppnade 2026-09-30: /podcast (16 verifierade SHL-poddar) och /ai (chatten läser hockeyns
+  // tabell, matcher och nyheter). /daily öppnas när hockeyns Daily har innehåll — tom yta visas aldrig.
+  hiddenRoutes: ["/analys", "/daily", "/kronika", "/brev", "/narrativ", "/allsvenskan/xp-tabell", "/allsvenskan/talanger", "/statistik"],
 };
 
 export function resolveVertical(raw: string | undefined): VerticalId {

@@ -4,33 +4,45 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { Send, Sparkles, Copy, Check, RotateCcw } from 'lucide-react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import Link from 'next/link'
+import { extractTextDeltas } from '@/lib/ai/ui-stream'
+import { vertical } from '@/lib/vertical'
+
+const HOCKEY = vertical.id === 'hockey'
+const LEAGUE = vertical.leagueName
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const UPGRADE_RESPONSE = `**AI-assistenten ingår i PRO.**
 
 Som PRO-medlem får du:
-- Obegränsade frågor om Allsvenskan-statistik
+- Obegränsade frågor om ${LEAGUE}-statistik
 - Realtidsdata: tabell, matcher & spelarstatistik
 - Nyhetsanalys från 1 000+ artiklar
 - Svar inom sekunder, dygnet runt
 
 **Uppgradera till PRO** och få tillgång direkt.`
 
-const SUGGESTIONS = [
-  { label: 'Tabellläge',  q: 'Hur ser tabellen ut just nu?' },
-  { label: 'Skytteligan', q: 'Vem leder skytteligan?' },
-  { label: 'Malmö FF',    q: 'Senaste nyheter om Malmö FF' },
-  { label: 'Bäst form',   q: 'Vilka lag har bäst form just nu?' },
-]
+const SUGGESTIONS = HOCKEY
+  ? [
+      { label: 'Tabellläge', q: 'Hur ser SHL-tabellen ut just nu?' },
+      { label: 'Frölunda',   q: 'Senaste nyheter om Frölunda' },
+      { label: 'Matcher',    q: 'Vilka matcher spelas härnäst?' },
+      { label: 'Bäst form',  q: 'Vilka lag har bäst form just nu?' },
+    ]
+  : [
+      { label: 'Tabellläge',  q: 'Hur ser tabellen ut just nu?' },
+      { label: 'Skytteligan', q: 'Vem leder skytteligan?' },
+      { label: 'Malmö FF',    q: 'Senaste nyheter om Malmö FF' },
+      { label: 'Bäst form',   q: 'Vilka lag har bäst form just nu?' },
+    ]
 
-// Allsvenskan-specific, not generic AI filler
+// Ligaspecifikt, inte generisk AI-utfyllnad
 const THINKING_MESSAGES = [
-  'Analyserar Allsvenskan-data…',
+  `Analyserar ${LEAGUE}-data…`,
   'Kollar senaste matchresultaten…',
-  'Söker bland 1 000+ artiklar…',
-  'Hämtar spelarstatistik…',
-  'Beräknar xG-form…',
+  'Söker bland nyheterna…',
+  HOCKEY ? 'Hämtar tabelläget…' : 'Hämtar spelarstatistik…',
+  HOCKEY ? 'Jämför lagens form…' : 'Beräknar xG-form…',
 ]
 
 type Msg = { role: 'user' | 'assistant'; text: string }
@@ -97,11 +109,13 @@ export default function AiChatPage() {
     setLoading(true)
 
     try {
-      const history = baseHistory.map(m => ({ role: m.role, content: m.text }))
+      // Samma protokoll som useChat: UIMessage med parts in, UI message stream ut.
+      const toMsg = (role: Msg['role'], text: string) => ({ role, parts: [{ type: 'text', text }] })
+      const history = baseHistory.filter(m => m.text.trim()).map(m => toMsg(m.role, m.text))
       const res = await fetch('/api/elite/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [...history, { role: 'user', content: q }] }),
+        body: JSON.stringify({ messages: [...history, toMsg('user', q)] }),
       })
 
       if (!res.ok) {
@@ -118,10 +132,14 @@ export default function AiChatPage() {
       setMessages(prev => [...prev, { role: 'assistant', text: '' }])
       const reader = res.body!.getReader()
       const dec = new TextDecoder()
+      let pending = ''
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
-        const chunk = dec.decode(value, { stream: true })
+        const parsed = extractTextDeltas(pending + dec.decode(value, { stream: true }))
+        pending = parsed.rest
+        const chunk = parsed.deltas.join('')
+        if (!chunk) continue
         setMessages(prev => {
           const msgs = [...prev]
           msgs[msgs.length - 1] = { role: 'assistant', text: msgs[msgs.length - 1].text + chunk }
@@ -159,7 +177,7 @@ export default function AiChatPage() {
       {/* Header */}
       <header className="flex w-full max-w-2xl shrink-0 items-center gap-2.5 px-5 py-4">
         <Sparkles size={16} className="text-pitch-ink" aria-hidden />
-        <h1 className="text-sm font-semibold text-foreground">Nano Fotboll AI</h1>
+        <h1 className="text-sm font-semibold text-foreground">{vertical.productName} AI</h1>
         <span className="ml-auto flex shrink-0 items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-500">
           <Sparkles size={9} aria-hidden />
           PRO
@@ -202,7 +220,7 @@ export default function AiChatPage() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2 }}
-                    aria-label="Nano Fotboll AI tänker"
+                    aria-label={`${vertical.productName} AI tänker`}
                   >
                     <ThinkingIndicator message={thinkingMsg} />
                   </motion.div>
@@ -229,7 +247,7 @@ export default function AiChatPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Fråga Nano Fotboll AI om Allsvenskan…"
+              placeholder={`Fråga ${vertical.productName} AI om ${LEAGUE}…`}
               disabled={loading}
               rows={1}
               aria-label="Fråga"
@@ -284,7 +302,7 @@ function EmptyState({ onAsk }: { onAsk: (q: string) => void }) {
 
       <div className="text-center">
         <h2 className="text-xl font-semibold text-foreground text-balance">Vad vill du veta?</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Fråga om Allsvenskan — statistik, matcher, nyheter</p>
+        <p className="mt-1 text-sm text-muted-foreground">Fråga om {LEAGUE} — statistik, matcher, nyheter</p>
       </div>
 
       {/* Staggered chips */}

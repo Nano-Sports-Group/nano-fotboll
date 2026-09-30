@@ -66,9 +66,11 @@ Ny kod läggs i befintlig feature-mapp. Skapa inte parallella mönster —
   AI-funktion = agent/skript i os som skriver till en tabell eller kolumn, plus en
   läsväg här. `ANTHROPIC_API_KEY` är tom i alla Vercel-miljöer med flit, så en
   LLM-route i web är död kod i produktion oavsett hur bra den ser ut lokalt.
-  Kvar att flytta (streamande chattar, kräver en autentiserad os-endpoint):
-  `app/api/elite/chat`, `app/api/elite/podcast-chat`, `app/api/match/chat`,
-  `app/api/forum/summarize`.
+  Chattarna (`app/api/elite/chat`, `elite/podcast-chat`, `match/chat`) går genom os:
+  `lib/ai/provider.ts` → `POST {OS_LLM_BASE_URL}/messages` (= `https://inngest.hampus.xyz/api/llm`,
+  satt i Vercel 2026-09-30) med `x-athopia-os-secret`; os håller nyckeln och budgeten.
+  Protokoll: klienten skickar UIMessage (`parts`), routen svarar `toUIMessageStreamResponse()`
+  — `lib/ai/ui-messages.ts` och `lib/ai/ui-stream.ts`. Kvar att flytta: `app/api/forum/summarize`.
 - **INGEN admin i nano-fotboll.** Admin = nano-admin (os.nanofotboll.se). Backend
   (RSS, agenter, Sportmonks-sync) = nano-os. Web = publik visning enbart.
 - **proxy.ts, inte middleware.ts.**

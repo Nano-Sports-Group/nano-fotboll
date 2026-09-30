@@ -1,6 +1,7 @@
 import { openai } from '@ai-sdk/openai'
 import { embed, embedMany } from 'ai'
 import { createClient } from '@supabase/supabase-js'
+import { SPORT } from '@/lib/vertical'
 
 const embeddingModel = openai.embedding('text-embedding-3-small')
 
@@ -45,10 +46,11 @@ export async function searchArticles(
   const vec = await embedQuery(query)
   const db = getDb()
 
+  // match_articles söker över alla sporter — hämta fler och behåll bara vertikalens artiklar.
   const { data: matches } = await db.rpc('match_articles', {
     query_embedding: vec,
     match_threshold: 0.5,
-    match_count: count,
+    match_count: count * 3,
   })
   if (!matches?.length) return []
 
@@ -56,17 +58,21 @@ export async function searchArticles(
   const { data: articles } = await db
     .from('articles')
     .select('id, title, url, slug')
+    .eq('sport', SPORT)
     .in('id', ids)
 
   const articleMap = new Map((articles ?? []).map((a) => [a.id, a]))
 
-  return matches.map((m: { content_id: string; chunk: string; similarity: number }) => {
-    const a = articleMap.get(m.content_id)
-    return {
-      title: a?.title ?? 'Artikel',
-      url: a?.url ?? (a?.slug ? `/artikel/${a.slug}` : ''),
-      chunk: m.chunk,
-      similarity: m.similarity,
-    }
-  })
+  return matches
+    .filter((m: { content_id: string }) => articleMap.has(m.content_id))
+    .slice(0, count)
+    .map((m: { content_id: string; chunk: string; similarity: number }) => {
+      const a = articleMap.get(m.content_id)
+      return {
+        title: a?.title ?? 'Artikel',
+        url: a?.url ?? (a?.slug ? `/artikel/${a.slug}` : ''),
+        chunk: m.chunk,
+        similarity: m.similarity,
+      }
+    })
 }
