@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Trophy, Newspaper, Shield, CalendarDays } from "lucide-react";
+import { vertical } from "@/lib/vertical";
 
 export const metadata: Metadata = {
   title: "Sidan hittades inte",
@@ -13,8 +14,8 @@ export const metadata: Metadata = {
  * wayfinding till de fyra ytor folk faktiskt söker.
  */
 const DESTINATIONS = [
-  { href: "/allsvenskan", label: "Allsvenskan", desc: "Tabell, resultat och spelschema", icon: Trophy },
-  { href: "/nyheter", label: "Flöde", desc: "Senaste kring svensk fotboll", icon: Newspaper },
+  { href: vertical.leaguePath, label: vertical.leagueName, desc: "Tabell, resultat och spelschema", icon: Trophy },
+  { href: "/nyheter", label: "Flöde", desc: vertical.id === "hockey" ? "Senaste kring svensk hockey" : "Senaste kring svensk fotboll", icon: Newspaper },
   { href: "/mitt-lag", label: "Mitt lag", desc: "Allt om din klubb", icon: Shield },
   { href: "/match", label: "Matcher", desc: "Kommande och pågående", icon: CalendarDays },
 ] as const;

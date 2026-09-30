@@ -17,20 +17,24 @@ import { PricingPlans } from "./PricingPlans";
 import { getUserPlan } from "@/lib/user-plan";
 import { isFounderOfferPublic } from "@/lib/founder-offer";
 import { jsonLd } from "@/lib/json-ld";
+import { VERTICAL, vertical } from "@/lib/vertical";
+
+const HOCKEY = VERTICAL === "hockey";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Priser & Prenumeration",
-  description:
-    "Nano Fotboll PRO — daglig AI-brief för ditt lag, poddintelligens och transfer-signaler. 20 % rabatt på årsplan.",
+  description: HOCKEY
+    ? "Nano Hockey PRO — SHL och HockeyAllsvenskan för ditt lag. 20 % rabatt på årsplan."
+    : "Nano Fotboll PRO — daglig AI-brief för ditt lag, poddintelligens och transfer-signaler. 20 % rabatt på årsplan.",
   alternates: { canonical: absoluteUrl("/prenumerera") },
   openGraph: {
     type: "website",
     locale: "sv_SE",
     url: absoluteUrl("/prenumerera"),
     title: "Priser & Prenumeration",
-    description: "Gratis, PRO eller Elite — välj din plan för Allsvenskan-bevakning på djupet.",
+    description: `Gratis, PRO eller Elite — välj din plan för ${vertical.leagueName}-bevakning på djupet.`,
   },
 };
 
@@ -58,19 +62,19 @@ function PricingJsonLd({ founderPublic }: { founderPublic: boolean }) {
   });
 
   const items = [
-    offer("0", "Nano Fotboll Gratis", 1),
+    offer("0", `${vertical.productName} Gratis`, 1),
     ...(founderPublic
-      ? [offer(kr(FOUNDER_OFFER.pricing.monthly), "Nano Fotboll PRO Founder", 2)]
+      ? [offer(kr(FOUNDER_OFFER.pricing.monthly), `${vertical.productName} PRO Founder`, 2)]
       : []),
-    offer(kr(PRICING.pro.monthly), "Nano Fotboll PRO", founderPublic ? 3 : 2),
-    offer(kr(PRICING.elite.monthly), "Nano Fotboll Elite", founderPublic ? 4 : 3),
+    offer(kr(PRICING.pro.monthly), `${vertical.productName} PRO`, founderPublic ? 3 : 2),
+    offer(kr(PRICING.elite.monthly), `${vertical.productName} Elite`, founderPublic ? 4 : 3),
   ];
 
   return (
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd({
       "@context": "https://schema.org",
       "@type": "ItemList",
-      name: "Nano Fotboll prenumerationsplaner",
+      name: `${vertical.productName} prenumerationsplaner`,
       itemListElement: items,
     })}} />
   );
@@ -92,21 +96,22 @@ export default async function PrenumereraPage() {
             : `PRO ${TRIAL_DAYS} dagar gratis · sedan ${PRICING.pro.monthly / 100} kr/mån`}
         </div>
         <h1 className="font-bold text-4xl sm:text-6xl md:text-7xl text-foreground mb-4 text-balance">
-          ALLSVENSKANS HEMMAPLAN
+          {HOCKEY ? "SHL PÅ DJUPET" : "ALLSVENSKANS HEMMAPLAN"}
         </h1>
         <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-          Allt som sägs och händer kring din klubb — läst, lyssnat och
-          siffergranskat åt dig. Varje morgon.
+          {HOCKEY
+            ? "Tabell, spelschema och resultat för ditt lag i SHL och HockeyAllsvenskan — samlat på ett ställe."
+            : "Allt som sägs och händer kring din klubb — läst, lyssnat och siffergranskat åt dig. Varje morgon."}
         </p>
       </div>
 
       <PricingPlans currentPlan={plan} founderPublic={founderPublic} />
 
-      <p className="text-center text-sm text-muted-foreground mt-10 max-w-lg mx-auto">
+      {!HOCKEY && <p className="text-center text-sm text-muted-foreground mt-10 max-w-lg mx-auto">
         Gratis ger dig flödet. PRO ger dig morgonbriefen, poddintelligensen och
         transfer-signalerna — det som tar bort nio flikar. Elite lägger till
         clustering och ”vad som spelar roll idag”.
-      </p>
+      </p>}
 
       <p className="text-center text-xs text-muted-foreground mt-6">
         {TRIAL_DAYS} dagar gratis · Betalning via Stripe · SSL · Avbryt när som helst

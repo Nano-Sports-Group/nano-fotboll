@@ -5,7 +5,7 @@ import { vertical } from "@/lib/vertical";
 
 export const metadata: Metadata = {
   title: "Skapa konto",
-  description: "Skapa konto på Nano Fotboll — Allsvenskans hemmaplan.",
+  description: `Skapa konto på ${vertical.productName} — ${vertical.tagline.toLowerCase()}.`,
   robots: { index: false, follow: true },
 };
 

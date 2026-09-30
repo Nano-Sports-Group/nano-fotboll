@@ -20,6 +20,7 @@ import "server-only";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { createServiceClient, isSupabaseConfigured } from "@/lib/supabase";
 import { FOUNDER_OFFER } from "@/lib/pricing";
+import { VERTICAL } from "@/lib/vertical";
 
 export interface FounderPotState {
   cap: number;
@@ -72,8 +73,9 @@ export function invalidateFounderOfferCache(): void {
   revalidateTag("founder-offer", "max");
 }
 
-/** Får Founder visas som erbjudande i publik UI? */
+/** Får Founder visas som erbjudande i publik UI? Aldrig på hockey: checkouten där ger aldrig 69. */
 export async function isFounderOfferPublic(): Promise<boolean> {
+  if (VERTICAL !== "football") return false;
   const pot = await getFounderPot();
   return pot.remaining > 0;
 }
