@@ -1,5 +1,6 @@
 "use client";
 
+import { vertical } from "@/lib/vertical";
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, ArrowRight } from "lucide-react";
@@ -41,7 +42,7 @@ export function LandingNav() {
               className="flex h-12 min-w-11 items-center font-heading text-2xl tracking-widest text-white transition-colors duration-200 hover:text-pitch-ink"
             >
               <NanoLogo size="lg" decorative />
-              <span aria-hidden className="ml-2 hidden sm:inline">NANO FOTBOLL</span>
+              <span aria-hidden className="ml-2 hidden sm:inline">{vertical.wordmark}</span>
             </Link>
 
             <div className="hidden items-center gap-2 md:flex">

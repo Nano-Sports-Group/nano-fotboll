@@ -22,7 +22,7 @@ export default function SignUpPage() {
         className="font-heading text-2xl text-foreground transition-colors hover:text-pitch-ink
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pitch focus-visible:ring-offset-4 focus-visible:ring-offset-background"
       >
-        NANO FOTBOLL
+        {vertical.wordmark}
       </Link>
 
       <SignUp />

@@ -27,13 +27,13 @@ import { UtmActivationTracker } from "@/components/growth/UtmActivationTracker";
 import { getHighlights } from "@/lib/highlights/queries";
 import { HighlightRail } from "@/components/highlights/HighlightRail";
 import { formLetter, formLabel } from "@/lib/form-letter";
-import { VERTICAL } from "@/lib/vertical";
+import { VERTICAL, vertical } from "@/lib/vertical";
 import { favoriteFromMeta, onboardingDoneFromMeta } from "@/lib/favorite-meta";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Hem — Nano Fotboll idag",
+  title: `Hem — ${vertical.productName} idag`,
   description: "Din dagliga brief, matchdag och snabbvägar till laget.",
 };
 

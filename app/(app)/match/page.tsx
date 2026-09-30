@@ -1,3 +1,4 @@
+import { vertical } from "@/lib/vertical";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { fetchAllsvenskanFixtures, fetchLiveScores } from "@/lib/db/fixtures";
@@ -6,7 +7,7 @@ import { ScoreWidget } from "@/components/ui/ScoreWidget";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 
 export const metadata: Metadata = {
-  title: "Allsvenskan-matcher 2026 – Schema & Resultat",
+  title: `${vertical.leagueName}-matcher 2026 – Schema & Resultat`,
   description: "Allsvenskan matchschema, resultat och livescore för hela 2026-säsongen.",
 };
 
@@ -88,7 +89,7 @@ export default async function MatcherPage() {
           title="Spelade"
           defaultOpen
           trailing={
-            <Link href="/allsvenskan/resultat" className="text-sm text-pitch-ink hover:underline shrink-0">
+            <Link href={`${vertical.leaguePath}/resultat`} className="text-sm text-pitch-ink hover:underline shrink-0">
               Alla resultat →
             </Link>
           }

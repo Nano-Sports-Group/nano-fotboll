@@ -1,5 +1,6 @@
 "use client";
 
+import { vertical } from "@/lib/vertical";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Star } from "lucide-react";
@@ -86,7 +87,7 @@ export function MittLagGuestPreview() {
             Välj favoritlag
           </Link>
           <Link
-            href="/allsvenskan"
+            href={vertical.leaguePath}
             className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-4 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             Bläddra bland lag

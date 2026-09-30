@@ -1,5 +1,6 @@
 "use client";
 
+import { vertical } from "@/lib/vertical";
 import { ProductEventTracker } from "@/components/analytics/ProductEventTracker";
 import { TrackedLink } from "@/components/analytics/TrackedLink";
 import type { FeedModule } from "@/lib/feed/build-feed-modules";
@@ -203,7 +204,7 @@ export function FeedModulesRailClient({ modules }: { modules: FeedModule[] }) {
                 className="block rounded-xl border border-pitch/30 bg-card px-4 py-3 hover:bg-muted/40 transition-colors"
               >
                 <p className="text-xs font-bold tracking-wide text-pitch-ink">
-                  NANO FOTBOLL
+                  {vertical.wordmark}
                 </p>
                 <p className="mt-1 font-semibold text-foreground line-clamp-2">
                   {title}
@@ -318,7 +319,7 @@ export function FeedModulesRailClient({ modules }: { modules: FeedModule[] }) {
             <div key={mod.id}>
               {impression}
               <TrackedLink
-                href="/allsvenskan"
+                href={vertical.leaguePath}
                 event="home_module_opened"
                 props={props}
                 className="block rounded-xl border border-border bg-card px-4 py-3 hover:bg-muted/40 transition-colors"

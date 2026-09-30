@@ -1,3 +1,4 @@
+import { vertical } from "@/lib/vertical";
 import { Newspaper, Sparkles } from "lucide-react";
 import type { TeamDailyPulse } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,7 +28,7 @@ export function TeamDailyPulseCard({ pulse }: { pulse: TeamDailyPulse | null }) 
         <div className="mb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             <Sparkles className="h-3.5 w-3.5 text-pitch-ink" />
-            Nano Fotboll idag
+            {vertical.productName} idag
           </div>
           <span className="text-xs text-muted-foreground">{dateLabel(pulse.pulseDate)}</span>
         </div>

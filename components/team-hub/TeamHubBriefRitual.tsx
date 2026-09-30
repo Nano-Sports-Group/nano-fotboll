@@ -1,3 +1,4 @@
+import { vertical } from "@/lib/vertical";
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { canAccess, type Plan } from "@/lib/access-rules";
@@ -43,13 +44,13 @@ export function TeamHubBriefRitual({
       {pulse && (
         <section
           className="mx-4 sm:mx-6 rounded-xl border border-pitch/25 bg-gradient-to-br from-pitch/8 via-card to-card overflow-hidden"
-          aria-label="Nano Fotboll idag"
+          aria-label={`${vertical.productName} idag`}
         >
           <div className="px-4 sm:px-5 py-4 sm:py-5">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 <Sparkles className="h-3.5 w-3.5 text-pitch-ink" aria-hidden />
-                Nano Fotboll idag · {ctx}
+                {vertical.productName} idag · {ctx}
               </div>
               <span className="text-xs text-muted-foreground">{dateLabel(pulse.pulse_date)}</span>
             </div>
