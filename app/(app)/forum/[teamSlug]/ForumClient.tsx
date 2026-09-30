@@ -41,9 +41,12 @@ export default function ForumClient({ teamSlug, sport, initialPosts, articlePref
     }
   }, [teamSlug, sport]);
 
-  useEffect(() => {
+  // Ny serverdata (t.ex. efter router.refresh) ersätter listan — justeras under render, inte i en effect.
+  const [prevInitial, setPrevInitial] = useState(initialPosts);
+  if (initialPosts !== prevInitial) {
+    setPrevInitial(initialPosts);
     setPosts(initialPosts);
-  }, [initialPosts]);
+  }
 
   usePullRefresh(refresh);
   useScrollRestoration(`forum:${teamSlug}`, !loading && posts.length > 0);

@@ -414,6 +414,7 @@ function SectionCard({ title, icon: Icon, children, className = "", footer }: {
   const storageKey = `mittlag:card:${title}`;
   const [open, setOpen] = useState(true);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- läser webbläsar-API (localStorage/navigator/Notification) efter hydrering; finns inte under SSR.
     try { if (localStorage.getItem(storageKey) === "0") setOpen(false); } catch { /* SSR/privat läge */ }
   }, [storageKey]);
   const toggle = () => setOpen((o) => {

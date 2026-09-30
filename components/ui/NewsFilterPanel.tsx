@@ -160,6 +160,7 @@ export function NewsFilterPanel({ allSources, initialParams, totalCount }: Props
         const saved = localStorage.getItem(LS_KEY);
         if (saved) {
           const parsed = JSON.parse(saved) as FilterState;
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- läser webbläsar-API (localStorage/navigator/Notification) efter hydrering; finns inte under SSR.
           setFilter(parsed);
           const params = filterStateToParams(parsed);
           if (params.toString()) router.replace(`${pathname}?${params.toString()}`, { scroll: false });

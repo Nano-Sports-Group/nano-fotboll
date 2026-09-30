@@ -44,6 +44,7 @@ export async function SportFront({ articles }: { articles: LandingArticle[] }) {
     fetchStandingsFull(),
   ]);
 
+  // eslint-disable-next-line react-hooks/purity -- Server Component: körs en gång per request, hydreras aldrig.
   const now = Date.now();
   const todaysFixtures = fixtures
     .filter(

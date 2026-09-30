@@ -8,6 +8,7 @@ export function useLocalStorage<T>(key: string, defaultValue: T) {
     try {
       const raw = window.localStorage.getItem(key);
       if (raw == null) return;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- läser webbläsar-API (localStorage/navigator/Notification) efter hydrering; finns inte under SSR.
       setValue(JSON.parse(raw) as T);
     } catch {
       // ignore

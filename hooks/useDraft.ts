@@ -39,6 +39,7 @@ export function useDraft(
         return;
       }
       if (typeof parsed.value === "string" && parsed.value.length > 0) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- läser webbläsar-API (localStorage/navigator/Notification) efter hydrering; finns inte under SSR.
         setValue(parsed.value);
       }
     } catch {

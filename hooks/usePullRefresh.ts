@@ -15,7 +15,10 @@ import {
  */
 export function usePullRefresh(handler: () => Promise<unknown>): void {
   const ref = useRef(handler);
-  ref.current = handler;
+  // Senaste handlern utan att registrera om lyssnaren — skrivs efter commit, aldrig under render.
+  useEffect(() => {
+    ref.current = handler;
+  }, [handler]);
 
   useEffect(() => {
     function onRefresh(event: Event) {

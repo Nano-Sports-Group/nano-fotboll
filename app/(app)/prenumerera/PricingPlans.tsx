@@ -146,6 +146,14 @@ function FeatureList({ features, paid, hero }: { features: string[]; paid: boole
   );
 }
 
+function NuvarandePlan() {
+  return (
+    <div className="h-11 rounded-xl border border-pitch/40 bg-pitch/10 flex items-center justify-center text-sm font-medium text-pitch-ink">
+      Nuvarande plan
+    </div>
+  );
+}
+
 /**
  * `currentPlan` kommer från `getUserPlan()` på servern. Kortet för nuvarande
  * plan var tidigare hårdkodat till GRATIS, så en betalande Elite-kund fick veta
@@ -163,12 +171,6 @@ export function PricingPlans({
   founderPublic?: boolean;
 }) {
   const [interval, setBilling] = useState<BillingInterval>("month");
-
-  const NuvarandePlan = () => (
-    <div className="h-11 rounded-xl border border-pitch/40 bg-pitch/10 flex items-center justify-center text-sm font-medium text-pitch-ink">
-      Nuvarande plan
-    </div>
-  );
 
   return (
     <>

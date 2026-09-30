@@ -45,6 +45,7 @@ export function MittLagGuestPreview() {
   useEffect(() => {
     if (!isLoaded || !slug) return;
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- startar en hämtning; laddnings-/felflaggan sätts synkront innan fetch (synk mot externt system).
     setError(false);
     fetch(`/api/team/${encodeURIComponent(slug)}/hub`)
       .then(async (res) => {

@@ -18,6 +18,7 @@ function useTeamArticles(teamSlug: string | null): { articles: Article[]; loadin
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- startar en hämtning; laddnings-/felflaggan sätts synkront innan fetch (synk mot externt system).
     if (!url || !key) { setLoading(false); return; }
 
     const db = createClient(url, key);

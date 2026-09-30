@@ -65,6 +65,7 @@ export function usePushPermission(): PushPermissionState {
 
   useEffect(() => {
     if (typeof window === "undefined" || !("Notification" in window)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- läser webbläsar-API (localStorage/navigator/Notification) efter hydrering; finns inte under SSR.
       setStatus("unsupported");
       return;
     }

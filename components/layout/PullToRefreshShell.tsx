@@ -98,9 +98,13 @@ export function PullToRefreshShell() {
   }, [onTouchStart, onTouchMove, onTouchEnd]);
 
   // En ny route ärver aldrig en halvdragen gest.
+  const [prevPath, setPrevPath] = useState(pathname);
+  if (pathname !== prevPath) {
+    setPrevPath(pathname);
+    setPull(0);
+  }
   useEffect(() => {
     startY.current = null;
-    setPull(0);
   }, [pathname]);
 
   const progress = Math.min(1, pull / PULL_THRESHOLD);

@@ -51,6 +51,7 @@ export function EdgeSwipeBack() {
     const ios =
       /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- läser webbläsar-API (localStorage/navigator/Notification) efter hydrering; finns inte under SSR.
     setEnabled(standalone && ios);
   }, []);
 

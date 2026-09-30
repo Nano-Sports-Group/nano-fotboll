@@ -39,6 +39,7 @@ export function MatchForum({ fixtureId, homeName, awayName }: {
     }
   }, [teamSlug]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- startar en hämtning; laddnings-/felflaggan sätts synkront innan fetch (synk mot externt system).
   useEffect(() => { fetchPosts(); }, [fetchPosts]);
 
   async function submit(e: React.FormEvent) {

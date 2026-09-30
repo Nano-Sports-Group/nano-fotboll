@@ -23,6 +23,7 @@ export function useGamification(): GamificationState {
 
   useEffect(() => {
     if (!isLoaded || !user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- startar en hämtning; laddnings-/felflaggan sätts synkront innan fetch (synk mot externt system).
       setState(prev => ({ ...prev, isLoading: false, loadError: null }))
       return
     }

@@ -122,6 +122,7 @@ export function OnboardingClient({ presetTeam = null }: { presetTeam?: string | 
 
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- startar en hämtning; laddnings-/felflaggan sätts synkront innan fetch (synk mot externt system).
       setLoadFailed(true);
       return;
     }

@@ -77,6 +77,7 @@ function TickerItem({ fixture }: { fixture: SMFixture }) {
 
 export async function FixturesTicker() {
   const fixtures = await fetchAllsvenskanFixtures();
+  // eslint-disable-next-line react-hooks/purity -- Server Component: körs en gång per request, hydreras aldrig.
   const now = Date.now();
 
   const window = fixtures

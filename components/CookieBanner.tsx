@@ -37,6 +37,7 @@ export function CookieBanner() {
   const slideY = bannerSlideY(pathname);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- läser webbläsar-API (localStorage/navigator/Notification) efter hydrering; finns inte under SSR.
     if (!getStoredConsent()) setVisible(true);
   }, []);
 

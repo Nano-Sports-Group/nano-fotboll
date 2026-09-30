@@ -143,6 +143,7 @@ export default async function SpelarePage({ params }: { params: Promise<{ slug: 
   ]);
 
   const age = player.birthdate
+    // eslint-disable-next-line react-hooks/purity -- Server Component: körs en gång per request, hydreras aldrig.
     ? Math.floor((Date.now() - new Date(player.birthdate).getTime()) / 3.156e10)
     : null;
 

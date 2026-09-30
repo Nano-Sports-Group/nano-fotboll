@@ -65,6 +65,7 @@ function useLocalFavoriteTeam(): FavoriteTeamState {
     if (typeof window !== "undefined") {
       const stored = window.localStorage.getItem(LS_KEY);
       const done = window.localStorage.getItem(LS_ONBOARDING_KEY);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- läser webbläsar-API (localStorage/navigator/Notification) efter hydrering; finns inte under SSR.
       if (stored) setSlug(stored);
       setNeedsOnboarding(!done && !stored);
     }
@@ -125,6 +126,7 @@ function useClerkFavoriteTeam(): FavoriteTeamState {
       const meta = user.unsafeMetadata as Record<string, unknown> | undefined;
       const clerkSlug = favoriteFromMeta(meta, VERTICAL);
       if (clerkSlug) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- startar en hämtning; laddnings-/felflaggan sätts synkront innan fetch (synk mot externt system).
         setSlug(clerkSlug);
         setIsLoaded(true);
         return;

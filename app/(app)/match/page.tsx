@@ -35,6 +35,7 @@ export default async function MatcherPage() {
     fetchAllsvenskanFixtures().catch(() => [] as SMFixture[]),
   ]);
 
+  // eslint-disable-next-line react-hooks/purity -- Server Component: körs en gång per request, hydreras aldrig.
   const now = Date.now();
   const upcoming = all
     .filter((f) => new Date(f.starting_at).getTime() >= now)

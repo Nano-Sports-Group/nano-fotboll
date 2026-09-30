@@ -102,6 +102,7 @@ export const WavyBackground = ({
   const [isSafari, setIsSafari] = useState(false);
   useEffect(() => {
     // I'm sorry but i have got to support it on safari.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- läser webbläsar-API (localStorage/navigator/Notification) efter hydrering; finns inte under SSR.
     setIsSafari(
       typeof window !== "undefined" &&
         navigator.userAgent.includes("Safari") &&

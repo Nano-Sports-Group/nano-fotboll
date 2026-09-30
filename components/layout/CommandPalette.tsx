@@ -33,6 +33,7 @@ export function CommandPalette() {
 
   useEffect(() => {
     if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- startar en hämtning; laddnings-/felflaggan sätts synkront innan fetch (synk mot externt system).
     setResults(null);
     setLoading(false);
   }, [open]);
@@ -41,6 +42,7 @@ export function CommandPalette() {
     let alive = true;
     if (!open) return;
     if (!trimmed) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- startar en hämtning; laddnings-/felflaggan sätts synkront innan fetch (synk mot externt system).
       setResults(null);
       return;
     }

@@ -794,6 +794,7 @@ export function FeedDashboard() {
 
   useEffect(() => {
     if (!isLoaded || !slug) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- startar en hämtning; laddnings-/felflaggan sätts synkront innan fetch (synk mot externt system).
     setLoading(true);
     fetch(`/api/feed/hub?team=${encodeURIComponent(slug)}`)
       .then((r) => r.json())

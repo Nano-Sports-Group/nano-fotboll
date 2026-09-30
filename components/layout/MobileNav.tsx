@@ -22,9 +22,12 @@ export function MobileNav() {
     return () => window.removeEventListener("athopia:open-mobile-menu", handler);
   }, []);
 
-  useEffect(() => {
+  // Ruttbyte stänger menyn — justeras under render, inte i en effect.
+  const [prevPath, setPrevPath] = useState(pathname);
+  if (pathname !== prevPath) {
+    setPrevPath(pathname);
     setOpen(false);
-  }, [pathname]);
+  }
 
   function openSearch() {
     setOpen(false);

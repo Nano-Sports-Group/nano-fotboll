@@ -41,6 +41,7 @@ export function PodcastSearch() {
     if (timer.current) clearTimeout(timer.current);
     const query = q.trim();
     if (query.length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- startar en hämtning; laddnings-/felflaggan sätts synkront innan fetch (synk mot externt system).
       setHits(null);
       setClips([]);
       setClipsGated(false);

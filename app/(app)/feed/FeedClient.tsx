@@ -321,6 +321,7 @@ export function FeedClient({ forceTeam }: { forceTeam?: string } = {}) {
   // ── Hero load ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isLoaded) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- startar en hämtning; laddnings-/felflaggan sätts synkront innan fetch (synk mot externt system).
     setHeroLoading(true);
     void fetchHero(slug).then((data) => {
       setHero(data);
@@ -383,6 +384,7 @@ export function FeedClient({ forceTeam }: { forceTeam?: string } = {}) {
 
   useEffect(() => {
     if (!isLoaded) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- startar en hämtning; laddnings-/felflaggan sätts synkront innan fetch (synk mot externt system).
     void load(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, slug]);

@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
 import { ProfileCard, type PublicProfile } from "./ProfileCard";
+import { useHydrated } from "@/hooks/useHydrated";
 
 // Enkel modul-cache så samma profil inte hämtas om vid varje öppning
 const cache = new Map<string, PublicProfile | null>();
@@ -97,8 +98,7 @@ export function ProfileLink({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useHydrated();
 
   const handle = useCallback(
     (e: React.MouseEvent) => {

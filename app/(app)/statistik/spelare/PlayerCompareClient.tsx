@@ -171,10 +171,9 @@ export function PlayerCompareClient({ pool }: { pool: ScoutPlayer[] }) {
   }, [pool, posFilter]);
 
   // Nollställ val vid positions-byte om spelaren inte finns i den nya poolen
-  useEffect(() => {
-    if (idA && !filteredPool.find((p) => String(p.player_id) === idA)) setIdA("");
-    if (idB && !filteredPool.find((p) => String(p.player_id) === idB)) setIdB("");
-  }, [filteredPool, idA, idB]);
+  // Justeras under render: konvergerar direkt eftersom "" alltid är giltigt.
+  if (idA && !filteredPool.some((p) => String(p.player_id) === idA)) setIdA("");
+  if (idB && !filteredPool.some((p) => String(p.player_id) === idB)) setIdB("");
 
   const cols = useMemo(() => {
     const out = {} as Record<ScoutMetricKey, number[]>;
