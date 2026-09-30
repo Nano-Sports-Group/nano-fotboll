@@ -1,4 +1,4 @@
-import { SPORT } from "@/lib/vertical";
+import { SPORT, vertical } from "@/lib/vertical";
 /**
  * lib/supabase.ts
  * ─────────────────────────────────────────────────────────────────────────────
@@ -713,7 +713,7 @@ export async function getEntities(type?: Entity["type"]): Promise<Entity[]> {
     let q = supabase.from("entities").select("*").order("name", { ascending: true }).limit(100);
     if (type) q = q.eq("type", type);
     // Visa bara Allsvenskan-lag (ej landslag, Camp Sweden, etc.)
-    if (type === "team") q = (q as any).eq("metadata->>league", "Allsvenskan");
+    if (type === "team") q = (q as any).eq("sport", SPORT).eq("metadata->>league", vertical.leagueEntity);
     const { data } = await q;
     return (data ?? []).map(mapEntity);
   } catch (e) { captureDbError(e);

@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { OnboardingClient } from "./OnboardingClient";
 import { recordUtmMilestone } from "@/lib/utm-attribution";
+import { VERTICAL } from "@/lib/vertical";
+import { favoriteFromMeta, onboardingDoneFromMeta } from "@/lib/favorite-meta";
 
 export const dynamic = "force-dynamic";
 
@@ -34,14 +36,14 @@ export default async function OnboardingPage() {
     const meta = user.unsafeMetadata as Record<string, unknown> | undefined;
 
     // Klar onboarding = ingen onboarding.
-    if (meta?.["onboardingDone"] === true) redirect("/feed");
+    if (onboardingDoneFromMeta(meta, VERTICAL)) redirect("/feed");
 
     // Kom hen via waitlisten är laget redan valt (speglat i user.created-
     // webhooken). Då hoppar vi lagsteget — men INTE hela onboardingen: hen har
     // aldrig sett push-frågan, och att tysta bort den vore mer överraskande än
     // att visa den. Tidigare redirectade den här raden på `favoriteTeam` och
     // gjorde just det.
-    const team = meta?.["favoriteTeam"];
+    const team = favoriteFromMeta(meta, VERTICAL);
     if (typeof team === "string" && team.length > 0) presetTeam = team;
   }
 

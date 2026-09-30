@@ -1,5 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
+import { VERTICAL, SPORT } from "@/lib/vertical";
+import { favoriteFromMeta } from "@/lib/favorite-meta";
 
 export interface PrimaryTeam {
   id: string;
@@ -14,7 +16,7 @@ export interface PrimaryTeam {
  */
 export async function getPrimaryTeam(): Promise<PrimaryTeam | null> {
   const user = await currentUser();
-  const slug = user?.unsafeMetadata?.["favoriteTeam"] as string | undefined;
+  const slug = favoriteFromMeta(user?.unsafeMetadata as Record<string, unknown> | undefined, VERTICAL);
   if (!slug || !isSupabaseConfigured()) return null;
 
   const db = createServerClient();
@@ -22,6 +24,7 @@ export async function getPrimaryTeam(): Promise<PrimaryTeam | null> {
     .from("entities")
     .select("id, slug, name")
     .eq("type", "team")
+    .eq("sport", SPORT)
     .eq("slug", slug)
     .maybeSingle();
 

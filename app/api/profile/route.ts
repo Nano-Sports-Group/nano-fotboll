@@ -1,4 +1,6 @@
-import { SPORT } from "@/lib/vertical";
+import { SPORT, vertical, VERTICAL } from "@/lib/vertical";
+import { favoriteFromMeta, withFavorite } from "@/lib/favorite-meta";
+import { planForVertical } from "@/lib/plan-for-vertical";
 import { auth, currentUser, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -26,30 +28,28 @@ export async function GET() {
     .select("*")
     .eq("clerk_user_id", userId)
     .maybeSingle();
-  const favouriteTeamId = data?.favourite_team_id;
+  // Fotbollens favorit bor i profiles.favourite_team_id; hockeyns i Clerk (lib/favorite-meta).
+  const favouriteTeamId = VERTICAL === "football" ? data?.favourite_team_id : null;
+  const hockeyFavourite =
+    VERTICAL === "football" ? null : favoriteFromMeta(user?.unsafeMetadata as Record<string, unknown>, VERTICAL) ?? null;
   const { data: favouriteTeam } = favouriteTeamId
     ? await createServerClient()
         .from("entities")
         .select("slug")
         .eq("id", favouriteTeamId)
         .eq("type", "team")
-        .eq("metadata->>league", "Allsvenskan")
+        .eq("sport", SPORT).eq("metadata->>league", vertical.leagueEntity)
         .maybeSingle()
     : { data: null };
 
   return jsonContract(SessionProfileResponseSchema, {
     profile: data ?? null,
-    favouriteTeamSlug: favouriteTeam?.slug ?? null,
+    favouriteTeamSlug: favouriteTeam?.slug ?? hockeyFavourite,
     email: user?.emailAddresses?.[0]?.emailAddress ?? null,
     firstName: user?.firstName ?? null,
     lastName: user?.lastName ?? null,
     imageUrl: user?.imageUrl ?? null,
-    plan:
-      user?.publicMetadata?.plan === "elite"
-        ? "elite"
-        : user?.publicMetadata?.plan === "pro"
-          ? "pro"
-          : "free",
+    plan: planForVertical(VERTICAL, user?.publicMetadata),
   });
 }
 
@@ -110,7 +110,7 @@ export async function PATCH(req: Request) {
         .from("entities")
         .select("id,slug")
         .eq("type", "team")
-        .eq("metadata->>league", "Allsvenskan");
+        .eq("sport", SPORT).eq("metadata->>league", vertical.leagueEntity);
       teamQuery = isUuid
         ? teamQuery.eq("id", favouriteTeamInput)
         : teamQuery.eq("slug", favouriteTeamInput);
@@ -148,7 +148,7 @@ export async function PATCH(req: Request) {
   if (nickname !== undefined) update.nickname = nickname || null;
   if (bio !== undefined) update.bio = bio || null;
   if (avatarUrl !== undefined) update.avatar_url = avatarUrl;
-  if (favouriteTeam !== undefined) {
+  if (favouriteTeam !== undefined && VERTICAL === "football") {
     update.favourite_team_id = favouriteTeam?.id ?? null;
   }
 
@@ -163,15 +163,11 @@ export async function PATCH(req: Request) {
   if (favouriteTeam !== undefined) {
     try {
       const client = await clerkClient();
-      const unsafeMetadata = {
-        ...((user?.unsafeMetadata as Record<string, unknown> | undefined) ?? {}),
-      };
-      if (favouriteTeam) {
-        unsafeMetadata.favoriteTeam = favouriteTeam.slug;
-        unsafeMetadata.onboardingDone = true;
-      } else {
-        delete unsafeMetadata.favoriteTeam;
-      }
+      const unsafeMetadata = withFavorite(
+        user?.unsafeMetadata as Record<string, unknown> | undefined,
+        VERTICAL,
+        favouriteTeam?.slug ?? null,
+      );
       await client.users.updateUserMetadata(userId, { unsafeMetadata });
     } catch {
       return NextResponse.json(

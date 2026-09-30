@@ -2,6 +2,7 @@ import "server-only";
 
 import { fetchStandingsFull } from "@/lib/db/fixtures";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
+import { SPORT, vertical } from "@/lib/vertical";
 
 export interface TeamCompareStats {
   name: string;
@@ -35,7 +36,7 @@ export async function getTeamCompareStats(slug: string): Promise<TeamCompareStat
     .select("id, name, slug, sportmonks_id, sportsmonks_id")
     .eq("slug", slug)
     .eq("type", "team")
-    .eq("metadata->>league", "Allsvenskan")
+    .eq("sport", SPORT).eq("metadata->>league", vertical.leagueEntity)
     .maybeSingle();
 
   if (!entity?.slug) return null;

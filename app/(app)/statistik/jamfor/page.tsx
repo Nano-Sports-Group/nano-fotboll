@@ -7,6 +7,7 @@ import {
   type TeamCompareStats,
 } from "@/lib/statistik/team-compare";
 import { TeamSearchBar } from "./TeamSearchBar";
+import { SPORT, vertical } from "@/lib/vertical";
 
 export const dynamic = 'force-dynamic';
 
@@ -37,7 +38,7 @@ async function getTeamList(): Promise<{ name: string; slug: string }[]> {
     .from("entities")
     .select("name, slug")
     .eq("type", "team")
-    .eq("metadata->>league", "Allsvenskan")
+    .eq("sport", SPORT).eq("metadata->>league", vertical.leagueEntity)
     .not("slug", "is", null)
     .order("name");
   return (data ?? []) as { name: string; slug: string }[];

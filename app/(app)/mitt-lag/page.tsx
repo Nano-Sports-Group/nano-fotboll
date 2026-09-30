@@ -27,6 +27,8 @@ import { UtmActivationTracker } from "@/components/growth/UtmActivationTracker";
 import { getHighlights } from "@/lib/highlights/queries";
 import { HighlightRail } from "@/components/highlights/HighlightRail";
 import { formLetter, formLabel } from "@/lib/form-letter";
+import { VERTICAL } from "@/lib/vertical";
+import { favoriteFromMeta, onboardingDoneFromMeta } from "@/lib/favorite-meta";
 
 export const dynamic = "force-dynamic";
 
@@ -85,7 +87,7 @@ export default async function MittLagPage({
 
   if (!primaryTeam?.slug) {
     const meta = user?.unsafeMetadata as Record<string, unknown> | undefined;
-    if (user && !meta?.["favoriteTeam"] && meta?.["onboardingDone"] !== true) {
+    if (user && !favoriteFromMeta(meta, VERTICAL) && !onboardingDoneFromMeta(meta, VERTICAL)) {
       redirect("/onboarding");
     }
     return <MittLagGuestPreview />;

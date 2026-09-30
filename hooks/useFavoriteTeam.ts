@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import { VERTICAL } from "@/lib/vertical";
+import { favoriteFromMeta, onboardingDoneFromMeta, withFavorite, withOnboardingDone } from "@/lib/favorite-meta";
 
 const LS_KEY = "athopia_favorite_team";
 const LS_ONBOARDING_KEY = "athopia_onboarding_done";
@@ -121,7 +123,7 @@ function useClerkFavoriteTeam(): FavoriteTeamState {
 
     if (user) {
       const meta = user.unsafeMetadata as Record<string, unknown> | undefined;
-      const clerkSlug = meta?.["favoriteTeam"] as string | undefined;
+      const clerkSlug = favoriteFromMeta(meta, VERTICAL);
       if (clerkSlug) {
         setSlug(clerkSlug);
         setIsLoaded(true);
@@ -131,7 +133,7 @@ function useClerkFavoriteTeam(): FavoriteTeamState {
       // det här fältet till Clerk för att gälla på alla enheter — men läsvägen
       // tittade bara i localStorage, som är enhetsbunden. Följden: den som
       // hoppade över lagvalet fick lagvalsmodalen igen i varje ny webbläsare.
-      if (meta?.["onboardingDone"] === true) {
+      if (onboardingDoneFromMeta(meta, VERTICAL)) {
         setNeedsOnboarding(false);
         setIsLoaded(true);
         return;
@@ -166,11 +168,8 @@ function useClerkFavoriteTeam(): FavoriteTeamState {
       if (user) {
         try {
           await user.update({
-            unsafeMetadata: {
-              ...((user.unsafeMetadata as Record<string, unknown>) ?? {}),
-              favoriteTeam: newSlug,
-              onboardingDone: true,
-            },
+            // Per sport: ett hockeyval skriver aldrig över fotbollslaget (lib/favorite-meta).
+            unsafeMetadata: withFavorite(user.unsafeMetadata as Record<string, unknown>, VERTICAL, newSlug),
           });
         } catch {
           // Clerk-fel är icke-kritiskt — localStorage räcker
@@ -200,9 +199,9 @@ function useClerkFavoriteTeam(): FavoriteTeamState {
     }
     if (user) {
       try {
-        const meta = { ...((user.unsafeMetadata as Record<string, unknown>) ?? {}) };
-        delete meta["favoriteTeam"];
-        await user.update({ unsafeMetadata: meta });
+        await user.update({
+          unsafeMetadata: withFavorite(user.unsafeMetadata as Record<string, unknown>, VERTICAL, null),
+        });
       } catch {
         // ignore
       }
@@ -219,10 +218,7 @@ function useClerkFavoriteTeam(): FavoriteTeamState {
     if (user) {
       void user
         .update({
-          unsafeMetadata: {
-            ...((user.unsafeMetadata as Record<string, unknown>) ?? {}),
-            onboardingDone: true,
-          },
+          unsafeMetadata: withOnboardingDone(user.unsafeMetadata as Record<string, unknown>, VERTICAL),
         })
         .catch(() => {});
     }

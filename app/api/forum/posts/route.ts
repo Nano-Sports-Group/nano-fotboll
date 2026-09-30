@@ -1,4 +1,4 @@
-import { SPORT } from "@/lib/vertical";
+import { SPORT, vertical, VERTICAL } from "@/lib/vertical";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
@@ -7,6 +7,7 @@ import { parseBody, z } from "@/lib/validation";
 import { sanitizeText } from "@/lib/sanitize";
 import { jsonContract } from "@/lib/api-contract";
 import { ForumPostsResponseSchema } from "@/lib/api-schemas";
+import { favoriteFromMeta } from "@/lib/favorite-meta";
 
 const ForumPostSchema = z.object({
   content: z.string().trim().min(1, "content krävs").max(500, "Max 500 tecken"),
@@ -102,7 +103,7 @@ export async function POST(req: NextRequest) {
         .select("slug")
         .eq("type", "team")
         .eq("slug", team_slug)
-        .eq("metadata->>league", "Allsvenskan")
+        .eq("sport", SPORT).eq("metadata->>league", vertical.leagueEntity)
         .maybeSingle();
       if (!team) {
         return NextResponse.json({ message: "Ogiltigt lag" }, { status: 400 });
@@ -174,7 +175,7 @@ export async function POST(req: NextRequest) {
         author_name: user.fullName ?? user.username ?? "Anonym",
         author_avatar: user.imageUrl ?? null,
         // Supporteridentitet: "Nickname (DIF)" + lagfärgad avatarring i forumet
-        author_team: (user.unsafeMetadata?.["favoriteTeam"] as string | undefined) ?? null,
+        author_team: favoriteFromMeta(user.unsafeMetadata as Record<string, unknown>, VERTICAL) ?? null,
         author_role: authorProfile?.role ?? null,
       })
       .select()
