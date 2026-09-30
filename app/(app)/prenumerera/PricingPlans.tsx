@@ -29,7 +29,8 @@ import {
 const FREE_FEATURES =
   VERTICAL === "hockey"
     ? [
-        "Tabell, spelschema och resultat för SHL",
+        "Tabell, spelschema och resultat — SHL och HockeyAllsvenskan",
+        "Nyhetsflöde för ditt lag",
         "Favoritlag och laghubb",
         "Forum (läs & skriv)",
       ]
@@ -43,10 +44,9 @@ const FREE_FEATURES =
 const PRO_FEATURES =
   VERTICAL === "hockey"
     ? [
-        "Daglig brief för ditt lag",
-        "Sammanfattningar av nyheter och matcher",
-        "Forum-läget senaste timmarna (4h)",
-        "Ryktesradar för ditt lag",
+        "AI-chatt om lagen, tabellerna och nyheterna",
+        "Poddintelligens — sök bland 20 hockeypoddar",
+        "Daglig lagbild för ditt lag",
       ]
     : [
         "Daglig AI-brief — text & ljud, 07:00",
@@ -57,9 +57,9 @@ const PRO_FEATURES =
         "xG, filter & AI-chat på match/lag",
       ];
 
-/** Hockeyns redaktionella bevakning är inte på än — säg det i stället för att låtsas. */
+/** Hockeyn är påslagen 2026-09-30, men lagbild och poddsammanfattningar byggs upp — säg det. */
 const HOCKEY_PRO_NOTE =
-  "Hockeybevakningen startar under säsongen. PRO-innehållet växer i takt med den; du kan avsluta när du vill.";
+  "Hockeyn är ny: lagbilden och poddsammanfattningarna byggs upp under hösten. Du kan avsluta när du vill.";
 
 const ELITE_FEATURES = [
   "Allt i PRO",
