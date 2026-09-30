@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SignIn } from "@clerk/nextjs";
+import { vertical } from "@/lib/vertical";
 
 export const metadata: Metadata = {
   title: "Logga in",
@@ -36,7 +37,7 @@ export default function SignInPage() {
           className="underline underline-offset-4 hover:text-foreground hover:no-underline
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pitch focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
-          Tillbaka till Nano Fotboll
+          Tillbaka till {vertical.productName}
         </Link>
       </p>
     </main>

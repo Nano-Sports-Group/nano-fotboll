@@ -87,7 +87,7 @@ export default async function AllsvenskanSpelschemePage() {
 
       <div className="mt-8 flex gap-4 text-sm">
         <Link href="/allsvenskan/tabell" className="text-pitch-ink hover:underline">Tabell →</Link>
-        <Link href="/allsvenskan/skytteliga" className="text-pitch-ink hover:underline">Skytteliga →</Link>
+        <Link href={leagueHref("/skytteliga")} className="text-pitch-ink hover:underline">{vertical.scorersLabel} →</Link>
       </div>
     </div>
   );

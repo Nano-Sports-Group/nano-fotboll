@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { jsonLd } from "@/lib/json-ld";
 import { getSiteUrl, CONTACT_EMAIL } from "@/lib/site-url";
+import { VERTICAL, vertical } from "@/lib/vertical";
 
 export const metadata: Metadata = {
-  title: "Om Nano Fotboll – Svensk fotbollsintelligens för Allsvenskan",
-  description: "Lär dig mer om Nano Fotboll — AI-driven nyhetsplattform för Allsvenskan med signalscoring, djupstatistik och lagforum.",
+  title: `${vertical.aboutLabel} – ${vertical.tagline}`,
+  description: `${vertical.productName}: ${vertical.leagueName} med tabell, matcher och lagforum.`,
   alternates: { canonical: `${getSiteUrl()}/om-oss` },
   robots: { index: true, follow: true },
 };
@@ -16,7 +17,7 @@ export default function OmOssPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd({
         "@context": "https://schema.org",
         "@type": "Organization",
-        name: "Nano Fotboll",
+        name: vertical.productName,
         url: `${getSiteUrl()}`,
         foundingDate: "2026",
         description: "AI-driven nyhetsplattform för Allsvenskan med signalscoring, djupstatistik och lagforum.",
@@ -30,9 +31,11 @@ export default function OmOssPage() {
       })}} />
 
       <div>
-        <h1 className="font-bold text-4xl sm:text-5xl text-foreground mb-4 text-balance">Om Nano Fotboll</h1>
+        <h1 className="font-bold text-4xl sm:text-5xl text-foreground mb-4 text-balance">{vertical.aboutLabel}</h1>
         <p className="text-muted-foreground text-lg leading-relaxed">
-          Nano Fotboll är en oberoende nyhetsplattform för Allsvenskan. Vi samlar signaler från över 40 svenska och internationella fotbollskällor, värderar dem med AI och presenterar det som faktiskt spelar roll — utan brus.
+          {VERTICAL === "hockey"
+            ? "Nano Hockey är Nano Sports Groups yta för svensk ishockey. Tabell, spelschema och resultat för SHL uppdateras från officiell matchdata. Nyheter och analys kommer när den redaktionella bevakningen av hockey startar."
+            : "Nano Fotboll är en oberoende nyhetsplattform för Allsvenskan. Vi samlar signaler från över 40 svenska och internationella fotbollskällor, värderar dem med AI och presenterar det som faktiskt spelar roll, utan brus."}
         </p>
       </div>
 
@@ -49,9 +52,15 @@ export default function OmOssPage() {
       <section>
         <h2 className="font-semibold text-2xl text-foreground mb-3 text-balance">Datakällor</h2>
         <ul className="text-muted-foreground leading-relaxed space-y-2 list-disc list-inside">
-          <li><strong className="text-foreground">Matchdata:</strong> Sportmonks API — officiell leverantör av Allsvenskan-statistik, resultat och spelartrupper.</li>
-          <li><strong className="text-foreground">Nyheter:</strong> RSS-flöden från över 40 svenska fotbollsmedier och officiella klubbkanaler.</li>
-          <li><strong className="text-foreground">Podcasts:</strong> Transkriberade avsnitt från de ledande svenska fotbollspodcastsarna.</li>
+          {VERTICAL === "hockey" ? (
+            <li><strong className="text-foreground">Matchdata:</strong> Sportradar, resultat, spelschema och tabell för SHL och HockeyAllsvenskan.</li>
+          ) : (
+            <>
+              <li><strong className="text-foreground">Matchdata:</strong> Sportmonks API, resultat, statistik och spelartrupper för Allsvenskan.</li>
+              <li><strong className="text-foreground">Nyheter:</strong> RSS-flöden från över 40 svenska fotbollsmedier och officiella klubbkanaler.</li>
+              <li><strong className="text-foreground">Podcasts:</strong> Transkriberade avsnitt från de ledande svenska fotbollspoddarna.</li>
+            </>
+          )}
         </ul>
       </section>
 

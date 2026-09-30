@@ -12,6 +12,7 @@ import { useState } from "react";
 import type { Plan } from "@/lib/access-rules";
 import { Check, Star } from "lucide-react";
 import { CheckoutButton } from "./CheckoutButton";
+import { VERTICAL } from "@/lib/vertical";
 import {
   FOUNDER_OFFER,
   PRICING,
@@ -23,21 +24,40 @@ import {
   type BillingInterval,
 } from "@/lib/pricing";
 
-const FREE_FEATURES = [
-  "Obegränsat nyhetsflöde för ditt lag",
-  "Push-notiser — mål, transfers, avspark",
-  "Live-resultat, tabell & statistik",
-  "Forum (läs & skriv)",
-];
+const FREE_FEATURES =
+  VERTICAL === "hockey"
+    ? [
+        "Tabell, spelschema och resultat för SHL",
+        "Favoritlag och laghubb",
+        "Forum (läs & skriv)",
+      ]
+    : [
+        "Obegränsat nyhetsflöde för ditt lag",
+        "Push-notiser — mål, transfers, avspark",
+        "Live-resultat, tabell & statistik",
+        "Forum (läs & skriv)",
+      ];
 
-const PRO_FEATURES = [
-  "Daglig AI-brief — text & ljud, 07:00",
-  "AI-sammanfattningar av artiklar & matcher",
-  "Forum-läget senaste timmarna (4h)",
-  "Ryktesradar — transfer före kollegorna",
-  "Poddintelligens — sök i Allsvenskans poddar",
-  "xG, filter & AI-chat på match/lag",
-];
+const PRO_FEATURES =
+  VERTICAL === "hockey"
+    ? [
+        "Daglig brief för ditt lag",
+        "Sammanfattningar av nyheter och matcher",
+        "Forum-läget senaste timmarna (4h)",
+        "Ryktesradar för ditt lag",
+      ]
+    : [
+        "Daglig AI-brief — text & ljud, 07:00",
+        "AI-sammanfattningar av artiklar & matcher",
+        "Forum-läget senaste timmarna (4h)",
+        "Ryktesradar — transfer före kollegorna",
+        "Poddintelligens — sök i Allsvenskans poddar",
+        "xG, filter & AI-chat på match/lag",
+      ];
+
+/** Hockeyns redaktionella bevakning är inte på än — säg det i stället för att låtsas. */
+const HOCKEY_PRO_NOTE =
+  "Hockeybevakningen startar under säsongen. PRO-innehållet växer i takt med den; du kan avsluta när du vill.";
 
 const ELITE_FEATURES = [
   "Allt i PRO",
@@ -205,6 +225,7 @@ export function PricingPlans({
           </div>
           <ProPriceTag interval={interval} founder={founderPublic} />
           <FeatureList features={PRO_FEATURES} paid hero={3} />
+          {VERTICAL === "hockey" ? <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{HOCKEY_PRO_NOTE}</p> : null}
           {currentPlan === "pro" ? (
             <NuvarandePlan />
           ) : currentPlan === "elite" ? (

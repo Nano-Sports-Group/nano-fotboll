@@ -11,10 +11,21 @@ import {
 } from "lucide-react";
 import { ListGroup } from "@/components/ui/ListGroup";
 import { ListRow } from "@/components/ui/ListRow";
+import { vertical } from "@/lib/vertical";
+
+/** Utforska-raderna. Vertikalens dolda ytor (hiddenRoutes) visas inte. */
+const DISCOVER = [
+  { href: "/forum", icon: <MessageSquare />, title: "Forum", subtitle: "Diskutera med andra supporters" },
+  { href: "/statistik", icon: <BarChart3 />, title: "Statistik", subtitle: "Lag, tabeller och jämförelser" },
+  { href: "/analys", icon: <FileSearch />, title: "Matchanalyser", subtitle: "xG, pressure och form efter varje match" },
+  { href: "/daily", icon: <Headphones />, title: vertical.dailyName, subtitle: "7 min morgonbrief, lyssna här" },
+  { href: "/podcast", icon: <Headphones />, title: "Poddar", subtitle: `${vertical.leagueName}-poddar samlade` },
+  { href: "/ai", icon: <Sparkles />, title: "Fråga", subtitle: "Statistik, matcher och nyheter när du vill gräva" },
+];
 
 export const metadata: Metadata = {
   title: "Mer",
-  description: "Forum, statistik, poddar, konto och prenumeration.",
+  description: "Forum, statistik, konto och prenumeration.",
 };
 
 /** Overflow utanför bottenraden (Mitt lag · Flöde · Matcher · Tabellen). */
@@ -26,48 +37,15 @@ export default function MerPage() {
       </h1>
 
       <ListGroup>
-        <ListRow
-          href="/forum"
-          leading={<MessageSquare />}
-          title="Forum"
-          subtitle="Diskutera med andra supporters"
-        />
-        <ListRow
-          href="/statistik"
-          leading={<BarChart3 />}
-          title="Statistik"
-          subtitle="Spelare, jämförelser och scout"
-        />
-        <ListRow
-          href="/analys"
-          leading={<FileSearch />}
-          title="Matchanalyser"
-          subtitle="xG, pressure och form efter varje match"
-        />
-        <ListRow
-          href="/daily"
-          leading={<Headphones />}
-          title="Nano Fotboll Daily"
-          subtitle="7 min morgonbrief — lyssna här"
-        />
-        <ListRow
-          href="/podcast"
-          leading={<Headphones />}
-          title="Poddar"
-          subtitle="Allsvenskan-poddar samlade"
-        />
-        <ListRow
-          href="/ai"
-          leading={<Sparkles />}
-          title="Fråga"
-          subtitle="Statistik, matcher och nyheter — när du vill gräva"
-        />
+        {DISCOVER.filter((row) => !vertical.hiddenRoutes.includes(row.href)).map((row) => (
+          <ListRow key={row.href} href={row.href} leading={row.icon} title={row.title} subtitle={row.subtitle} />
+        ))}
       </ListGroup>
 
       <ListGroup>
         <ListRow href="/konto" leading={<User />} title="Konto" />
         <ListRow href="/prenumerera" leading={<CreditCard />} title="Prenumeration" />
-        <ListRow href="/om-oss" leading={<Info />} title="Om Nano Fotboll" />
+        <ListRow href="/om-oss" leading={<Info />} title={vertical.aboutLabel} />
       </ListGroup>
     </div>
   );

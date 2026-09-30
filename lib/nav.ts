@@ -69,7 +69,7 @@ export const SIDEBAR_NAV_ITEMS: NavItem[] = [
  * nås från flera flikar, och att gissa fel förälder är sämre än att låta
  * GlassNav-tummen tona ut (den gör det redan vid activeIndex === -1).
  */
-export const SECONDARY_NAV_ITEMS: NavItem[] = [
+const ALL_SECONDARY_NAV_ITEMS: NavItem[] = [
   { href: "/statistik", label: "Statistik", icon: BarChart3, iosSymbol: "chart.bar.fill" },
   { href: "/forum", label: "Forum", icon: MessageSquare, iosSymbol: "bubble.left.and.bubble.right.fill" },
   { href: "/analys", label: "Matchanalyser", icon: FileSearch, iosSymbol: "doc.text.magnifyingglass" },
@@ -80,6 +80,11 @@ export const SECONDARY_NAV_ITEMS: NavItem[] = [
   { href: "/prenumerera", label: "Prenumeration", icon: CreditCard, iosSymbol: "creditcard.fill" },
   { href: "/om-oss", label: vertical.aboutLabel, icon: Info, iosSymbol: "info.circle" },
 ];
+
+/** Vertikalens dolda ytor (lib/vertical.ts → hiddenRoutes) syns inte i menyn. */
+export const SECONDARY_NAV_ITEMS: NavItem[] = ALL_SECONDARY_NAV_ITEMS.filter(
+  (item) => !vertical.hiddenRoutes.includes(item.href),
+);
 
 /** @deprecated Använd BOTTOM_NAV_ITEMS — behålls för tillfälliga imports. */
 export const NAV_ITEMS = BOTTOM_NAV_ITEMS;

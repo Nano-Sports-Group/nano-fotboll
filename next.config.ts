@@ -6,6 +6,7 @@
 
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import { HOCKEY } from "./lib/vertical";
 
 const isHockey = process.env.NEXT_PUBLIC_VERTICAL === "hockey";
 const leagueHome = isHockey ? "/shl" : "/allsvenskan";
@@ -25,6 +26,11 @@ const nextConfig: NextConfig = {
         ? [
             { source: "/allsvenskan", destination: "/shl", permanent: false },
             { source: "/allsvenskan/:path*", destination: "/shl/:path*", permanent: false },
+            // Ytor utan hockeyinnehåll ännu (lib/vertical.ts → hiddenRoutes). Tillfälliga: tas bort när materialet finns.
+            ...HOCKEY.hiddenRoutes.flatMap((route) => [
+              { source: route, destination: "/shl", permanent: false },
+              { source: `${route}/:path*`, destination: "/shl", permanent: false },
+            ]),
           ]
         : []),
       { source: "/sammanfattning", destination: "/mitt-lag", permanent: true },

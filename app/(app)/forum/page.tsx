@@ -1,4 +1,5 @@
-import { SPORT } from "@/lib/vertical";
+import { SPORT, vertical } from "@/lib/vertical";
+import { getAllsvenskanTeams } from "@/lib/feed/get-allsvenskan-teams";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { currentUser } from "@clerk/nextjs/server";
@@ -7,30 +8,18 @@ import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import { ForumSummaryPopupGate } from "@/components/ForumSummaryPopupGate";
 
 export const metadata: Metadata = {
-  title: "Forum — Allsvenskan",
-  description: "Diskutera Allsvenskan med supportrar från alla 16 lag.",
+  title: `Forum · ${vertical.leagueName}`,
+  description: `Diskutera ${vertical.leagueName} med supportrar från alla lag.`,
 };
 
 export const dynamic = "force-dynamic";
 
-const ALLSVENSKAN: { slug: string; name: string; abbr: string }[] = [
-  { slug: "aik",             name: "AIK",             abbr: "AIK" },
-  { slug: "bk-hacken",       name: "BK Häcken",       abbr: "HÄC" },
-  { slug: "degerfors-if",    name: "Degerfors IF",    abbr: "DEG" },
-  { slug: "djurgardens-if",  name: "Djurgårdens IF",  abbr: "DJU" },
-  { slug: "gais",            name: "GAIS",            abbr: "GAI" },
-  { slug: "halmstads-bk",    name: "Halmstads BK",    abbr: "HBK" },
-  { slug: "hammarby-if",     name: "Hammarby IF",     abbr: "BAJ" },
-  { slug: "helsingborgs-if", name: "Helsingborgs IF", abbr: "HIF" },
-  { slug: "if-elfsborg",     name: "IF Elfsborg",     abbr: "ELF" },
-  { slug: "ifk-goteborg",    name: "IFK Göteborg",    abbr: "IFG" },
-  { slug: "ifk-norrkoping",  name: "IFK Norrköping",  abbr: "IFN" },
-  { slug: "ifk-varnamo",     name: "IFK Värnamo",     abbr: "VÄR" },
-  { slug: "kalmar-ff",       name: "Kalmar FF",       abbr: "KFF" },
-  { slug: "malmo-ff",        name: "Malmö FF",        abbr: "MFF" },
-  { slug: "mjallby-aif",     name: "Mjällby AIF",     abbr: "MJÄ" },
-  { slug: "vasteras-sk",     name: "Västerås SK",     abbr: "VSK" },
-];
+/** Tre bokstäver ur lagnamnets mest särskiljande ord: "Hammarby IF" → HAM, "Frölunda HC" → FRÖ. */
+function abbrFor(name: string): string {
+  const words = name.split(/\s+/).filter(Boolean);
+  const longest = words.reduce((a, w) => (w.length > a.length ? w : a), words[0] ?? name);
+  return longest.slice(0, 3).toUpperCase();
+}
 
 interface TeamStats {
   slug: string;
@@ -111,10 +100,12 @@ export default async function ForumIndexPage() {
   ]);
 
   const followedSlugs = await getFollowedSlugs(clerkUser?.id ?? null);
+  // Vertikalens lag ur entities (samma källa som lagsidorna) — aldrig en handskriven lista.
+  const LEAGUE_TEAMS = (await getAllsvenskanTeams()).map((t) => ({ ...t, abbr: abbrFor(t.name) }));
 
   // Sort: followed first (in order), then rest alphabetically
-  const followed = ALLSVENSKAN.filter((t) => followedSlugs.includes(t.slug));
-  const rest = ALLSVENSKAN.filter((t) => !followedSlugs.includes(t.slug));
+  const followed = LEAGUE_TEAMS.filter((t) => followedSlugs.includes(t.slug));
+  const rest = LEAGUE_TEAMS.filter((t) => !followedSlugs.includes(t.slug));
   const sorted = [...followed, ...rest];
 
   return (
@@ -125,7 +116,7 @@ export default async function ForumIndexPage() {
         <div className="mb-8">
           <h1 className="font-bold text-3xl text-foreground tracking-tight text-balance">Forum</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Allsvenskan · Välj ett lag och delta i diskussionen
+            {vertical.leagueName} · Välj ett lag och delta i diskussionen
           </p>
         </div>
 

@@ -27,6 +27,13 @@ export type VerticalPack = {
   paused: boolean;
   seoKeywords: readonly string[];
   featuredTeams: readonly { href: string; label: string }[];
+  /** "Skytteliga" (fotboll) / "Poängliga" (hockey). */
+  scorersLabel: string;
+  /**
+   * Ytor som bara har innehåll i den här sporten ännu inte finns: redirectas i next.config
+   * och döljs i menyn. Tas bort ur listan när hockeyn har eget material där.
+   */
+  hiddenRoutes: readonly string[];
 };
 
 const FOOTBALL_KEYWORDS = [
@@ -71,6 +78,8 @@ export const FOOTBALL: VerticalPack = {
     { href: "/lag/djurgarden", label: "DIF" },
     { href: "/lag/malmo-ff", label: "Malmö" },
   ],
+  scorersLabel: "Skytteliga",
+  hiddenRoutes: [],
 };
 
 export const HOCKEY: VerticalPack = {
@@ -89,7 +98,7 @@ export const HOCKEY: VerticalPack = {
     "SHL just nu: dagens nyheter, tabell, matchresultat och spelschema. Uppdateras när intaget är på.",
   leagueShareDescription:
     "SHL just nu: dagens nyheter, tabell, matchresultat och spelschema.",
-  leagueSubtitle: "Nyheter, tabell och matcher — samma yta som fotbollen.",
+  leagueSubtitle: "Tabell, spelschema och resultat för SHL.",
   leagueJsonLdDescription: "SHL är den högsta divisionen i svensk klubbhockey för herrar.",
   schemaSport: "IceHockey",
   paused: true,
@@ -103,7 +112,16 @@ export const HOCKEY: VerticalPack = {
     "svensk hockey",
     "hockey SHL",
   ],
-  featuredTeams: [],
+  featuredTeams: [
+    { href: "/lag/frolunda-hc", label: "Frölunda" },
+    { href: "/lag/farjestads-bk", label: "Färjestad" },
+    { href: "/lag/djurgardens-if", label: "Djurgården" },
+    { href: "/lag/skelleftea-aik", label: "Skellefteå" },
+    { href: "/lag/lulea-hf", label: "Luleå" },
+    { href: "/lag/brynas-if", label: "Brynäs" },
+  ],
+  scorersLabel: "Poängliga",
+  hiddenRoutes: ["/analys", "/daily", "/podcast", "/ai", "/kronika", "/brev", "/narrativ", "/allsvenskan/xp-tabell", "/allsvenskan/talanger", "/statistik"],
 };
 
 export function resolveVertical(raw: string | undefined): VerticalId {
