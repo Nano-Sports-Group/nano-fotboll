@@ -15,7 +15,7 @@ export async function generateMetadata({
   const { hub } = await loadTeamSection(slug);
   return {
     title: `${hub.team.name} — Matcher | Nano Fotboll`,
-    description: `Spelade och kommande matcher för ${hub.team.name} i Allsvenskan.`,
+    description: `Spelade och kommande matcher för ${hub.team.name} i ${hub.team.league}.`,
     alternates: { canonical: `${getSiteUrl()}/lag/${slug}/matcher` },
   };
 }

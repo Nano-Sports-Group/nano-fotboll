@@ -1,4 +1,4 @@
-import { SPORT } from "@/lib/vertical";
+import { SPORT, vertical } from "@/lib/vertical";
 /**
  * lib/team-hub/queries.ts — Team Hub aggregeringslager
  * ─────────────────────────────────────────────────────────────────────────────
@@ -357,7 +357,7 @@ export async function getTeamPulse(teamEntityId: string): Promise<TeamPulse | nu
 }
 
 export interface TeamHubPayload {
-  team: { id: string; name: string; slug: string; logo_url: string | null; sportsmonks_id: number | null };
+  team: { id: string; name: string; slug: string; logo_url: string | null; sportsmonks_id: number | null; league: string };
   position: number | null;
   pulse: TeamPulse | null;
   dailyEpisode: DailyEpisode | null;
@@ -490,6 +490,8 @@ export async function getTeamHub(
     slug: String(data.slug),
     logo_url: (meta.logo_url as string | null) ?? null,
     sportsmonks_id: smId,
+    // Lagets egen liga (hockey: SHL eller HockeyAllsvenskan), inte vertikalens huvudliga.
+    league: typeof meta.league === "string" ? meta.league : vertical.leagueName,
   };
 
   const newsFetcher =

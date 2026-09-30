@@ -15,7 +15,7 @@ export async function generateMetadata({
   const { hub } = await loadTeamSection(slug);
   return {
     title: `${hub.team.name} — Trupp | Nano Fotboll`,
-    description: `Spelartrupp och nyckelspelare för ${hub.team.name} i Allsvenskan.`,
+    description: `Spelartrupp och nyckelspelare för ${hub.team.name} i ${hub.team.league}.`,
     alternates: { canonical: `${getSiteUrl()}/lag/${slug}/trupp` },
   };
 }

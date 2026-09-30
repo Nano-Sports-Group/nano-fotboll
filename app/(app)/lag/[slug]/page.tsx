@@ -10,7 +10,7 @@
 
 import type { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
-import { SPORT } from "@/lib/vertical";
+import { SPORT, vertical } from "@/lib/vertical";
 import { isFollowing } from "@/app/actions/follows";
 import {
   createServerClient,
@@ -69,6 +69,12 @@ async function getTeamMeta(slug: string): Promise<TeamMeta | null> {
   } catch {
     return null;
   }
+}
+
+/** Ligans sida: huvudligan på sin väg, övriga ligor via tabellens ?liga=. */
+function leagueTableHref(league: string): string {
+  const l = vertical.leagues.find((x) => x.name === league);
+  return l?.param ? `${vertical.leaguePath}/tabell?liga=${l.param}` : vertical.leaguePath;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -152,12 +158,12 @@ export default async function TeamHubPage({ params }: { params: Promise<{ slug: 
     "@context": "https://schema.org",
     "@type": "SportsTeam",
     name: hub.team.name,
-    sport: "Soccer",
+    sport: vertical.schemaSport,
     url: `${getSiteUrl()}/lag/${hub.team.slug}`,
     memberOf: {
       "@type": "SportsOrganization",
-      name: "Allsvenskan",
-      url: `${getSiteUrl()}/allsvenskan`,
+      name: hub.team.league,
+      url: `${getSiteUrl()}${leagueTableHref(hub.team.league)}`,
     },
     ...(hub.team.logo_url ? { logo: hub.team.logo_url, image: hub.team.logo_url } : {}),
   };
@@ -198,7 +204,7 @@ export default async function TeamHubPage({ params }: { params: Promise<{ slug: 
       <div className="px-4 sm:px-6 pt-1.5 pb-0">
         <AppBreadcrumbs
           items={[
-            { label: "Allsvenskan", href: "/allsvenskan" },
+            { label: hub.team.league, href: leagueTableHref(hub.team.league) },
             { label: hub.team.name },
           ]}
         />
@@ -210,6 +216,7 @@ export default async function TeamHubPage({ params }: { params: Promise<{ slug: 
         currentSlug={hub.team.slug}
         team={{ name: hub.team.name, logo_url: hub.team.logo_url }}
         position={hub.position}
+        league={hub.team.league}
         form={hub.form}
         stats={hub.stats}
         entityId={hub.team.id}

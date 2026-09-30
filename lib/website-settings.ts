@@ -106,23 +106,23 @@ export const HOCKEY_DEFAULT_WEBSITE_SETTINGS: WebsiteSettings = {
     contactEmail: CONTACT_EMAIL,
   },
   seo: {
-    defaultTitle: "Nano Hockey — SHL 2026/27: tabell, resultat och statistik",
+    defaultTitle: "Nano Hockey — SHL och HockeyAllsvenskan 2026/27: tabell, resultat och statistik",
     defaultDescription:
-      "SHL 2026/27 — tabell, resultat, spelschema och nyheter för alla 14 lag. Följ ditt lag varje dag, inte bara på matchdag.",
-    homeTitle: "SHL 2026/27 – Tabell, Resultat, Matcher och Statistik | Nano Hockey",
+      "SHL och HockeyAllsvenskan 2026/27 — tabell, resultat, spelschema och nyheter för alla 28 lag. Följ ditt lag varje dag, inte bara på matchdag.",
+    homeTitle: "SHL och HockeyAllsvenskan 2026/27 – Tabell, Resultat och Matcher | Nano Hockey",
     homeDescription:
-      "SHL 2026/27: tabell, resultat, spelschema och nyhetsflöde för alla 14 lag.",
+      "SHL och HockeyAllsvenskan 2026/27: tabell, resultat, spelschema och nyhetsflöde för alla 28 lag.",
   },
   sharing: {
     ...DEFAULT_WEBSITE_SETTINGS.sharing,
-    homeOgTitle: "SHL 2026/27 – Tabell, Resultat, Matcher och Statistik | Nano Hockey",
+    homeOgTitle: "SHL och HockeyAllsvenskan 2026/27 – Tabell, Resultat och Matcher | Nano Hockey",
     homeOgDescription:
-      "Tabell, resultat, spelschema och nyheter för SHL. Matchsidor och forum för ditt lag.",
+      "Tabell, resultat, spelschema och nyheter för SHL och HockeyAllsvenskan. Matchsidor och forum för ditt lag.",
     nyhetDescriptionTemplate: "Nano Hockey följer händelsen. Originalet hos {source}.",
-    teamTitleTemplate: "{team} – SHL 2026/27: Nyheter, Statistik och Matcher",
+    teamTitleTemplate: "{team} 2026/27: Nyheter, Tabell och Matcher",
     teamDescriptionTemplate:
-      "Allt om {team} i SHL — senaste nyheter, matchresultat, trupp, statistik och lagforum.",
-    matchDescriptionTemplate: "Matchen mellan {home} och {away} i SHL.",
+      "Allt om {team} — senaste nyheter, matchresultat, tabelläge och lagforum.",
+    matchDescriptionTemplate: "Matchen mellan {home} och {away}.",
   },
 };
 

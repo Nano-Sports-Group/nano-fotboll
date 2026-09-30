@@ -4,7 +4,7 @@ import { ArticleCard } from "@/components/ui/ArticleCard";
 import { createServerClient, isSupabaseConfigured, mapArticle } from "@/lib/supabase";
 import type { Article } from "@/lib/types";
 import { Newspaper } from "lucide-react";
-import { SPORT } from "@/lib/vertical";
+import { SPORT, vertical } from "@/lib/vertical";
 import { getSiteUrl } from "@/lib/site-url";
 import { contentCutoffIso } from "@/lib/content-window";
 
@@ -57,7 +57,7 @@ export async function generateMetadata({
   const name = team?.name ?? slug;
   return {
     title: `${name} Nyheter – Allsvenskan 2026`,
-    description: `Senaste nyheterna om ${name} i Allsvenskan 2026 — matcher, transferer och matchanalyser.`,
+    description: `Senaste nyheterna om ${name} i ${vertical.leagueName} — matcher, övergångar och analyser.`,
     alternates: { canonical: `${getSiteUrl()}/lag/${slug}/nyheter` },
   };
 }

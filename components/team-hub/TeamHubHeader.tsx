@@ -28,6 +28,7 @@ export function TeamHubHeader({
   currentSlug,
   team,
   position,
+  league,
   form,
   stats,
   entityId,
@@ -38,6 +39,8 @@ export function TeamHubHeader({
   currentSlug: string;
   team: { name: string; logo_url: string | null };
   position: number | null;
+  /** Lagets liga — hockey har två. */
+  league: string;
   form: ("W" | "D" | "L")[];
   stats: TeamSeasonRow | null;
   entityId: string;
@@ -95,7 +98,7 @@ export function TeamHubHeader({
                 />
               </div>
               <div className="flex items-center gap-3 mt-1">
-                {position && <span className="team-ink text-xs font-bold">#{position} i Allsvenskan</span>}
+                {position && <span className="team-ink text-xs font-bold">#{position} i {league}</span>}
                 <FormDots form={form} />
               </div>
             </div>
