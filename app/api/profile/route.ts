@@ -188,7 +188,7 @@ export async function PATCH(req: Request) {
           sport: SPORT,
           followed_team_ids: favouriteTeam ? [favouriteTeam.id] : [],
         },
-        { onConflict: "clerk_user_id" },
+        { onConflict: "clerk_user_id,sport" },
       );
     if (feedConfigError) {
       console.error("[profile PATCH] favorite team feed sync:", feedConfigError);

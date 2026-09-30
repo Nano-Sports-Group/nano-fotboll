@@ -79,6 +79,7 @@ async function getFollowedSlugs(userId: string | null): Promise<string[]> {
       .from("user_feed_config")
       .select("followed_team_ids")
       .eq("clerk_user_id", userId)
+      .eq("sport", SPORT)
       .maybeSingle();
     const ids: string[] = (data as any)?.followed_team_ids ?? [];
     if (!ids.length) return [];

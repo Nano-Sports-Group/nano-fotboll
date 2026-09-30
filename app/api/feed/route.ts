@@ -100,6 +100,7 @@ export async function GET(req: Request) {
       .from("user_feed_config")
       .select("followed_team_ids, content_types")
       .eq("clerk_user_id", userId)
+      .eq("sport", SPORT)
       .maybeSingle();
 
     if (isPro && !teamSlug) {

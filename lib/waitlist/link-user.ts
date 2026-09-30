@@ -89,7 +89,8 @@ export async function linkWaitlistToUser(
         await db
           .from("user_feed_config")
           .update({ followed_team_ids: [teamId] })
-          .eq("clerk_user_id", clerkUserId);
+          .eq("clerk_user_id", clerkUserId)
+          .eq("sport", SPORT);
       }
     } else {
       await clerk.users.updateUserMetadata(clerkUserId, {

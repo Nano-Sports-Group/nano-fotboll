@@ -125,7 +125,7 @@ export async function POST(req: Request) {
         followed_leagues:  [],
         content_types:     [],
       },
-      { onConflict: "clerk_user_id" }
+      { onConflict: "clerk_user_id,sport" }
     );
 
     if (error) {
