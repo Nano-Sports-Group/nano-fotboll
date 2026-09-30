@@ -737,3 +737,45 @@ export function parseFixtureScore(fixture: SMFixture) {
   const isLive = fixture.state?.state === "inprogress";
   return { home, away, homeGoals, awayGoals, liveMinute, isLive };
 }
+
+export type HockeyPlayerStat = {
+  player_id: string;
+  player_name: string;
+  team_name: string;
+  games: number;
+  goals: number;
+  assists: number;
+  points: number;
+  plus_minus: number;
+  shots_on_goal: number;
+  penalty_minutes: number;
+};
+
+/**
+ * Hockeyns poängliga ur vyn hockey_player_season_stats (räknas ur fixtures.raw — ingen
+ * extra leverantörskostnad). Målvakter (räddningar > 0, inga poäng) filtreras bort.
+ */
+export const fetchHockeyPointsLeaders = unstable_cache(
+  async (league?: string, limit = 30): Promise<HockeyPlayerStat[]> => {
+    if (!isSupabaseConfigured() || SPORT !== "hockey") return [];
+    try {
+      const db = createServerClient();
+      const seasonId = await seasonIdFor(db, league);
+      if (!seasonId) return [];
+      const { data } = await db
+        .from("hockey_player_season_stats" as never)
+        .select("player_id,player_name,team_name,games,goals,assists,points,plus_minus,shots_on_goal,penalty_minutes")
+        .eq("season_id", seasonId)
+        .gt("points", 0)
+        .order("points", { ascending: false })
+        .order("goals", { ascending: false })
+        .limit(limit);
+      return (data ?? []) as unknown as HockeyPlayerStat[];
+    } catch (e) {
+      Sentry.captureException(e);
+      return [];
+    }
+  },
+  ["hockey-points-leaders", SPORT],
+  { revalidate: 600, tags: ["fixtures"] }
+);
