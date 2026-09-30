@@ -23,8 +23,11 @@ import {
   proPriceLabel,
   PRICING,
   FOUNDER_OFFER,
+  isComboEnabled,
 } from "@/lib/pricing";
 import { isFounderOfferPublic } from "@/lib/founder-offer";
+import { planForVertical } from "@/lib/plan-for-vertical";
+import { SportAccess } from "./SportAccess";
 import { getSiteUrl } from "@/lib/site-url";
 import Stripe from "stripe";
 
@@ -60,7 +63,7 @@ export default async function KontoPage({
 }) {
   const { userId } = await auth();
   const user = await currentUser();
-  const publicMeta = (user?.publicMetadata ?? {}) as { plan?: string; founder?: boolean };
+  const publicMeta = (user?.publicMetadata ?? {}) as { plan?: string; plans?: unknown; founder?: boolean };
   // Märket sitter på ett genomfört Founder-köp och följer med för alltid — även
   // när potten är slut för alla andra. Potten avgör bara vad vi ERBJUDER.
   const isFounder = publicMeta.founder === true;
@@ -196,6 +199,12 @@ export default async function KontoPage({
               )
             }
           />
+          {isComboEnabled() && (
+            <SportAccess
+              footballPlan={planForVertical("football", publicMeta)}
+              hockeyPlan={planForVertical("hockey", publicMeta)}
+            />
+          )}
           {privateMeta.subscription?.cancelAtPeriodEnd && periodEndFormatted && (
             <ListRow
               leading={<AlertTriangle className="text-amber-400" />}

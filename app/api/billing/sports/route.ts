@@ -17,7 +17,7 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import {
   COMBO_PRICING,
-  PRICING,
+  SPORT_PRICING,
   isComboEnabled,
   isPaidPlan,
   isSubscriptionScope,
@@ -100,12 +100,14 @@ export async function POST(req: Request & { headers: Headers }) {
     return NextResponse.json({ error: "Ändringen går inte att göra på din prenumeration" }, { status: 409 });
   }
 
-  const plan = isPaidPlan(subscription.metadata?.plan) ? subscription.metadata.plan : "pro";
+  const currentPlan = isPaidPlan(subscription.metadata?.plan) ? subscription.metadata.plan : "pro";
+  // Elite Kombo utan fotboll blir hockey PRO — hockey har ingen Elite.
+  const plan = target === "hockey" ? "pro" : currentPlan;
   const item = subscription.items.data[0];
   const interval = (item?.price?.recurring?.interval === "year" ? "year" : "month") as BillingInterval;
   if (!item) return NextResponse.json({ error: "Prenumerationen saknar rad" }, { status: 409 });
 
-  const label = target === "both" ? COMBO_PRICING[plan].label : PRICING[plan].label;
+  const label = target === "both" ? COMBO_PRICING[plan].label : SPORT_PRICING[target][plan].label;
   const product = await productFor(stripe, target, label);
   // Founder-priset gäller bara fotboll ensam (kombo = ordinarie kombopris), men märket ligger
   // kvar i metadata: tar en founder bort hockey igen får hen tillbaka 69 kr ("för alltid").
@@ -113,7 +115,7 @@ export async function POST(req: Request & { headers: Headers }) {
 
   await stripe.subscriptions.update(subscription.id, {
     items: [{ id: item.id, price_data: { currency: "sek", product, unit_amount: unitAmount, recurring: { interval } } }],
-    metadata: { ...subscription.metadata, vertical: target },
+    metadata: { ...subscription.metadata, vertical: target, plan },
     proration_behavior: "create_prorations",
   });
 

@@ -12,9 +12,11 @@ interface Props {
   interval: BillingInterval;
   label: string;
   variant?: "primary" | "outline";
+  /** Fotboll + Hockey i en prenumeration. */
+  combo?: boolean;
 }
 
-export function CheckoutButton({ plan, interval, label, variant = "primary" }: Props) {
+export function CheckoutButton({ plan, interval, label, variant = "primary", combo = false }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { isSignedIn } = useAuth();
@@ -24,7 +26,7 @@ export function CheckoutButton({ plan, interval, label, variant = "primary" }: P
     // Detta var produktens enda helt oinstrumenterade betal-CTA. UpgradePrompt och
     // FeedPaywallBanner loggar via TrackedLink, men huvudknappen på /prenumerera
     // loggade ingenting — konverteringen gick inte att skilja från utebliven trafik.
-    trackEvent("paywall_cta_click", { plan, interval, surface: "prenumerera" });
+    trackEvent("paywall_cta_click", { plan, interval, combo, surface: "prenumerera" });
 
     if (!isSignedIn) {
       router.push("/sign-up?redirect_url=/onboarding");
@@ -36,7 +38,7 @@ export function CheckoutButton({ plan, interval, label, variant = "primary" }: P
       const res = await fetch("/api/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, interval }),
+        body: JSON.stringify({ plan, interval, combo }),
       });
       const { url, error: apiError } = await res.json();
 

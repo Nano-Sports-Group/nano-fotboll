@@ -11,7 +11,7 @@
 
 import type { Metadata } from "next";
 import { Zap } from "lucide-react";
-import { FOUNDER_OFFER, PRICING, TRIAL_DAYS } from "@/lib/pricing";
+import { ELITE_AVAILABLE, FOUNDER_OFFER, PRICING, TRIAL_DAYS, isComboEnabled } from "@/lib/pricing";
 import { absoluteUrl } from "@/lib/site-url";
 import { PricingPlans } from "./PricingPlans";
 import { getUserPlan } from "@/lib/user-plan";
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     locale: "sv_SE",
     url: absoluteUrl("/prenumerera"),
     title: "Priser & Prenumeration",
-    description: `Gratis, PRO eller Elite — välj din plan för ${vertical.leagueName}-bevakning på djupet.`,
+    description: `${ELITE_AVAILABLE ? "Gratis, PRO eller Elite" : "Gratis eller PRO"} — välj din plan för ${vertical.leagueName}-bevakning på djupet.`,
   },
 };
 
@@ -67,7 +67,7 @@ function PricingJsonLd({ founderPublic }: { founderPublic: boolean }) {
       ? [offer(kr(FOUNDER_OFFER.pricing.monthly), `${vertical.productName} PRO Founder`, 2)]
       : []),
     offer(kr(PRICING.pro.monthly), `${vertical.productName} PRO`, founderPublic ? 3 : 2),
-    offer(kr(PRICING.elite.monthly), `${vertical.productName} Elite`, founderPublic ? 4 : 3),
+    ...(ELITE_AVAILABLE ? [offer(kr(PRICING.elite.monthly), `${vertical.productName} Elite`, founderPublic ? 4 : 3)] : []),
   ];
 
   return (
@@ -105,7 +105,7 @@ export default async function PrenumereraPage() {
         </p>
       </div>
 
-      <PricingPlans currentPlan={plan} founderPublic={founderPublic} />
+      <PricingPlans currentPlan={plan} founderPublic={founderPublic} comboEnabled={isComboEnabled()} />
 
       {!HOCKEY && <p className="text-center text-sm text-muted-foreground mt-10 max-w-lg mx-auto">
         Gratis ger dig flödet. PRO ger dig morgonbriefen, poddintelligensen och

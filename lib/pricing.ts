@@ -15,6 +15,8 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
+import { VERTICAL, type VerticalId } from "./vertical";
+
 export type PaidPlan = "pro" | "elite";
 export type BillingInterval = "month" | "year";
 
@@ -35,10 +37,27 @@ interface PlanPricing {
  *   Elite 169×12 = 2028 → −20 % = 1622,40 → 1619
  *   Founder 69×12 = 828 → −20 % = 662,40 → 659
  */
-export const PRICING: Record<PaidPlan, PlanPricing> = {
-  pro: { label: "PRO", monthly: 8900, yearly: 84900 },
-  elite: { label: "Elite", monthly: 16900, yearly: 161900 },
+/**
+ * Pris per sport (founder-beslut 2026-09-30). Hockey har ingen Elite än — AI-brief,
+ * poddar och AI-chatt byggs upp först; PRO är billigare så länge innehållet är tunnare.
+ * `hockey.elite` finns bara för att typen ska vara hel: `ELITE_AVAILABLE` stoppar försäljningen.
+ */
+export const SPORT_PRICING: Record<VerticalId, Record<PaidPlan, PlanPricing>> = {
+  football: {
+    pro: { label: "PRO", monthly: 8900, yearly: 84900 },
+    elite: { label: "Elite", monthly: 16900, yearly: 161900 },
+  },
+  hockey: {
+    pro: { label: "PRO", monthly: 6900, yearly: 65900 },
+    elite: { label: "Elite", monthly: 16900, yearly: 161900 },
+  },
 };
+
+/** Den här deployens priser — alla befintliga anropare läser härifrån. */
+export const PRICING: Record<PaidPlan, PlanPricing> = SPORT_PRICING[VERTICAL];
+
+/** Säljs Elite i den här vertikalen? Styr både prissidan och checkout. */
+export const ELITE_AVAILABLE: boolean = VERTICAL === "football";
 
 /**
  * Founder-erbjudande: PRO 69 kr/mån FÖR ALLTID för de första 500 i potten.
@@ -129,13 +148,13 @@ export function monthlyEquivalent(plan: PaidPlan): number {
 // ── Kombo: Fotboll + Hockey i en prenumeration ───────────────────────────────
 
 /**
- * Kombopris (båda sporterna). FÖRSLAG 2026-09-30, väntar på founder-ja — därför
- * bakom `isComboEnabled()`: inget visas eller säljs förrän flaggan är satt.
+ * Kombopris (båda sporterna). Founder-godkänt 2026-09-30. Säljs bakom `isComboEnabled()`.
  * Årspris = 20 % rabatt på 12 × månad, avrundat nedåt till …9 som övriga planer.
  */
 export const COMBO_PRICING: Record<PaidPlan, PlanPricing> = {
-  pro: { label: "PRO Kombo", monthly: 12900, yearly: 123900 },
-  elite: { label: "Elite Kombo", monthly: 24900, yearly: 238900 },
+  pro: { label: "PRO Kombo", monthly: 12900, yearly: 122900 },
+  // Elite Kombo = fotbollens Elite + hockeyns PRO (hockey saknar Elite).
+  elite: { label: "Elite Kombo", monthly: 20900, yearly: 199900 },
 };
 
 /** Vilka sporter en prenumeration ger. 'both' = kombo. */
@@ -152,11 +171,14 @@ export function scopeAmountFor(
   interval: BillingInterval,
   opts?: { founder: boolean },
 ): number {
-  if (scope === "both") {
-    const p = COMBO_PRICING[plan];
-    return interval === "year" ? p.yearly : p.monthly;
-  }
-  return amountFor(plan, interval, { founder: scope === "football" && Boolean(opts?.founder) });
+  // Omfångets sport avgör priset — inte vilken sajt köpet görs från.
+  const p =
+    scope === "both"
+      ? COMBO_PRICING[plan]
+      : scope === "football" && plan === "pro" && opts?.founder
+        ? FOUNDER_OFFER.pricing
+        : SPORT_PRICING[scope][scope === "hockey" ? "pro" : plan];
+  return interval === "year" ? p.yearly : p.monthly;
 }
 
 /** Kombon säljs bara när founder har godkänt priset (NEXT_PUBLIC_COMBO_ENABLED=true). */

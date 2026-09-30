@@ -33,13 +33,13 @@ import { enforceRateLimit } from "@/lib/ratelimit";
 import { logFunnelEvent } from "@/lib/funnel";
 import {
   ANNUAL_DISCOUNT,
-  PRICING,
   TRIAL_DAYS,
   isPaidPlan,
   isBillingInterval,
   type PaidPlan,
   type BillingInterval,
   COMBO_PRICING,
+  SPORT_PRICING,
   isComboEnabled,
   scopeAmountFor,
   type SubscriptionScope,
@@ -92,8 +92,12 @@ export async function POST(req: Request & { headers: Headers }) {
   }
   // Omfånget kommer från deployen (eller kombo-valet), aldrig fritt ur bodyn.
   const scope: SubscriptionScope = combo ? "both" : VERTICAL;
+  // Hockey säljer ingen Elite ensamt (bara i Elite Kombo).
+  if (plan === "elite" && scope === "hockey") {
+    return NextResponse.json({ error: "Elite finns inte för hockey än" }, { status: 400 });
+  }
 
-  const planMeta = combo ? COMBO_PRICING[plan] : PRICING[plan];
+  const planMeta = combo ? COMBO_PRICING[plan] : SPORT_PRICING[VERTICAL][plan];
 
   // ── Founder-grind ─────────────────────────────────────────────────────────
   // Elite är aldrig Founder. För PRO: eget avtal (waitlist-kohort) eller

@@ -14,6 +14,8 @@ import { Check, Star } from "lucide-react";
 import { CheckoutButton } from "./CheckoutButton";
 import { VERTICAL } from "@/lib/vertical";
 import {
+  COMBO_PRICING,
+  ELITE_AVAILABLE,
   FOUNDER_OFFER,
   PRICING,
   TRIAL_DAYS,
@@ -146,6 +148,42 @@ function FeatureList({ features, paid, hero }: { features: string[]; paid: boole
   );
 }
 
+/** Båda sporterna i en prenumeration. Priset kommer från COMBO_PRICING — aldrig räknat i klienten. */
+function ComboCard({ interval }: { interval: BillingInterval }) {
+  const pro = COMBO_PRICING.pro;
+  const elite = COMBO_PRICING.elite;
+  const amount = interval === "year" ? pro.yearly : pro.monthly;
+  const eliteAmount = interval === "year" ? elite.yearly : elite.monthly;
+  const unit = interval === "year" ? "år" : "mån";
+  return (
+    <section
+      aria-labelledby="kombo-rubrik"
+      className="mt-6 max-w-4xl mx-auto rounded-2xl border border-border bg-card p-6 sm:flex sm:items-center sm:justify-between sm:gap-8"
+    >
+      <div>
+        <h2 id="kombo-rubrik" className="font-semibold text-xl text-foreground text-balance">
+          Fotboll + Hockey
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          PRO på båda sporterna i en prenumeration. Lägg till eller ta bort en sport när du vill under Konto.
+        </p>
+        <div className="mt-3 flex items-baseline gap-1">
+          <span className="text-3xl font-bold text-foreground tabular-nums">{amount / 100}</span>
+          <span className="text-muted-foreground text-sm">kr / {unit}</span>
+        </div>
+        <WeeklyLine ore={amount} interval={interval} />
+        <p className="mt-2 text-xs text-muted-foreground">
+          Elite Kombo (fotbollens Elite + hockeyns PRO): {formatKr(eliteAmount)} / {unit}
+        </p>
+      </div>
+      <div className="mt-4 flex flex-col gap-2 sm:mt-0 sm:w-56 shrink-0">
+        <CheckoutButton plan="pro" interval={interval} combo label="Välj PRO Kombo" variant="outline" />
+        <CheckoutButton plan="elite" interval={interval} combo label="Välj Elite Kombo" variant="outline" />
+      </div>
+    </section>
+  );
+}
+
 function NuvarandePlan() {
   return (
     <div className="h-11 rounded-xl border border-pitch/40 bg-pitch/10 flex items-center justify-center text-sm font-medium text-pitch-ink">
@@ -166,9 +204,12 @@ function NuvarandePlan() {
 export function PricingPlans({
   currentPlan = "free",
   founderPublic = false,
+  comboEnabled = false,
 }: {
   currentPlan?: Plan;
   founderPublic?: boolean;
+  /** Kombo säljs (isComboEnabled() i server-parenten). */
+  comboEnabled?: boolean;
 }) {
   const [interval, setBilling] = useState<BillingInterval>("month");
 
@@ -197,7 +238,7 @@ export function PricingPlans({
       </div>
 
       {/* Planer */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto items-stretch">
+      <div className={`grid grid-cols-1 gap-6 max-w-4xl mx-auto items-stretch ${ELITE_AVAILABLE ? "sm:grid-cols-3" : "sm:grid-cols-2 max-w-2xl"}`}>
         {/* Gratis */}
         <div className="rounded-2xl border border-border bg-card p-6 flex flex-col">
           <div className="mb-6">
@@ -243,17 +284,21 @@ export function PricingPlans({
           )}
         </div>
 
-        {/* Elite */}
-        <div className="rounded-2xl border border-border bg-card p-6 flex flex-col">
-          <ElitePriceTag interval={interval} />
-          <FeatureList features={ELITE_FEATURES} paid />
-          {currentPlan === "elite" ? (
-            <NuvarandePlan />
-          ) : (
-            <CheckoutButton plan="elite" interval={interval} label="Välj Elite" variant="outline" />
-          )}
-        </div>
+        {/* Elite — säljs inte på hockey än */}
+        {ELITE_AVAILABLE && (
+          <div className="rounded-2xl border border-border bg-card p-6 flex flex-col">
+            <ElitePriceTag interval={interval} />
+            <FeatureList features={ELITE_FEATURES} paid />
+            {currentPlan === "elite" ? (
+              <NuvarandePlan />
+            ) : (
+              <CheckoutButton plan="elite" interval={interval} label="Välj Elite" variant="outline" />
+            )}
+          </div>
+        )}
       </div>
+
+      {comboEnabled && <ComboCard interval={interval} />}
     </>
   );
 }

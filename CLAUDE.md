@@ -98,6 +98,8 @@ Ny kod läggs i befintlig feature-mapp. Skapa inte parallella mönster —
 - Ingen auth-läsning i render-vägen som tvingar routes dynamic i onödan
   (LCP-regressioner har fixats för detta — se commits 46dc3a8, 97e8cb6).
 - Priser: Free 0 / PRO 89 kr/mån / Elite 169 kr/mån, **20 % rabatt årsvis** (659/849/1619).
+  **Per sport** (2026-09-30): hockey PRO 69 kr (ingen hockey-Elite, `ELITE_AVAILABLE`), PRO Kombo 129,
+  Elite Kombo 209. En källa: `SPORT_PRICING`/`COMBO_PRICING` i `lib/pricing.ts`. Se `context/offer_catalog.md`.
   Veckopris (`formatWeeklyKr`) är alltid andra rad och muted — hero är det Stripe drar.
 - **Founder är en pott, aldrig en boolean.** `isFounderOfferPublic()` i `lib/founder-offer.ts`
   läser `founder_offer_state` (cache 30 s). Klientkomponenter tar `founderPublic` som prop från
