@@ -12,6 +12,7 @@ import Link from "next/link";
 import { Mic, Headphones } from "lucide-react";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import { PodcastSearch } from "./PodcastSearch";
+import { contentCutoffIso } from "@/lib/content-window";
 
 export const revalidate = 300;
 
@@ -36,6 +37,7 @@ async function getLatest(): Promise<{ episodes: EpisodeRow[]; shows: string[] }>
     const { data } = await db
       .from("podcasts")
       .select("id, title, show_name, published_at, mentioned_teams")
+      .gte("published_at", contentCutoffIso())
       .order("published_at", { ascending: false })
       .limit(40);
     const episodes = (data ?? []) as EpisodeRow[];

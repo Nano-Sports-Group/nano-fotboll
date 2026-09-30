@@ -8,6 +8,7 @@ import {
 import { mapNewsFeedRow } from "@/lib/feed/map-feed-row";
 import { jsonContract } from "@/lib/api-contract";
 import { WidgetSnapshotSchema } from "@/lib/api-schemas";
+import { contentCutoffIso } from "@/lib/content-window";
 
 /**
  * GET /api/widget?team=<slug>
@@ -119,6 +120,7 @@ export async function GET(req: Request) {
       "id, title, source_name, url, published_at, summary, importance_score, entity_ids, news_tag, source_count, story_cluster_id, push_priority, slug, rights_status, is_athopia_generated",
     )
     .eq("sport", SPORT)
+    .gte("published_at", contentCutoffIso())
     .order("importance_score", { ascending: false, nullsFirst: false })
     .order("published_at", { ascending: false })
     .limit(NEWS_LIMIT);

@@ -21,6 +21,7 @@ import {
   resolveRightsStatus,
 } from "@/lib/provenance";
 import { getDailyEpisodeForShareCached } from "@/lib/team-hub/queries";
+import { contentCutoffIso } from "@/lib/content-window";
 
 export type FeedModule = z.infer<typeof FeedModuleSchema>;
 
@@ -47,6 +48,7 @@ export async function buildFeedModules(
           "id, title, source_name, url, published_at, summary, importance_score, feed_score, news_tag, source_count, story_cluster_id, push_priority, slug, rights_status, is_athopia_generated",
         )
         .eq("sport", SPORT)
+        .gte("published_at", contentCutoffIso())
         .order("feed_score", { ascending: false, nullsFirst: false })
         .limit(4),
       db
@@ -57,6 +59,7 @@ export async function buildFeedModules(
         .eq("sport", SPORT)
         .eq("status", "published")
         .eq("is_athopia_generated", true)
+        .gte("published_at", contentCutoffIso())
         .order("published_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
@@ -66,6 +69,7 @@ export async function buildFeedModules(
           "id, title, show_name, published_at, metadata, audio_url, rss_sources!inner(sport)",
         )
         .eq("rss_sources.sport", SPORT)
+        .gte("published_at", contentCutoffIso())
         .order("published_at", { ascending: false, nullsFirst: false })
         .limit(1)
         .maybeSingle(),

@@ -4,6 +4,7 @@ import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { jsonContract } from "@/lib/api-contract";
 import { SearchResponseSchema } from "@/lib/api-schemas";
+import { contentCutoffIso } from "@/lib/content-window";
 
 export async function GET(req: Request) {
   // Sök är dyr + missbruksbar → rate-limit (per IP för anon, per user om inloggad)
@@ -28,6 +29,7 @@ export async function GET(req: Request) {
           .not("slug", "is", null)
           .neq("slug", "")
           .ilike("title", `%${q}%`)
+          .gte("published_at", contentCutoffIso())
           .limit(6),
         supabase
           .from("entities")
@@ -48,6 +50,7 @@ export async function GET(req: Request) {
           .select("id,title,rss_sources!inner(sport)")
           .eq("rss_sources.sport", SPORT)
           .ilike("title", `%${q}%`)
+          .gte("published_at", contentCutoffIso())
           .limit(6),
       ]);
 

@@ -8,6 +8,7 @@ import { mapNewsFeedRow } from "@/lib/feed/map-feed-row";
 import { jsonContract } from "@/lib/api-contract";
 import { HeroResponseSchema } from "@/lib/api-schemas";
 import { withDiscussionCounts } from "@/lib/feed/discussion-counts";
+import { contentCutoffIso } from "@/lib/content-window";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +71,7 @@ export async function GET(req: Request) {
     .eq("status", "published")
     .eq("sport", SPORT)
     .eq("is_athopia_generated", true)
+    .gte("published_at", contentCutoffIso())
     .order("published_at", { ascending: false })
     .limit(1);
   if (teamEntityId) summaryQ = summaryQ.contains("entity_ids", [teamEntityId]);
@@ -80,6 +82,7 @@ export async function GET(req: Request) {
     .from("news_feed_clustered")
     .select(CLUSTER_SELECT)
     .eq("sport", SPORT)
+    .gte("published_at", contentCutoffIso())
     .order("feed_score", { ascending: false, nullsFirst: false })
     .limit(5);
   if (teamEntityId) newsQ = newsQ.contains("entity_ids", [teamEntityId]);

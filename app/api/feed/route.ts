@@ -11,6 +11,7 @@ import { resolveFeedUserId } from "@/lib/feed/feed-usage";
 import { getUserPlan } from "@/lib/user-plan";
 import { canAccess, type Plan } from "@/lib/access-rules";
 import { withDiscussionCounts } from "@/lib/feed/discussion-counts";
+import { contentCutoffIso } from "@/lib/content-window";
 
 const PAGE_SIZE = 20;
 function getDb() {
@@ -123,6 +124,7 @@ export async function GET(req: Request) {
         "id, title, source_name, url, published_at, summary, importance_score, feed_score, entity_ids, news_tag, source_count, story_cluster_id, push_priority, slug, rights_status, is_athopia_generated",
       )
       .eq("sport", SPORT)
+      .gte("published_at", contentCutoffIso())
       .order(isPro ? "feed_score" : "published_at", { ascending: false, nullsFirst: false })
       .range(offset, offset + effectiveLimit - 1);
 
@@ -147,6 +149,7 @@ export async function GET(req: Request) {
           "id, title, source_name, url, published_at, summary, importance_score, feed_score, entity_ids, news_tag, source_count, story_cluster_id, push_priority",
         )
         .eq("sport", SPORT)
+        .gte("published_at", contentCutoffIso())
         .order(isPro ? "feed_score" : "published_at", { ascending: false, nullsFirst: false })
         .range(offset, offset + effectiveLimit - 1);
       if (filterTeamIds.length === 1) {

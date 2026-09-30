@@ -1,6 +1,7 @@
 import { SPORT } from "@/lib/vertical";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import type { Narrative, Entity, Article } from "@/lib/types";
+import { contentCutoffIso } from "@/lib/content-window";
 
 /**
  * Queries bakom /lag/[slug]/analys.
@@ -53,6 +54,7 @@ export async function getTeamAISummaries(teamName: string): Promise<Article[]> {
       .eq("source_name", "Nano Fotboll AI")
       .eq("status", "published")
       .ilike("metadata->>team_name", `%${teamName}%`)
+      .gte("published_at", contentCutoffIso())
       .order("created_at", { ascending: false })
       .limit(3);
     return (data as Article[]) ?? [];
@@ -77,6 +79,7 @@ export async function getTeamNarratives(teamEntityId: string): Promise<Narrative
       .select("*")
       .eq("sport", SPORT)
       .contains("entity_ids", [teamEntityId])
+      .gte("last_updated_at", contentCutoffIso())
       .order("importance_score", { ascending: false })
       .limit(8);
     if (error) return [];

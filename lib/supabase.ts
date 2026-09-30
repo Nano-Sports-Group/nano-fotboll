@@ -51,6 +51,7 @@ import type {
 } from "@/lib/types";
 import { listenMetaFromRow } from "@/lib/podcast/spotify";
 import { mapImportanceTier } from "@/lib/feed/importance";
+import { contentCutoffIso } from "@/lib/content-window";
 
 // ─── Miljövariabler ────────────────────────────────────────────────────────────
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
@@ -291,6 +292,7 @@ export async function getArticles(
       .from("articles")
       .select("*")
       .eq("sport", SPORT)
+      .gte("published_at", contentCutoffIso())
       .order("published_at", { ascending: false })
       .range(offset, offset + limit - 1);
     if (teamSlug) q = q.ilike("title", `%${teamSlug}%`);
@@ -451,6 +453,7 @@ async function fetchFilteredArticles(filters: ArticleFilters = {}): Promise<{ ar
       .from("news_feed")
       .select("*", { count: "exact" })
       .eq("sport", SPORT)
+      .gte("published_at", contentCutoffIso())
       .range(offset, offset + limit - 1);
 
     if (sort === "latest") {
@@ -668,6 +671,7 @@ export async function getPostMatchAnalyses(limit = 20): Promise<PostMatchAnalysi
       .eq("sport", SPORT)
       .eq("status", "published")
       .filter("metadata->>type", "eq", "post_match_analysis")
+      .gte("published_at", contentCutoffIso())
       .order("published_at", { ascending: false })
       .limit(limit);
     // Listan VISAR matchdatum men sorterades på publiceringsdatum, så ordningen
@@ -695,6 +699,7 @@ export const getNarratives = unstable_cache(
         .from("narratives")
         .select("*")
         .eq("sport", SPORT)
+        .gte("last_updated_at", contentCutoffIso())
         .order("importance_score", { ascending: false, nullsFirst: false })
         .limit(limit);
       return (data ?? []).map(mapNarrative);
@@ -729,6 +734,7 @@ export const getPodcasts = unstable_cache(
       const { data } = await supabase
         .from("podcasts")
         .select("*")
+        .gte("published_at", contentCutoffIso())
         .order("published_at", { ascending: false })
         .limit(limit);
       return (data ?? []).map(mapPodcast);
@@ -783,6 +789,7 @@ async function fetchPodcastSignalsForEntities(
     const { data: pods } = await supabase
       .from("podcasts")
       .select("id, title, show_name, published_at, entity_ids, mentioned_teams, metadata, audio_url")
+      .gte("published_at", contentCutoffIso())
       .order("published_at", { ascending: false })
       .limit(24);
 
@@ -869,6 +876,7 @@ export async function searchEmbeddings(query: string, sourceType?: string): Prom
       .select("*")
       .eq("sport", SPORT)
       .ilike("title", `%${query}%`)
+      .gte("published_at", contentCutoffIso())
       .order("published_at", { ascending: false })
       .limit(20);
     if (sourceType) q = q.eq("source_type", sourceType);

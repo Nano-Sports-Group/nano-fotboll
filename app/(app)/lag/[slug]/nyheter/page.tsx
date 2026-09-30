@@ -6,6 +6,7 @@ import type { Article } from "@/lib/types";
 import { Newspaper } from "lucide-react";
 import { SPORT } from "@/lib/vertical";
 import { getSiteUrl } from "@/lib/site-url";
+import { contentCutoffIso } from "@/lib/content-window";
 
 export const dynamic = 'force-dynamic';
 
@@ -55,6 +56,7 @@ async function getTeamArticles(teamId: string): Promise<Article[]> {
       .eq("status", "published")
       .eq("sport", SPORT)
       .contains("entity_ids", [teamId])
+      .gte("published_at", contentCutoffIso())
       .order("published_at", { ascending: false })
       .limit(24);
     return (data ?? []).map(mapArticle);

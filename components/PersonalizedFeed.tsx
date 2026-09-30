@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@supabase/supabase-js";
 import type { Article } from "@/lib/types";
 import { SPORT } from "@/lib/vertical";
+import { contentCutoffIso } from "@/lib/content-window";
 
 function useTeamArticles(teamSlug: string | null): { articles: Article[]; loading: boolean } {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -28,12 +29,14 @@ function useTeamArticles(teamSlug: string | null): { articles: Article[]; loadin
           .select("*")
           .contains("entity_ids", [teamSlug])
           .eq("sport", SPORT)
+          .gte("published_at", contentCutoffIso())
           .order("published_at", { ascending: false })
           .limit(4)
       : db
           .from("articles")
           .select("*")
           .eq("sport", SPORT)
+          .gte("published_at", contentCutoffIso())
           .order("published_at", { ascending: false })
           .limit(6);
 

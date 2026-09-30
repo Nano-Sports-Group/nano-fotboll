@@ -5,6 +5,7 @@ import { listenMetaFromRow } from "@/lib/podcast/spotify";
 import { excerptAround } from "@/lib/podcast/rights";
 import { getUserPlan } from "@/lib/user-plan";
 import { canAccess } from "@/lib/access-rules";
+import { contentCutoffIso } from "@/lib/content-window";
 
 interface Clip {
   episodeId: string;
@@ -67,6 +68,7 @@ export async function GET(req: Request) {
         .from("podcasts")
         .select("id, title, show_name, published_at, mentioned_teams, metadata")
         .or(`title.ilike.%${q}%,show_name.ilike.%${q}%`)
+        .gte("published_at", contentCutoffIso())
         .order("published_at", { ascending: false })
         .limit(10),
       searchClips(supabase, q, isPro),

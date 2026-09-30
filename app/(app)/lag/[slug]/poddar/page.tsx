@@ -4,6 +4,7 @@ import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import type { Podcast } from "@/lib/types";
 import { Mic } from "lucide-react";
 import { SPORT } from "@/lib/vertical";
+import { contentCutoffIso } from "@/lib/content-window";
 
 export const dynamic = 'force-dynamic';
 
@@ -46,6 +47,7 @@ async function getTeamPodcasts(teamName: string): Promise<Podcast[]> {
       .from("podcasts")
       .select("*")
       .ilike("title", `%${teamName}%`)
+      .gte("published_at", contentCutoffIso())
       .order("published_at", { ascending: false })
       .limit(24);
     return (data ?? []).map(mapPodcast);

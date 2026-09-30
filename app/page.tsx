@@ -11,6 +11,7 @@ import { isWaitlistMode } from "@/lib/waitlist/mode";
 import { getWebsiteSettings } from "@/lib/website-settings.server";
 import { resolveShareMetadata, toNextMetadata } from "@/lib/website-settings";
 import { SPORT, VERTICAL, vertical } from "@/lib/vertical";
+import { contentCutoffIso } from "@/lib/content-window";
 
 // ISR: servera cachad HTML direkt (snabb laddning), regenerera i bakgrunden.
 // Tidigare 'force-dynamic' gjorde att varje besök blockerade på en Supabase-query
@@ -46,6 +47,7 @@ async function getLatestArticles(): Promise<LandingArticle[]> {
       .eq("status", "published")
       .eq("is_processed", true)
       .eq("sport", SPORT)
+      .gte("published_at", contentCutoffIso())
       .order("published_at", { ascending: false })
       .limit(6);
 

@@ -15,6 +15,7 @@ import { unstable_cache } from "next/cache";
 import { getTeamNews, getTeamThreads } from "@/lib/dashboard/queries";
 import type { DashArticle, DashThread } from "@/lib/dashboard/types";
 import type { PodcastEpisodeSignal } from "@/lib/types";
+import { contentCutoffIso } from "@/lib/content-window";
 
 export const SEASON_2026 = 26806;
 
@@ -422,6 +423,7 @@ export async function getTeamNewsPersonalized(
       .eq("sport", SPORT)
       .eq("status", "published")
       .contains("entity_ids", [String(team.id)])
+      .gte("published_at", contentCutoffIso())
       .order("published_at", { ascending: false })
       .limit(8);
 

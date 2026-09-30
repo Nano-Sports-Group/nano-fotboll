@@ -4,6 +4,7 @@ import { listenMetaFromRow } from "@/lib/podcast/spotify";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import { jsonContract } from "@/lib/api-contract";
 import { PodcastListResponseSchema, PodcastEpisodeResponseSchema } from "@/lib/api-schemas";
+import { contentCutoffIso } from "@/lib/content-window";
 
 
 type PodcastRow = {
@@ -65,6 +66,7 @@ export async function GET(request: NextRequest) {
   }
 
   const { data, error } = await query
+    .gte("published_at", contentCutoffIso())
     .order("published_at", { ascending: false })
     .limit(limit);
   if (error) {
