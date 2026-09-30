@@ -125,3 +125,55 @@ export function formatWeeklyKr(ore: number, interval: BillingInterval = "month")
 export function monthlyEquivalent(plan: PaidPlan): number {
   return Math.round(PRICING[plan].yearly / 12);
 }
+
+// ── Kombo: Fotboll + Hockey i en prenumeration ───────────────────────────────
+
+/**
+ * Kombopris (båda sporterna). FÖRSLAG 2026-09-30, väntar på founder-ja — därför
+ * bakom `isComboEnabled()`: inget visas eller säljs förrän flaggan är satt.
+ * Årspris = 20 % rabatt på 12 × månad, avrundat nedåt till …9 som övriga planer.
+ */
+export const COMBO_PRICING: Record<PaidPlan, PlanPricing> = {
+  pro: { label: "PRO Kombo", monthly: 12900, yearly: 123900 },
+  elite: { label: "Elite Kombo", monthly: 24900, yearly: 238900 },
+};
+
+/** Vilka sporter en prenumeration ger. 'both' = kombo. */
+export type SubscriptionScope = "football" | "hockey" | "both";
+
+export function isSubscriptionScope(v: unknown): v is SubscriptionScope {
+  return v === "football" || v === "hockey" || v === "both";
+}
+
+/** Belopp i öre. Founder gäller bara fotbollens PRO — aldrig kombo eller hockey. */
+export function scopeAmountFor(
+  scope: SubscriptionScope,
+  plan: PaidPlan,
+  interval: BillingInterval,
+  opts?: { founder: boolean },
+): number {
+  if (scope === "both") {
+    const p = COMBO_PRICING[plan];
+    return interval === "year" ? p.yearly : p.monthly;
+  }
+  return amountFor(plan, interval, { founder: scope === "football" && Boolean(opts?.founder) });
+}
+
+/** Kombon säljs bara när founder har godkänt priset (NEXT_PUBLIC_COMBO_ENABLED=true). */
+export function isComboEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_COMBO_ENABLED === "true";
+}
+
+/**
+ * Nytt omfång när en sport läggs till eller tas bort. `null` = otillåten ändring
+ * (lägga till det man redan har, ta bort sista sporten — det är en uppsägning).
+ */
+export function nextScope(
+  current: SubscriptionScope,
+  action: "add" | "remove",
+  sport: "football" | "hockey",
+): SubscriptionScope | null {
+  if (action === "add") return current === "both" || current === sport ? null : "both";
+  if (current !== "both") return null;
+  return sport === "football" ? "hockey" : "football";
+}

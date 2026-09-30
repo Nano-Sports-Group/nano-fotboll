@@ -83,6 +83,14 @@ export async function POST(req: Request) {
         break;
       }
 
+      // Kombo: hockeyfacket skrivs här, sedan fortsätter fotbollsgrenen nedan.
+      if (session.metadata?.vertical === "both") {
+        await writeHockeyPlan(clerk, clerkUserId, session.metadata?.plan === "elite" ? "elite" : "pro", {
+          customerId: typeof session.customer === "string" ? session.customer : null,
+          subscriptionId: typeof session.subscription === "string" ? session.subscription : null,
+        });
+      }
+
       if (session.metadata?.vertical === "hockey") {
         const hockeyPlan = session.metadata?.plan === "elite" ? "elite" : "pro";
         await writeHockeyPlan(clerk, clerkUserId, hockeyPlan, {
@@ -136,6 +144,27 @@ export async function POST(req: Request) {
       const subscription = event.data.object as Stripe.Subscription;
       const clerkUserId = subscription.metadata?.clerkUserId;
       if (!clerkUserId) break;
+
+      // Omfångsbyte (lägg till/ta bort sport): den sport som föll bort blir free.
+      const previousScope = (
+        (event.data as { previous_attributes?: { metadata?: Record<string, string> } }).previous_attributes?.metadata
+      )?.vertical;
+      const scope = subscription.metadata?.vertical ?? "football";
+      if (previousScope === "both" && scope === "football") {
+        await writeHockeyPlan(clerk, clerkUserId, "free", { subscriptionId: null });
+      }
+      if (previousScope === "both" && scope === "hockey") {
+        const effective = await updatePlanSource(clerkUserId, "stripe", "free");
+        await clerk.users.updateUserMetadata(clerkUserId, { privateMetadata: { stripeSubscriptionId: null } });
+        await markNewsletterPlan(clerkUserId, effective);
+      }
+      if (scope === "both") {
+        const alive = subscription.status === "active" || subscription.status === "trialing";
+        await writeHockeyPlan(clerk, clerkUserId, !alive ? "free" : subscription.metadata?.plan === "elite" ? "elite" : "pro", {
+          customerId: typeof subscription.customer === "string" ? subscription.customer : null,
+          subscriptionId: subscription.id,
+        });
+      }
 
       if (subscription.metadata?.vertical === "hockey") {
         const alive = subscription.status === "active" || subscription.status === "trialing";
@@ -215,12 +244,13 @@ export async function POST(req: Request) {
         break;
       }
 
-      if (subscription.metadata?.vertical === "hockey") {
+      if (subscription.metadata?.vertical === "hockey" || subscription.metadata?.vertical === "both") {
         await writeHockeyPlan(clerk, clerkUserId, "free", {
           subscriptionId: null,
         });
         console.log(`[stripe-webhook] Hockey-prenumeration avbruten för ${clerkUserId}`);
-        break;
+        // Kombo: fotbollen avslutas också — fortsätt till fotbollsgrenen.
+        if (subscription.metadata?.vertical === "hockey") break;
       }
 
       const effectivePlan = await updatePlanSource(clerkUserId, "stripe", "free");

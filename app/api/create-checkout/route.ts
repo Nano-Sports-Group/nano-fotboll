@@ -35,11 +35,14 @@ import {
   ANNUAL_DISCOUNT,
   PRICING,
   TRIAL_DAYS,
-  amountFor,
   isPaidPlan,
   isBillingInterval,
   type PaidPlan,
   type BillingInterval,
+  COMBO_PRICING,
+  isComboEnabled,
+  scopeAmountFor,
+  type SubscriptionScope,
 } from "@/lib/pricing";
 import { isFounderOfferPublic } from "@/lib/founder-offer";
 import { isWaitlistMode } from "@/lib/waitlist/mode";
@@ -74,15 +77,23 @@ export async function POST(req: Request & { headers: Headers }) {
   // Defaults: PRO månadsvis. Body kan override:a.
   let plan: PaidPlan = "pro";
   let interval: BillingInterval = "month";
+  let combo = false;
   try {
-    const body = (await req.json()) as { plan?: unknown; interval?: unknown };
+    const body = (await req.json()) as { plan?: unknown; interval?: unknown; combo?: unknown };
     if (isPaidPlan(body.plan)) plan = body.plan;
     if (isBillingInterval(body.interval)) interval = body.interval;
+    combo = body.combo === true;
   } catch {
     // Ingen/ogiltig body → behåll defaults
   }
+  // Kombo säljs bara när founder godkänt priset (lib/pricing → isComboEnabled).
+  if (combo && !isComboEnabled()) {
+    return NextResponse.json({ error: "Kombo är inte tillgänglig" }, { status: 400 });
+  }
+  // Omfånget kommer från deployen (eller kombo-valet), aldrig fritt ur bodyn.
+  const scope: SubscriptionScope = combo ? "both" : VERTICAL;
 
-  const planMeta = PRICING[plan];
+  const planMeta = combo ? COMBO_PRICING[plan] : PRICING[plan];
 
   // ── Founder-grind ─────────────────────────────────────────────────────────
   // Elite är aldrig Founder. För PRO: eget avtal (waitlist-kohort) eller
@@ -91,7 +102,7 @@ export async function POST(req: Request & { headers: Headers }) {
   let founder = false;
   let claimedPot = false;
   // Hockey får inte ta en plats i fotbollens Founder-pott.
-  if (VERTICAL !== "hockey" && plan === "pro") {
+  if (scope === "football" && plan === "pro") {
     const [waitlist, publicFounder] = await Promise.all([
       loadWaitlistByClerkUser(userId),
       isFounderOfferPublic(),
@@ -111,7 +122,7 @@ export async function POST(req: Request & { headers: Headers }) {
     }
   }
 
-  const unitAmount = amountFor(plan, interval, { founder });
+  const unitAmount = scopeAmountFor(scope, plan, interval, { founder });
   const founderFlag = String(founder);
   const discountPct = Math.round(ANNUAL_DISCOUNT * 100);
 
@@ -126,7 +137,7 @@ export async function POST(req: Request & { headers: Headers }) {
           price_data: {
             currency: "sek",
             product_data: {
-              name: `${vertical.productName} ${planMeta.label}`,
+              name: combo ? `Nano ${planMeta.label} (Fotboll + Hockey)` : `${vertical.productName} ${planMeta.label}`,
               description:
                 interval === "year"
                   ? `${planMeta.label}-prenumeration, årsvis (${discountPct} % rabatt)`
@@ -139,12 +150,12 @@ export async function POST(req: Request & { headers: Headers }) {
         },
       ],
       client_reference_id: userId,
-      metadata: { clerkUserId: userId, plan, interval, founder: founderFlag, founderClaimedPot: String(claimedPot), vertical: VERTICAL },
+      metadata: { clerkUserId: userId, plan, interval, founder: founderFlag, founderClaimedPot: String(claimedPot), vertical: scope },
       success_url: `${base}/konto?checkout=success`,
       cancel_url: `${base}/prenumerera`,
       subscription_data: {
         trial_period_days: TRIAL_DAYS,
-        metadata: { clerkUserId: userId, plan, interval, founder: founderFlag, founderClaimedPot: String(claimedPot), vertical: VERTICAL },
+        metadata: { clerkUserId: userId, plan, interval, founder: founderFlag, founderClaimedPot: String(claimedPot), vertical: scope },
       },
     });
 
