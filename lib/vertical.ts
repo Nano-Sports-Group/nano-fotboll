@@ -95,13 +95,13 @@ export const HOCKEY: VerticalPack = {
   leaguePath: "/shl",
   leagueTitle: "SHL 2026/27 – Nyheter, Tabell, Resultat & Matcher",
   leagueDescription:
-    "SHL just nu: dagens nyheter, tabell, matchresultat och spelschema. Uppdateras när intaget är på.",
+    "SHL just nu: dagens nyheter, tabell, matchresultat och spelschema. Uppdateras löpande.",
   leagueShareDescription:
     "SHL just nu: dagens nyheter, tabell, matchresultat och spelschema.",
   leagueSubtitle: "Tabell, spelschema och resultat för SHL.",
   leagueJsonLdDescription: "SHL är den högsta divisionen i svensk klubbhockey för herrar.",
   schemaSport: "IceHockey",
-  paused: true,
+  paused: false,
   seoKeywords: [
     "SHL",
     "SHL 2026",

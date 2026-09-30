@@ -20,11 +20,11 @@ test("fotbollens ligaväg är oförändrad", () => {
   assert.equal(FOOTBALL.paused, false);
 });
 
-test("hockey pekar på SHL och är pausad", () => {
+test("hockey pekar på SHL och är live", () => {
   assert.equal(leagueHrefFor("hockey"), "/shl");
   assert.equal(leagueHrefFor("hockey", "tabell"), "/shl/tabell");
   assert.equal(HOCKEY.leagueEntity, "SHL");
-  assert.equal(HOCKEY.paused, true);
+  assert.equal(HOCKEY.paused, false); // Sportradar-synken live sedan 2026-09-29
 });
 
 test("fotbollsplan läser det gamla fältet", () => {
