@@ -38,7 +38,7 @@ async function getTeamList(): Promise<{ name: string; slug: string }[]> {
     .from("entities")
     .select("name, slug")
     .eq("type", "team")
-    .eq("sport", SPORT).eq("metadata->>league", vertical.leagueEntity)
+    .eq("sport", SPORT).in("metadata->>league", [...vertical.leagueEntities])
     .not("slug", "is", null)
     .order("name");
   return (data ?? []) as { name: string; slug: string }[];

@@ -19,6 +19,31 @@ import { contentCutoffIso } from "@/lib/content-window";
 
 export const SEASON_2026 = 26806;
 
+/**
+ * Lagets säsong = den senaste säsong laget har en tabellrad i. Fungerar för SHL,
+ * HockeyAllsvenskan och upp-/nedflyttade lag utan ligalogik. Fotbollen faller tillbaka
+ * på SEASON_2026 som förut.
+ */
+export async function seasonIdForTeam(teamSmId: number): Promise<number> {
+  if (!isSupabaseConfigured()) return SEASON_2026;
+  try {
+    const db = createServerClient();
+    const { data: rows } = await db.from("team_season_stats").select("season_id").eq("team_id", teamSmId);
+    const ids = [...new Set((rows ?? []).map((r) => Number(r.season_id)).filter(Boolean))];
+    if (ids.length === 0) return SEASON_2026;
+    const { data: seasons } = await db
+      .from("seasons")
+      .select("sportmonks_id")
+      .eq("sport", SPORT)
+      .in("sportmonks_id", ids)
+      .order("start_date", { ascending: false, nullsFirst: false })
+      .limit(1);
+    return Number(seasons?.[0]?.sportmonks_id ?? ids[0]);
+  } catch {
+    return SEASON_2026;
+  }
+}
+
 export interface TeamSeasonRow {
   team_id: number;
   played: number;
@@ -88,21 +113,21 @@ export interface FixtureRow {
 }
 
 /** Hela ligans säsongsstatistik — används för normalisering + tabellposition. */
-export async function getLeagueSeasonStats(): Promise<TeamSeasonRow[]> {
+export async function getLeagueSeasonStats(seasonId: number = SEASON_2026): Promise<TeamSeasonRow[]> {
   if (!isSupabaseConfigured()) return [];
   try {
     const db = createServerClient();
     const { data } = await db
       .from("team_season_stats")
       .select("*")
-      .eq("season_id", SEASON_2026);
+      .eq("season_id", seasonId);
     return shapeLeagueSeasonStats((data ?? []) as Record<string, unknown>[]);
   } catch {
     return [];
   }
 }
 
-export async function getTeamLeaders(teamSmId: number): Promise<LeaderRow[]> {
+export async function getTeamLeaders(teamSmId: number, seasonId: number = SEASON_2026): Promise<LeaderRow[]> {
   if (!isSupabaseConfigured()) return [];
   try {
     const db = createServerClient();
@@ -110,7 +135,7 @@ export async function getTeamLeaders(teamSmId: number): Promise<LeaderRow[]> {
       .from("player_season_stats")
       .select("player_id,goals,assists,appearances,minutes,shots,shots_on_target,rating,yellow_cards,red_cards")
       .eq("team_id", teamSmId)
-      .eq("season_id", SEASON_2026);
+      .eq("season_id", seasonId);
 
     const rows = (stats ?? []) as Record<string, unknown>[];
     const playerIds = rows.map((r) => Number(r.player_id)).filter(Boolean);
@@ -146,18 +171,18 @@ export async function getTeamLeaders(teamSmId: number): Promise<LeaderRow[]> {
   }
 }
 
-export async function getTeamFixtures(teamSmId: number): Promise<{ recent: FixtureRow[]; upcoming: FixtureRow[] }> {
+export async function getTeamFixtures(teamSmId: number, seasonId: number = SEASON_2026): Promise<{ recent: FixtureRow[]; upcoming: FixtureRow[] }> {
   if (!isSupabaseConfigured()) return { recent: [], upcoming: [] };
   try {
     const db = createServerClient();
     const cols = "sportmonks_id,home_team_id,away_team_id,home_team_name,away_team_name,home_score,away_score,kickoff_at,status";
     const [{ data: recent }, { data: upcoming }] = await Promise.all([
       db.from("fixtures").select(cols)
-        .eq("season_id", SEASON_2026).eq("status", "FT")
+        .eq("sport", SPORT).eq("season_id", seasonId).eq("status", "FT")
         .or(`home_team_id.eq.${teamSmId},away_team_id.eq.${teamSmId}`)
         .order("kickoff_at", { ascending: false }).limit(5),
       db.from("fixtures").select(cols)
-        .eq("season_id", SEASON_2026).in("status", ["NS", "LIVE"])
+        .eq("sport", SPORT).eq("season_id", seasonId).in("status", ["NS", "LIVE"])
         .or(`home_team_id.eq.${teamSmId},away_team_id.eq.${teamSmId}`)
         .order("kickoff_at", { ascending: true }).limit(3),
     ]);
@@ -454,7 +479,11 @@ export async function getTeamHub(
   const { data } = await db.from("entities").select("*").eq("type", "team").eq("sport", SPORT).eq("slug", slug).maybeSingle();
   if (!data) return null;
   const meta = (data.metadata ?? {}) as Record<string, unknown>;
-  const smId = (meta.sportsmonks_id as number | null) ?? null;
+  // Kolumnen först: hockeyns lag (Sportradar) har inget metadata.sportsmonks_id, så hockeyns
+  // lagsidor visade aldrig tabellplats, statistik eller matcher.
+  const smId =
+    (data.sportmonks_id != null ? Number(data.sportmonks_id) : null) ??
+    ((meta.sportsmonks_id as number | null) ?? null);
   const team = {
     id: String(data.id),
     name: String(data.name),
@@ -494,10 +523,11 @@ export async function getTeamHub(
     };
   }
 
+  const seasonId = await seasonIdForTeam(smId);
   const [league, leaders, fixtures] = await Promise.all([
-    getLeagueSeasonStats(),
-    getTeamLeaders(smId),
-    getTeamFixtures(smId),
+    getLeagueSeasonStats(seasonId),
+    getTeamLeaders(smId, seasonId),
+    getTeamFixtures(smId, seasonId),
   ]);
 
   const stats = league.find((t) => t.team_id === smId) ?? null;

@@ -52,7 +52,7 @@ async function fetchAllsvenskanTeams(): Promise<FeedTeamOption[]> {
       .select("name, slug")
       .eq("type", "team")
       .eq("sport", SPORT)
-      .eq("metadata->>league", vertical.leagueEntity)
+      .in("metadata->>league", [...vertical.leagueEntities])
       .not("slug", "is", null)
       .order("name", { ascending: true });
     return (data ?? [])

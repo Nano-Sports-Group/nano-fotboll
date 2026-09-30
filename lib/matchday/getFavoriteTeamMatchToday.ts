@@ -1,5 +1,5 @@
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
-import { getTeamFixtures } from "@/lib/team-hub/queries";
+import { getTeamFixtures, seasonIdForTeam } from "@/lib/team-hub/queries";
 import { getPrimaryTeam } from "@/lib/team/getPrimaryTeam";
 import { pickTodaysMatch } from "@/lib/matchday/helpers";
 import type { FixtureRow } from "@/lib/team-hub/queries";
@@ -17,14 +17,16 @@ export async function getFavoriteTeamMatchToday(): Promise<FavoriteTeamMatchToda
   const db = createServerClient();
   const { data } = await db
     .from("entities")
-    .select("metadata")
+    .select("sportmonks_id, metadata")
     .eq("id", team.id)
     .maybeSingle();
 
-  const smId = (data?.metadata as Record<string, unknown> | null)?.sportsmonks_id;
-  if (typeof smId !== "number") return null;
+  // Kolumnen först — hockeyns lag har inget metadata.sportsmonks_id.
+  const raw = data?.sportmonks_id ?? (data?.metadata as Record<string, unknown> | null)?.sportsmonks_id;
+  const smId = raw != null ? Number(raw) : NaN;
+  if (!Number.isFinite(smId)) return null;
 
-  const { recent, upcoming } = await getTeamFixtures(smId);
+  const { recent, upcoming } = await getTeamFixtures(smId, await seasonIdForTeam(smId));
   const match = pickTodaysMatch(recent, upcoming);
   if (!match) return null;
 

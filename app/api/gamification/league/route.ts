@@ -24,7 +24,7 @@ async function joinableLeagues(): Promise<League[]> {
     .select("slug")
     .eq("type", "team")
     .eq("sport", SPORT)
-    .eq("metadata->>league", vertical.leagueEntity)
+    .in("metadata->>league", [...vertical.leagueEntities])
     .not("slug", "is", null);
   const slugs = (teams ?? []).map((t) => String(t.slug));
   if (slugs.length === 0) return [];

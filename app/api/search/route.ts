@@ -36,7 +36,7 @@ export async function GET(req: Request) {
           .select("id,slug,name")
           .eq("type", "team")
           .eq("sport", SPORT)
-          .eq("metadata->>league", vertical.leagueEntity)
+          .in("metadata->>league", [...vertical.leagueEntities])
           .ilike("name", `%${q}%`)
           .limit(6),
         supabase

@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
         .select("slug")
         .eq("type", "team")
         .eq("slug", team_slug)
-        .eq("sport", SPORT).eq("metadata->>league", vertical.leagueEntity)
+        .eq("sport", SPORT).in("metadata->>league", [...vertical.leagueEntities])
         .maybeSingle();
       if (!team) {
         return NextResponse.json({ message: "Ogiltigt lag" }, { status: 400 });

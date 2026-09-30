@@ -29,7 +29,7 @@ export async function listWaitlistTeams(): Promise<WaitlistTeam[]> {
       .select("name, slug")
       .eq("sport", SPORT)
       .eq("type", "team")
-      .eq("metadata->>league", vertical.leagueEntity)
+      .in("metadata->>league", [...vertical.leagueEntities])
       .order("name");
 
     if (error || !data) return [];

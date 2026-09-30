@@ -4,7 +4,8 @@ import { fetchAllsvenskanFixtures } from "@/lib/db/fixtures";
 import type { SMFixture } from "@/lib/db/fixtures";
 import { AppBreadcrumbs } from "@/components/ui/AppBreadcrumbs";
 import { jsonLd } from "@/lib/json-ld";
-import { VERTICAL, leagueHref, vertical } from "@/lib/vertical";
+import { VERTICAL, leagueHref, vertical, leagueFromParam } from "@/lib/vertical";
+import { LeagueSwitcher } from "@/components/ui/LeagueSwitcher";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 60;
@@ -46,8 +47,14 @@ function getParticipantName(f: SMFixture, location: "home" | "away"): string {
   return (p as unknown as Record<string, unknown>)?.name as string ?? "—";
 }
 
-export default async function AllsvenskanResultatPage() {
-  const fixtures = await fetchAllsvenskanFixtures().catch(() => [] as SMFixture[]);
+export default async function AllsvenskanResultatPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ liga?: string }>;
+}) {
+  const league = leagueFromParam((await searchParams).liga);
+  const leagueName = league ?? vertical.leagueName;
+  const fixtures = await fetchAllsvenskanFixtures(league).catch(() => [] as SMFixture[]);
   const finished = fixtures
     .filter(f => f.state?.short_name === "FT" || f.state?.state === "finished")
     .sort((a, b) => new Date(b.starting_at).getTime() - new Date(a.starting_at).getTime());
@@ -71,7 +78,8 @@ export default async function AllsvenskanResultatPage() {
         ],
       })}} />
 
-      <h1 className="font-bold text-4xl sm:text-5xl text-foreground mb-2 text-balance">{VERTICAL === "hockey" ? "SHL RESULTAT 2026/27" : "ALLSVENSKAN RESULTAT 2026"}</h1>
+      <h1 className="font-bold text-4xl sm:text-5xl text-foreground mb-2 text-balance">{VERTICAL === "hockey" ? `${leagueName.toUpperCase()} RESULTAT 2026/27` : "ALLSVENSKAN RESULTAT 2026"}</h1>
+      <LeagueSwitcher basePath={leagueHref("/resultat")} active={league} />
       <p className="text-muted-foreground mb-8">Alla matchresultat — senaste matchen visas först.</p>
 
       {finished.length === 0 ? (

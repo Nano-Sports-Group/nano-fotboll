@@ -38,7 +38,7 @@ export async function GET() {
         .select("slug")
         .eq("id", favouriteTeamId)
         .eq("type", "team")
-        .eq("sport", SPORT).eq("metadata->>league", vertical.leagueEntity)
+        .eq("sport", SPORT).in("metadata->>league", [...vertical.leagueEntities])
         .maybeSingle()
     : { data: null };
 
@@ -110,7 +110,7 @@ export async function PATCH(req: Request) {
         .from("entities")
         .select("id,slug")
         .eq("type", "team")
-        .eq("sport", SPORT).eq("metadata->>league", vertical.leagueEntity);
+        .eq("sport", SPORT).in("metadata->>league", [...vertical.leagueEntities]);
       teamQuery = isUuid
         ? teamQuery.eq("id", favouriteTeamInput)
         : teamQuery.eq("slug", favouriteTeamInput);

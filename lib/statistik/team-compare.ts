@@ -36,7 +36,7 @@ export async function getTeamCompareStats(slug: string): Promise<TeamCompareStat
     .select("id, name, slug, sportmonks_id, sportsmonks_id")
     .eq("slug", slug)
     .eq("type", "team")
-    .eq("sport", SPORT).eq("metadata->>league", vertical.leagueEntity)
+    .eq("sport", SPORT).in("metadata->>league", [...vertical.leagueEntities])
     .maybeSingle();
 
   if (!entity?.slug) return null;

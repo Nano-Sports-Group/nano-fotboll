@@ -3,7 +3,8 @@ import Link from "next/link";
 import { fetchAllsvenskanFixtures } from "@/lib/db/fixtures";
 import type { SMFixture } from "@/lib/db/fixtures";
 import { AppBreadcrumbs } from "@/components/ui/AppBreadcrumbs";
-import { VERTICAL, leagueHref, vertical } from "@/lib/vertical";
+import { VERTICAL, leagueHref, vertical, leagueFromParam } from "@/lib/vertical";
+import { LeagueSwitcher } from "@/components/ui/LeagueSwitcher";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 1800;
@@ -38,8 +39,14 @@ function getAwayTeam(f: SMFixture) {
   return f.participants?.find(p => (p as unknown as Record<string,unknown>).location === "away");
 }
 
-export default async function AllsvenskanSpelschemePage() {
-  const fixtures = await fetchAllsvenskanFixtures().catch(() => [] as SMFixture[]);
+export default async function AllsvenskanSpelschemePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ liga?: string }>;
+}) {
+  const league = leagueFromParam((await searchParams).liga);
+  const leagueName = league ?? vertical.leagueName;
+  const fixtures = await fetchAllsvenskanFixtures(league).catch(() => [] as SMFixture[]);
   const upcoming = fixtures
     .filter(f => f.state?.short_name === "NS")
     .sort((a, b) => new Date(a.starting_at).getTime() - new Date(b.starting_at).getTime());
@@ -55,7 +62,8 @@ export default async function AllsvenskanSpelschemePage() {
         />
       </div>
 
-      <h1 className="font-bold text-4xl sm:text-5xl text-foreground mb-2 text-balance">{VERTICAL === "hockey" ? "SHL SPELSCHEMA 2026/27" : "ALLSVENSKAN SPELSCHEMA 2026"}</h1>
+      <h1 className="font-bold text-4xl sm:text-5xl text-foreground mb-2 text-balance">{VERTICAL === "hockey" ? `${leagueName.toUpperCase()} SPELSCHEMA 2026/27` : "ALLSVENSKAN SPELSCHEMA 2026"}</h1>
+      <LeagueSwitcher basePath={leagueHref("/spelschema")} active={league} />
       <p className="text-muted-foreground mb-8">{VERTICAL === "hockey" ? "Nästa omgångar i SHL 2026/27." : "Nästa omgångar i Allsvenskan 2026."}</p>
 
       {upcoming.length === 0 ? (

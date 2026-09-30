@@ -6,7 +6,8 @@ import type { SMStandingRow } from "@/lib/db/fixtures";
 import { AppBreadcrumbs } from "@/components/ui/AppBreadcrumbs";
 import { Target, CalendarDays, Flag, BarChart3, Sparkles } from "lucide-react";
 import { jsonLd } from "@/lib/json-ld";
-import { VERTICAL, leagueHref, vertical } from "@/lib/vertical";
+import { VERTICAL, leagueFromParam, leagueHref, vertical } from "@/lib/vertical";
+import { LeagueSwitcher } from "@/components/ui/LeagueSwitcher";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 60;
@@ -62,9 +63,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function AllsvenskanTabellPage() {
+export default async function AllsvenskanTabellPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ liga?: string }>;
+}) {
+  const league = leagueFromParam((await searchParams).liga);
+  const leagueName = league ?? vertical.leagueName;
   const [standings, coveredThrough] = await Promise.all([
-    fetchStandingsFull().catch(() => [] as SMStandingRow[]),
+    fetchStandingsFull(league).catch(() => [] as SMStandingRow[]),
     fetchStandingsCoveredThrough().catch(() => null),
   ]);
   // Tabellen räknas om varje natt, men ur fixtures som inte fått nya resultat
@@ -92,7 +99,8 @@ export default async function AllsvenskanTabellPage() {
           : VERTICAL === "hockey" ? "SHL-tabell 2026/27" : "Allsvenskan-tabell 2026",
       })}} />
 
-      <h1 className="font-bold text-4xl sm:text-5xl text-foreground mb-2 text-balance">{VERTICAL === "hockey" ? "SHL TABELL 2026/27" : "ALLSVENSKAN TABELL 2026"}</h1>
+      <h1 className="font-bold text-4xl sm:text-5xl text-foreground mb-2 text-balance">{VERTICAL === "hockey" ? `${leagueName.toUpperCase()} TABELL 2026/27` : "ALLSVENSKAN TABELL 2026"}</h1>
+      <LeagueSwitcher basePath={leagueHref("/tabell")} active={league} />
       {notice ? (
         <p
           data-testid="standings-staleness"
@@ -114,7 +122,10 @@ export default async function AllsvenskanTabellPage() {
           { href: leagueHref("/resultat"), Icon: Flag, label: "Resultat" },
           { href: leagueHref("/xp-tabell"), Icon: BarChart3, label: "xP-tabell" },
           { href: leagueHref("/talanger"), Icon: Sparkles, label: "Talanger" },
-        ].map((l) => (
+        ]
+          // Dolda ytor (hockey: xP-tabell, talanger) länkas inte — de redirectar bara.
+          .filter((l) => !vertical.hiddenRoutes.some((r) => l.href.startsWith(r.replace("/allsvenskan", vertical.leaguePath))))
+          .map((l) => (
           <Link
             key={l.href}
             href={l.href}

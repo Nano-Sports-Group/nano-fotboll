@@ -296,18 +296,14 @@ export const fetchUpcomingFixtures = unstable_cache(
 
 /** Allsvenskan-matcher för aktuell säsong. ISR 60s. */
 export const fetchAllsvenskanFixtures = unstable_cache(
-  async (): Promise<SMFixture[]> => {
+  async (league?: string): Promise<SMFixture[]> => {
     if (!isSupabaseConfigured()) return [];
     try {
       const db = createServerClient();
 
-      // Hitta aktuell säsong
-      const { data: season } = await db
-        .from("seasons")
-        .select("sportmonks_id")
-        .eq("sport", SPORT)
-        .eq("is_current", true)
-        .maybeSingle();
+      // Aktuell säsong, eller vald ligas senaste säsong (hockey: ?liga=)
+      const seasonId = await seasonIdFor(db, league);
+      const season = seasonId ? { sportmonks_id: seasonId } : null;
 
       let q = db
         .from("fixtures")
@@ -418,6 +414,31 @@ async function getCurrentSeasonId(db: ReturnType<typeof createServerClient>): Pr
   return Number(data?.sportmonks_id ?? 0);
 }
 
+/**
+ * Säsong för en namngiven liga i vertikalen (hockey: SHL + HockeyAllsvenskan). Utan liga:
+ * aktuell säsong som förut. Ligans senaste säsong väljs via leagues — bara huvudligan har
+ * is_current, så att alla "aktuell säsong"-frågor med maybeSingle() fortsätter fungera.
+ */
+async function seasonIdFor(db: ReturnType<typeof createServerClient>, league?: string): Promise<number> {
+  if (!league) return getCurrentSeasonId(db);
+  const { data: lg } = await db
+    .from("leagues")
+    .select("sportmonks_id")
+    .eq("sport", SPORT)
+    .eq("name", league)
+    .maybeSingle();
+  if (!lg?.sportmonks_id) return 0;
+  const { data } = await db
+    .from("seasons")
+    .select("sportmonks_id")
+    .eq("sport", SPORT)
+    .eq("league_id", lg.sportmonks_id)
+    .order("start_date", { ascending: false, nullsFirst: false })
+    .limit(1)
+    .maybeSingle();
+  return Number(data?.sportmonks_id ?? 0);
+}
+
 /** Matcher för en omgång i aktuell säsong. ISR 300s. */
 export const fetchRoundFixtures = unstable_cache(
   async (round: number): Promise<SMFixture[]> => {
@@ -505,17 +526,13 @@ async function fetchPreviousPositions(
 
 /** Full standings med points, played, goal_diff. ISR 3600s. */
 export const fetchStandingsFull = unstable_cache(
-  async (_seasonId?: string): Promise<SMStandingRow[]> => {
+  async (league?: string): Promise<SMStandingRow[]> => {
     if (!isSupabaseConfigured()) return [];
     try {
       const db = createServerClient();
 
-      const { data: season } = await db
-        .from("seasons")
-        .select("sportmonks_id")
-        .eq("sport", SPORT)
-        .eq("is_current", true)
-        .maybeSingle();
+      const seasonId = await seasonIdFor(db, league);
+      const season = seasonId ? { sportmonks_id: seasonId } : null;
 
       if (!season?.sportmonks_id) return [];
 

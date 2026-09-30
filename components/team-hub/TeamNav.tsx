@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
+import { VERTICAL } from "@/lib/vertical";
 
 /**
  * TeamNav — EN persistent flikrad för alla lagrutter.
@@ -26,15 +27,17 @@ export interface TeamNavItem {
   label: string;
   /** Absolut route i stället för suffix — forumet lever utanför /lag. */
   absolute?: string;
+  /** Bygger på Sportmonks spelar-/xG-data som bara fotbollen har — döljs på hockey. */
+  footballOnly?: boolean;
 }
 
 export const TEAM_NAV_ITEMS: TeamNavItem[] = [
   { href: "", label: "Översikt" },
   { href: "/nyheter", label: "Nyheter" },
-  { href: "/analys", label: "Analys" },
+  { href: "/analys", label: "Analys", footballOnly: true },
   { href: "/matcher", label: "Matcher" },
-  { href: "/trupp", label: "Trupp" },
-  { href: "/statistik", label: "Statistik" },
+  { href: "/trupp", label: "Trupp", footballOnly: true },
+  { href: "/statistik", label: "Statistik", footballOnly: true },
   { href: "/poddar", label: "Poddar" },
   { href: "/forum", label: "Forum", absolute: "/forum" },
 ];
@@ -67,7 +70,7 @@ export function TeamNav({
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <ul className="flex gap-1 overflow-x-auto scrollbar-none -mb-px list-none m-0 p-0">
-          {TEAM_NAV_ITEMS.map((item) => {
+          {TEAM_NAV_ITEMS.filter((item) => VERTICAL === "football" || !item.footballOnly).map((item) => {
             const href = item.absolute ? `${item.absolute}/${slug}` : `${base}${item.href}`;
             const isActive = item.absolute
               ? pathname.startsWith(`${item.absolute}/${slug}`)
