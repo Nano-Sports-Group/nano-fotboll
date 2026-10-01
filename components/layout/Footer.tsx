@@ -71,6 +71,11 @@ export function Footer() {
               </Link>
             </li>
             <li>
+              <Link href="/anvandarvillkor" className="hover:text-foreground transition-colors">
+                Användarvillkor
+              </Link>
+            </li>
+            <li>
               <Link href="/ai-transparens" className="hover:text-foreground transition-colors">
                 AI-transparens
               </Link>

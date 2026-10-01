@@ -116,6 +116,10 @@ export default async function PrenumereraPage() {
       <p className="text-center text-xs text-muted-foreground mt-6">
         {TRIAL_DAYS} dagar gratis · Betalning via Stripe · SSL · Avbryt när som helst
       </p>
+      <p className="text-center text-xs text-muted-foreground mt-2">
+        Genom att prenumerera godkänner du{" "}
+        <a href="/anvandarvillkor" className="underline underline-offset-2 hover:text-foreground">användarvillkoren</a>.
+      </p>
     </div>
   );
 }

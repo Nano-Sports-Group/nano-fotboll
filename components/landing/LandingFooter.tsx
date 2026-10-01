@@ -23,7 +23,13 @@ export function LandingFooter() {
               href="/integritetspolicy"
               className="transition-colors hover:text-white/70"
             >
-              Integritet & Användarvillkor
+              Integritet
+            </Link>
+            <Link
+              href="/anvandarvillkor"
+              className="transition-colors hover:text-white/70"
+            >
+              Användarvillkor
             </Link>
             <Link
               href="/ai-transparens"

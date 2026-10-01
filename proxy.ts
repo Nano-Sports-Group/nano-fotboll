@@ -20,9 +20,10 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import { NextResponse } from "next/server";
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { clerkMiddleware, createRouteMatcher, type ClerkMiddlewareAuth } from "@clerk/nextjs/server";
 import { isWaitlistMode } from "@/lib/waitlist/mode";
+import { HOME_SPORT_COOKIE, apexDestination, sportOfHost } from "@/lib/home-sport";
 
 // Inloggning krävs
 const isProtectedRoute = createRouteMatcher([
@@ -46,11 +47,32 @@ const APEX_HOSTS = new Set(["nanosport.se", "www.nanosport.se"]);
 /** Det landningssidan själv behöver på huvuddomänen. Statiska filer och /_next matchas aldrig av proxyn. */
 const APEX_OWN = /^\/(?:$|api\/|monitoring)/;
 
+/**
+ * Hemsport (2026-10-01): varje sportsajt sätter cookien `nano_sport` på hela .nanosport.se.
+ * nanosport.se läser den och skickar en inloggad användare till SIN sport — inte alltid fotboll.
+ * Clerks kontoportal ska ha "efter inloggning" = https://nanosport.se, så blir huvuddomänen växeln.
+ * Ingen cookie = landningssidans "Välj sport". Andra appar (TV) skickar egen redirect_url till Clerk.
+ */
 function appOrigin(): string {
   return (process.env.NEXT_PUBLIC_SITE_URL || "https://fotboll.nanosport.se").replace(/\/$/, "");
 }
 
 export default clerkMiddleware(async (auth, req) => {
+  const res = await route(auth, req);
+  const sport = sportOfHost(req.nextUrl.hostname);
+  if (sport && res && req.cookies.get(HOME_SPORT_COOKIE)?.value !== sport) {
+    res.cookies.set(HOME_SPORT_COOKIE, sport, {
+      domain: ".nanosport.se",
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: "lax",
+      secure: true,
+      path: "/",
+    });
+  }
+  return res;
+});
+
+async function route(auth: ClerkMiddlewareAuth, req: NextRequest) {
   const waitlistMode = isWaitlistMode();
 
   if (APEX_HOSTS.has(req.nextUrl.hostname)) {
@@ -60,7 +82,9 @@ export default clerkMiddleware(async (auth, req) => {
     }
     if (pathname === "/") {
       const { userId } = await auth();
-      if (userId) return NextResponse.redirect(`${appOrigin()}/mitt-lag`);
+      const home = apexDestination(req.cookies.get(HOME_SPORT_COOKIE)?.value);
+      if (userId && home) return NextResponse.redirect(home);
+      // Inloggad utan hemsport: landningssidan med "Välj sport".
     }
   }
 
@@ -109,7 +133,8 @@ export default clerkMiddleware(async (auth, req) => {
     });
     return res;
   }
-});
+  return NextResponse.next();
+}
 
 export const config = {
   // Kör middleware på alla routes utom Next.js-interna + statiska filer

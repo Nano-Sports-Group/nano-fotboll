@@ -11,7 +11,7 @@ import path from "node:path";
  * navigeringen och visa ingenting. Undantagen nedan är rena textsidor: de
  * hämtar ingenting, så ett skelett där hade bara blinkat till i onödan.
  */
-const STATISKA_UNDANTAG = new Set(["ai-transparens", "integritetspolicy", "om-oss"]);
+const STATISKA_UNDANTAG = new Set(["ai-transparens", "anvandarvillkor", "integritetspolicy", "om-oss"]);
 
 const APP_DIR = path.join("app", "(app)");
 

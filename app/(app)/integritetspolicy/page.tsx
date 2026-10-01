@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { CONTACT_EMAIL } from "@/lib/site-url";
+import { vertical } from "@/lib/vertical";
 
 export const metadata: Metadata = {
-  title: "Integritetspolicy | Nano Fotboll",
-  description: "Hur Nano Fotboll hanterar dina personuppgifter.",
+  title: `Integritetspolicy | ${vertical.productName}`,
+  description: `Hur ${vertical.productName} hanterar dina personuppgifter.`,
 };
 
 export default function IntegritetspolicyPage() {
@@ -12,9 +13,19 @@ export default function IntegritetspolicyPage() {
       <h1 className="font-bold text-4xl text-foreground mb-6 text-balance">Integritetspolicy</h1>
       <div className="prose prose-invert max-w-none space-y-6 text-muted-foreground leading-relaxed">
         <p>
-          Nano Fotboll (&quot;vi&quot;, &quot;oss&quot;) värnar om din integritet. Denna policy beskriver
+          {vertical.productName} (&quot;vi&quot;, &quot;oss&quot;) värnar om din integritet. Denna policy beskriver
           vilka uppgifter vi samlar in, hur de används och dina rättigheter.
         </p>
+
+        <section>
+          <h2 className="font-semibold text-2xl text-foreground mb-3 text-balance">Personuppgiftsansvarig</h2>
+          <p>
+            HMJ98 Internet Content Provider, enskild firma i Dubai, Förenade Arabemiraten (licens 1652761),
+            som driver varumärkena Nano Fotboll, Nano Hockey och Nano Sport. Kontakt:{" "}
+            <a href={`mailto:${CONTACT_EMAIL}`} className="text-pitch-ink hover:underline">{CONTACT_EMAIL}</a>.
+            Villkoren för tjänsten står i <a href="/anvandarvillkor" className="text-pitch-ink hover:underline">användarvillkoren</a>.
+          </p>
+        </section>
 
         <section>
           <h2 className="font-semibold text-2xl text-foreground mb-3 text-balance">Vilka uppgifter samlar vi in?</h2>
@@ -50,7 +61,7 @@ export default function IntegritetspolicyPage() {
           </p>
         </section>
 
-        <p className="text-sm">Senast uppdaterad: juni 2026</p>
+        <p className="text-sm">Senast uppdaterad: 1 oktober 2026</p>
       </div>
     </div>
   );
