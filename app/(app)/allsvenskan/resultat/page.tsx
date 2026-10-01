@@ -78,7 +78,7 @@ export default async function AllsvenskanResultatPage({
         ],
       })}} />
 
-      <h1 className="font-bold text-4xl sm:text-5xl text-foreground mb-2 text-balance">{VERTICAL === "hockey" ? `${leagueName.toUpperCase()} RESULTAT 2026/27` : "ALLSVENSKAN RESULTAT 2026"}</h1>
+      <h1 className="font-bold text-4xl sm:text-5xl text-foreground mb-2 text-balance">{VERTICAL === "hockey" ? `${leagueName.toUpperCase()} RESULTAT 2026/27` : `${leagueName.toUpperCase()} RESULTAT 2026`}</h1>
       <LeagueSwitcher basePath={leagueHref("/resultat")} active={league} />
       <p className="text-muted-foreground mb-8">Alla matchresultat — senaste matchen visas först.</p>
 

@@ -68,8 +68,12 @@ export const FOOTBALL: VerticalPack = {
   leagueName: "Allsvenskan",
   leagueHeading: "ALLSVENSKAN",
   leagueEntity: "Allsvenskan",
-  leagueEntities: ["Allsvenskan"],
-  leagues: [{ name: "Allsvenskan", param: null }],
+  // Superettan förberedd 2026-10-01: syns i ligaväxlaren först när synken levererat en säsong.
+  leagueEntities: ["Allsvenskan", "Superettan"],
+  leagues: [
+    { name: "Allsvenskan", param: null },
+    { name: "Superettan", param: "superettan" },
+  ],
   leaguePath: "/allsvenskan",
   leagueTitle: "Allsvenskan 2026 – Nyheter, Tabell, Resultat & Matcher",
   leagueDescription:

@@ -779,3 +779,27 @@ export const fetchHockeyPointsLeaders = unstable_cache(
   ["hockey-points-leaders", SPORT],
   { revalidate: 600, tags: ["fixtures"] }
 );
+
+/**
+ * Vertikalens ligor som har en säsong i databasen. Ligaväxlaren visar bara dessa, så en
+ * förberedd liga (Superettan, 2026-10-01) dyker upp först när synken har levererat data.
+ */
+export const fetchLeaguesWithData = unstable_cache(
+  async (): Promise<string[]> => {
+    if (!isSupabaseConfigured()) return [];
+    try {
+      const db = createServerClient();
+      const [{ data: leagues }, { data: seasons }] = await Promise.all([
+        db.from("leagues").select("sportmonks_id,name").eq("sport", SPORT),
+        db.from("seasons").select("league_id").eq("sport", SPORT),
+      ]);
+      const withSeason = new Set((seasons ?? []).map((s) => Number(s.league_id)));
+      return (leagues ?? []).filter((l) => withSeason.has(Number(l.sportmonks_id))).map((l) => String(l.name));
+    } catch (e) {
+      Sentry.captureException(e);
+      return [];
+    }
+  },
+  ["leagues-with-data", SPORT],
+  { revalidate: 3600, tags: ["fixtures"] }
+);

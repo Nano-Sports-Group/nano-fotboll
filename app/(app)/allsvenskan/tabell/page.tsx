@@ -99,7 +99,7 @@ export default async function AllsvenskanTabellPage({
           : VERTICAL === "hockey" ? "SHL-tabell 2026/27" : "Allsvenskan-tabell 2026",
       })}} />
 
-      <h1 className="font-bold text-4xl sm:text-5xl text-foreground mb-2 text-balance">{VERTICAL === "hockey" ? `${leagueName.toUpperCase()} TABELL 2026/27` : "ALLSVENSKAN TABELL 2026"}</h1>
+      <h1 className="font-bold text-4xl sm:text-5xl text-foreground mb-2 text-balance">{VERTICAL === "hockey" ? `${leagueName.toUpperCase()} TABELL 2026/27` : `${leagueName.toUpperCase()} TABELL 2026`}</h1>
       <LeagueSwitcher basePath={leagueHref("/tabell")} active={league} />
       {notice ? (
         <p
