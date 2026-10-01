@@ -1,3 +1,4 @@
+import { vertical } from "@/lib/vertical";
 /**
  * Website-inställningar — hur Nano Fotboll ser ut när någon delar eller googlar.
  *
@@ -87,9 +88,9 @@ export const DEFAULT_WEBSITE_SETTINGS: WebsiteSettings = {
     includeBrandInOgTitle: false,
     articleDescriptionFallback: "defaultDescription",
     nyhetDescriptionTemplate: "Nano Fotboll följer händelsen. Originalet hos {source}.",
-    teamTitleTemplate: "{team} – Allsvenskan 2026: Nyheter, Statistik & Matcher",
+    teamTitleTemplate: "{team} – {league} 2026: Nyheter, Statistik & Matcher",
     teamDescriptionTemplate:
-      "Allt om {team} i Allsvenskan — senaste nyheter, matchresultat, spelartrupp, statistik och lagforum.",
+      "Allt om {team} i {league} — senaste nyheter, matchresultat, spelartrupp, statistik och lagforum.",
     matchUpcomingTitleTemplate: "{home} – {away}",
     matchResultTitleTemplate: "{home} {homeScore}–{awayScore} {away}",
     matchDescriptionTemplate: "Matchen mellan {home} och {away} i Allsvenskan.",
@@ -131,7 +132,7 @@ export type ShareContext =
   | { kind: "default" }
   | { kind: "article"; title: string; summary: string | null; path: string }
   | { kind: "nyhet"; title: string; sourceName: string | null; path: string }
-  | { kind: "team"; team: string; path: string }
+  | { kind: "team"; team: string; path: string; /** Lagets egen liga (Superettan, Landslag …). */ league?: string }
   | {
       kind: "match";
       home: string;
@@ -355,9 +356,13 @@ export function resolveShareMetadata(
   }
 
   if (ctx.kind === "team") {
-    const vars = { team: ctx.team };
-    const title = interpolate(settings.sharing.teamTitleTemplate, vars);
-    const description = interpolate(settings.sharing.teamDescriptionTemplate, vars);
+    // Lag i en annan liga än huvudligan (Superettan, landslaget) får sin egen liga i titeln — även när
+    // en admin-sparad mall har huvudligans namn utskrivet i stället för {league}.
+    const league = ctx.league && ctx.league !== "Landslag" ? ctx.league : ctx.league === "Landslag" ? "landslaget" : vertical.leagueName;
+    const vars = { team: ctx.team, league };
+    const swap = (t: string) => (league !== vertical.leagueName ? t.split(vertical.leagueName).join(league) : t);
+    const title = swap(interpolate(settings.sharing.teamTitleTemplate, vars));
+    const description = swap(interpolate(settings.sharing.teamDescriptionTemplate, vars));
     return {
       title,
       titleAbsolute: false,

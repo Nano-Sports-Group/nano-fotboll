@@ -826,6 +826,8 @@ export const APNSSubscriptionResponseSchema = z.object({
 /** GET /api/feed/config svarar med den råa raden ELLER null. */
 export const FeedConfigResponseSchema = z.object({
   content_types: z.array(z.string()).nullable().optional(),
+  /** Landslaget: none | some | second_team (lib/national-interest.ts). */
+  national_interest: z.enum(["none", "some", "second_team"]).optional(),
 });
 
 /** GET /api/forum/summary — PRO-gated teaser/full summary. */

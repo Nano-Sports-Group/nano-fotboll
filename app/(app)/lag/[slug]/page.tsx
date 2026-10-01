@@ -46,6 +46,7 @@ interface TeamMeta {
   name: string;
   slug: string;
   logo_url: string | null;
+  league?: string;
 }
 
 async function getTeamMeta(slug: string): Promise<TeamMeta | null> {
@@ -65,6 +66,7 @@ async function getTeamMeta(slug: string): Promise<TeamMeta | null> {
       name: String(data.name),
       slug: String(data.slug),
       logo_url: (meta.logo_url as string | null) ?? null,
+      league: typeof meta.league === "string" ? meta.league : undefined,
     };
   } catch {
     return null;
@@ -88,6 +90,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       kind: "team",
       team: team.name,
       path: `/lag/${slug}`,
+      ...(team.league ? { league: team.league } : {}),
     }),
   );
 }

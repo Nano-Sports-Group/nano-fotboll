@@ -1,5 +1,7 @@
 import { SPORT } from "@/lib/vertical";
 import { auth } from "@clerk/nextjs/server";
+import { fetchNationalTeamIds } from "@/lib/db/national";
+import { keepForNationalInterest, parseNationalInterest, type NationalInterest } from "@/lib/national-interest";
 import { createClient } from "@supabase/supabase-js";
 import { jsonContract } from "@/lib/api-contract";
 import { FeedResponseSchema } from "@/lib/api-schemas";
@@ -96,10 +98,12 @@ export async function GET(req: Request) {
   }
 
   let contentTypeTags: string[] | null = null;
+  let nationalInterest: NationalInterest = "some";
+  const nationalIds = new Set(await fetchNationalTeamIds().catch(() => [] as string[]));
   if (userId) {
     const { data: feedConfig } = await db
       .from("user_feed_config")
-      .select("followed_team_ids, content_types")
+      .select("followed_team_ids, content_types, national_interest")
       .eq("clerk_user_id", userId)
       .eq("sport", SPORT)
       .maybeSingle();
@@ -112,6 +116,12 @@ export async function GET(req: Request) {
 
     if (!typeFilter) {
       contentTypeTags = interestsToNewsTags(feedConfig?.content_types ?? null);
+    }
+
+    nationalInterest = parseNationalInterest(feedConfig?.national_interest);
+    // "Mitt andra lag": landslaget räknas som ett följt lag när flödet filtreras på följda lag.
+    if (nationalInterest === "second_team" && filterTeamIds.length > 0 && !teamSlug) {
+      filterTeamIds = [...new Set([...filterTeamIds, ...nationalIds])];
     }
   }
 
@@ -163,9 +173,14 @@ export async function GET(req: Request) {
         fallback = fallback.in("news_tag", contentTypeTags);
       }
       const { data: fb } = await fallback;
-      items = (fb ?? []).map((a) => mapNewsFeedRow(a));
+      items = (fb ?? [])
+        .filter((a) => teamSlug || keepForNationalInterest(a, nationalInterest, nationalIds))
+        .map((a) => mapNewsFeedRow(a));
     } else {
-      items = (articleData ?? []).map((a) => mapNewsFeedRow(a));
+      // Landslagets rum: användarens intresse avgör (lib/national-interest.ts). En lagsida visar allt.
+      items = (articleData ?? [])
+        .filter((a) => teamSlug || keepForNationalInterest(a, nationalInterest, nationalIds))
+        .map((a) => mapNewsFeedRow(a));
     }
   } catch (err) {
     console.error("[feed] DB-fel:", err);

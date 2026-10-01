@@ -5441,6 +5441,14 @@
                           "type": "null"
                         }
                       ]
+                    },
+                    "national_interest": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "some",
+                        "second_team"
+                      ]
                     }
                   },
                   "additionalProperties": false,

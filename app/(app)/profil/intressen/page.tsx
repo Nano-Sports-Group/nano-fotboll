@@ -3,9 +3,10 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { InterestSettingsClient } from "./InterestSettingsClient";
 import { getUserFeedPreferences } from "@/lib/feed/getUserFeedPreferences";
+import { SPORT, vertical } from "@/lib/vertical";
 
 export const metadata: Metadata = {
-  title: "Mina intressen — Nano Fotboll",
+  title: `Mina intressen — ${vertical.productName}`,
   description: "Välj vilka typer av nyheter som ska prioriteras i ditt flöde.",
 };
 
@@ -22,7 +23,11 @@ export default async function IntressenPage() {
         Styr vilka typer av nyheter som filtreras i ditt flöde och på /nyheter.
         Statistik och tabeller påverkar inte nyhetsfiltret — de finns under Statistik.
       </p>
-      <InterestSettingsClient initialSelected={prefs.contentTypes} />
+      <InterestSettingsClient
+        initialSelected={prefs.contentTypes}
+        initialNational={prefs.nationalInterest}
+        showNational={SPORT === "football"}
+      />
     </div>
   );
 }

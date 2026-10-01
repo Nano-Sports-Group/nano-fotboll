@@ -5,6 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { jsonContract } from "@/lib/api-contract";
 import { FeedConfigResponseSchema } from "@/lib/api-schemas";
 import { enforceRateLimit } from "@/lib/ratelimit";
+import { NATIONAL_INTEREST_LEVELS, parseNationalInterest } from "@/lib/national-interest";
 
 function getDb() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -36,6 +37,7 @@ export async function GET() {
       content_types: Array.isArray(data.content_types)
         ? (data.content_types as string[])
         : null,
+      national_interest: parseNationalInterest(data.national_interest),
     });
   } catch {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
@@ -61,6 +63,12 @@ export async function PATCH(req: Request) {
   const update: Record<string, unknown> = { clerk_user_id: userId };
   for (const k of allowed) {
     if (k in body) update[k] = body[k];
+  }
+  if ("national_interest" in body) {
+    if (!(NATIONAL_INTEREST_LEVELS as readonly unknown[]).includes(body.national_interest)) {
+      return NextResponse.json({ error: "Invalid national_interest" }, { status: 400 });
+    }
+    update.national_interest = body.national_interest;
   }
   // En rad per användare och sport — sporten kommer från deployen, aldrig från bodyn.
   update.sport = SPORT;
