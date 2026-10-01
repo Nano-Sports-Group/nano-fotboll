@@ -17,7 +17,7 @@ const CHAT: { name: string; team: string; short: string; text: string }[] = [
   { name: "Sofia", team: "hammarby", short: "HIF", text: "3-5-2 i andra halvlek — äntligen vågar vi." },
   { name: "Jonte", team: "aik", short: "AIK", text: "Vår mittback vinner ju varenda duell. Statistiken ljuger inte." },
   { name: "Elsa", team: "djurgarden", short: "DIF", text: "Kolla xG-kartan från igår. Vi skapade mer än det såg ut." },
-  { name: "Ali", team: "malmo-ff", short: "MFF", text: "Athopia-betyget gav vår sexa 8.1. Helt rätt för en gångs skull." },
+  { name: "Ali", team: "malmo-ff", short: "MFF", text: "Nano-betyget gav vår sexa 8.1. Helt rätt för en gångs skull." },
   { name: "Nils", team: "ifk-goteborg", short: "IFK", text: "Matchtråden ikväll blir kaos. På bästa sätt." },
 ];
 

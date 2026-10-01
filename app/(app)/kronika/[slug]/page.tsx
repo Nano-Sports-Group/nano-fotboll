@@ -72,7 +72,7 @@ export default async function KronikaPage({ params }: { params: Promise<{ slug: 
   const column = await getColumn(slug);
   if (!column) notFound();
   const author = await getAuthor(column.author_clerk_user_id);
-  const authorName = author?.nickname ?? author?.display_name ?? "Athopia-krönikör";
+  const authorName = author?.nickname ?? author?.display_name ?? "Krönikör";
 
   return (
     <article className="mx-auto max-w-2xl px-4 sm:px-6 py-12">

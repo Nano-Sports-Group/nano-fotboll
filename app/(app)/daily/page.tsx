@@ -229,7 +229,7 @@ export default async function DailyPage({
         </h1>
         <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
           Morgonbrief med det viktigaste från natten och gårdagen — transfers, xG och matchläge.
-          100&nbsp;% Athopia-original, inte podd-citat.
+          100&nbsp;% eget original, inte podd-citat.
         </p>
       </header>
 

@@ -35,7 +35,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: "Mitt konto",
-  description: "Hantera din Athopia-prenumeration och dina kontoinställningar.",
+  description: "Hantera din prenumeration och dina kontoinställningar.",
 };
 
 // ─── Stripe Portal URL ─────────────────────────────────────────────────────────

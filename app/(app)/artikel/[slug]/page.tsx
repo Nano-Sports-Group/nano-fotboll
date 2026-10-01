@@ -198,7 +198,7 @@ export default async function ArtikelPage({
             teamName={teamName}
             className="mb-8"
             maxHeight="7rem"
-            tease="Full Athopia-analys bakom PRO."
+            tease="Full analys bakom PRO."
             preview={
               <p className="text-[1.0625rem] leading-7 text-foreground/90">
                 {(article.summary ?? article.title).slice(0, 180)}…
