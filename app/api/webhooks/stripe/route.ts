@@ -58,6 +58,14 @@ export async function POST(req: Request) {
     );
   }
 
+  // Nano Maps Pro säljs i samma Stripe-konto men ägs av nano-maps egen webhook
+  // (`plans.maps`). Utan den här spärren föll ett Maps-köp ner i fotbollsgrenen
+  // och gav fotbolls-PRO för 49 kr.
+  const eventMeta = (event.data.object as { metadata?: Record<string, string> | null }).metadata;
+  if (eventMeta?.vertical === "maps") {
+    return NextResponse.json({ received: true });
+  }
+
   const clerk = await clerkClient();
   async function markNewsletterPlan(clerkUserId: string, plan: string) {
     try {
@@ -302,7 +310,7 @@ export async function POST(req: Request) {
       if (paidSubscriptionId) {
         try {
           const paidSub = await stripe.subscriptions.retrieve(paidSubscriptionId);
-          if (paidSub.metadata?.vertical === "hockey") break;
+          if (paidSub.metadata?.vertical === "hockey" || paidSub.metadata?.vertical === "maps") break;
         } catch {
           // Fotbollens värvningskredit får inte blockeras av ett misslyckat uppslag.
         }
