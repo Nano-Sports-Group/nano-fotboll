@@ -58,11 +58,11 @@ export async function POST(req: Request) {
     );
   }
 
-  // Nano Maps Pro säljs i samma Stripe-konto men ägs av nano-maps egen webhook
-  // (`plans.maps`). Utan den här spärren föll ett Maps-köp ner i fotbollsgrenen
-  // och gav fotbolls-PRO för 49 kr.
+  // Nano Maps Pro och Nano TV Plus säljs i samma Stripe-konto men ägs av apparnas egna
+  // webhookar (`plans.maps`, `plans.tv`). Utan den här spärren föll ett Maps-köp ner i
+  // fotbollsgrenen och gav fotbolls-PRO för 49 kr.
   const eventMeta = (event.data.object as { metadata?: Record<string, string> | null }).metadata;
-  if (eventMeta?.vertical === "maps") {
+  if (eventMeta?.vertical === "maps" || eventMeta?.vertical === "tv") {
     return NextResponse.json({ received: true });
   }
 
