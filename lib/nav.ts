@@ -69,7 +69,13 @@ export const BOTTOM_NAV_ITEMS: NavItem[] = vertical.id === "golf" ? GOLF_NAV : T
  * `exact` matchar bara sidan själv — golfens Hem (/golf) ska inte lysa på /golf/spelare.
  */
 export function isNavActive(item: Pick<NavItem, "href" | "exact">, pathname: string): boolean {
-  return pathname === item.href || (!item.exact && pathname.startsWith(`${item.href}/`));
+  // Hockeyns /shl är en rewrite av /allsvenskan. På förrenderade sidor ger usePathname() målet,
+  // inte adressen i adressfältet — utan översättningen lyser ingen flik på hockeyns ligahem.
+  const path =
+    vertical.id === "hockey" && (pathname === "/allsvenskan" || pathname.startsWith("/allsvenskan/"))
+      ? `/shl${pathname.slice("/allsvenskan".length)}`
+      : pathname;
+  return path === item.href || (!item.exact && path.startsWith(`${item.href}/`));
 }
 
 /** Bottenraden får aldrig växa förbi detta. Låst av `lib/nav.test.ts`. */
