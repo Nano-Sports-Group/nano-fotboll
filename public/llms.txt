@@ -4,16 +4,16 @@
 Nano Fotboll är en signalstyrd nyhetsplattform för svensk fotboll med AI-sammanfattningar, live-tabell, matchresultat och lagforum för Allsvenskan.
 
 ## Kontakt
-- E-post: hej@nanofotboll.se
-- Webb: https://nanofotboll.se
+- E-post: hello@nanosport.se
+- Webb: https://fotboll.nanosport.se
 
 ## Innehåll
-- Nyheter: https://nanofotboll.se/nyheter
-- Allsvenskan: https://nanofotboll.se/allsvenskan
-- Matcher: https://nanofotboll.se/match
-- Statistik: https://nanofotboll.se/statistik
-- Podcast: https://nanofotboll.se/podcast
-- Prenumerera: https://nanofotboll.se/prenumerera
+- Nyheter: https://fotboll.nanosport.se/nyheter
+- Allsvenskan: https://fotboll.nanosport.se/allsvenskan
+- Matcher: https://fotboll.nanosport.se/match
+- Statistik: https://fotboll.nanosport.se/statistik
+- Podcast: https://fotboll.nanosport.se/podcast
+- Prenumerera: https://fotboll.nanosport.se/prenumerera
 
 ## Om tjänsten
 Nano Fotboll aggregerar signaler från 40+ fotbollskällor, klassificerar nyhetsvärde med AI och presenterar Allsvenskan-bevakning utan brus. Gratis för grundfunktioner; PRO och Elite för djupanalys och obegränsat flöde.
