@@ -10,6 +10,9 @@
  * - Bara fakta som inte åldras: land, huvudtour, en daterad merit. Aldrig ranking, form eller
  *   antal segrar — de ändras varje vecka och ska komma ur data, inte ur en fil.
  * - `stars` är ett preliminärt urval. Founder väljer listan; lägg till eller ta bort rader här.
+ * - Varje merit ska gå att belägga. Kontrollerade mot källor 2026-10-04: Stark (US Women's Open 2025),
+ *   Grant (Scandinavian Mixed 2022), Nordqvist (2009, 2017, 2021), Norén (Ryder Cup 2018), Åberg
+ *   (Ryder Cup 2023 och 2025). Övriga är allmänt kända resultat och inte kontrollerade den dagen.
  */
 
 export type TourSlug =
@@ -54,7 +57,7 @@ export interface GolfPlayer {
 }
 
 export const GOLF_PLAYERS: readonly GolfPlayer[] = [
-  { slug: "ludvig-aberg", name: "Ludvig Åberg", country: "Sverige", tour: "pga-tour", group: "swedish", merit: "Ryder Cup-vinnare 2023" },
+  { slug: "ludvig-aberg", name: "Ludvig Åberg", country: "Sverige", tour: "pga-tour", group: "swedish", merit: "Ryder Cup-vinnare 2023 och 2025" },
   { slug: "alex-noren", name: "Alex Norén", country: "Sverige", tour: "pga-tour", group: "swedish", merit: "Ryder Cup-vinnare 2018" },
   { slug: "henrik-stenson", name: "Henrik Stenson", country: "Sverige", tour: "liv-golf", group: "swedish", merit: "Vann The Open 2016" },
   { slug: "maja-stark", name: "Maja Stark", country: "Sverige", tour: "lpga-tour", group: "swedish", merit: "Vann US Women's Open 2025" },
