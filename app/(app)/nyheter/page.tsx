@@ -22,7 +22,7 @@ import { filterStateToParams } from "@/lib/filters";
 import { ActiveFilterChips, type FilterChip } from "@/components/feed/ActiveFilterChips";
 import { getUserFeedPreferences } from "@/lib/feed/getUserFeedPreferences";
 import { absoluteUrl } from "@/lib/site-url";
-import { VERTICAL } from "@/lib/vertical";
+import { VERTICAL, vertical } from "@/lib/vertical";
 import { buildFeedModules } from "@/lib/feed/build-feed-modules";
 import { getFeedFilterOptions } from "@/lib/feed/get-allsvenskan-teams";
 import {
@@ -36,11 +36,13 @@ import type { FeedModule } from "@/lib/feed/build-feed-modules";
 export const dynamic = "force-dynamic";
 
 const NYHETER_TITLE =
-  VERTICAL === "hockey" ? "Flöde — SHL-nyheter 2026/27" : "Flöde — Allsvenskan-nyheter 2026";
+  VERTICAL === "hockey" ? "Flöde — SHL-nyheter 2026/27" : VERTICAL === "golf" ? "Flöde — golfnyheter" : "Flöde — Allsvenskan-nyheter 2026";
 const NYHETER_DESCRIPTION =
   VERTICAL === "hockey"
     ? "Dagens SHL-flöde — signalscorerat, AI-kurerat och kopplat till diskussion."
-    : "Dagens Allsvenskan-flöde — signalscorerat, AI-kurerat och kopplat till diskussion.";
+    : VERTICAL === "golf"
+      ? "Dagens golfflöde ur svenskt perspektiv — signalscorerat, AI-kurerat och kopplat till diskussion."
+      : "Dagens Allsvenskan-flöde — signalscorerat, AI-kurerat och kopplat till diskussion.";
 
 export const metadata: Metadata = {
   title: NYHETER_TITLE,
@@ -331,7 +333,9 @@ export default async function NyheterPage({
             <p className="text-sm text-muted-foreground">
               {total > 0
                 ? `${total} ${total === 1 ? "artikel" : "artiklar"}`
-                : "Inga artiklar matchar filtret"}
+                : vertical.paused
+                  ? "Bevakningen har inte startat"
+                  : "Inga artiklar matchar filtret"}
             </p>
           </header>
 
@@ -366,12 +370,22 @@ export default async function NyheterPage({
           ) : null}
 
           {feedArticles.length === 0 && articles.length === 0 ? (
-            <div className="py-16 text-center text-sm text-muted-foreground">
-              <p>Inga artiklar matchade filtret.</p>
-              <Link href="/nyheter" className="mt-2 inline-block text-pitch-ink hover:underline">
-                Visa allt
-              </Link>
-            </div>
+            vertical.paused ? (
+              // Pausad vertikal (golf): flödet är tomt för att intaget inte är påslaget, inte för att ett filter är fel.
+              <div className="py-16 text-center text-sm text-muted-foreground">
+                <p>Flödet är tomt än. Nyheterna dyker upp här när bevakningen startar.</p>
+                <Link href={vertical.leaguePath} className="mt-2 inline-block text-pitch-ink hover:underline">
+                  Se vad som kommer
+                </Link>
+              </div>
+            ) : (
+              <div className="py-16 text-center text-sm text-muted-foreground">
+                <p>Inga artiklar matchade filtret.</p>
+                <Link href="/nyheter" className="mt-2 inline-block text-pitch-ink hover:underline">
+                  Visa allt
+                </Link>
+              </div>
+            )
           ) : feedArticles.length === 0 && !hero ? (
             <div className="py-8 text-center text-sm text-muted-foreground">
               <p>Toppnyheter visas ovan — mer i listan snart.</p>

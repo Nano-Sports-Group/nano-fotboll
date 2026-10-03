@@ -83,6 +83,8 @@ Ny kod läggs i befintlig feature-mapp. Skapa inte parallella mönster —
   `SPORT` kommer från `lib/vertical.ts`. Odefinierad `NEXT_PUBLIC_VERTICAL` är
   fotboll. Hockey är samma app med `NEXT_PUBLIC_VERTICAL=hockey`, ligaväg `/shl`,
   och intaget pausat (`context/verticals/hockey.md`).
+  Golf är `NEXT_PUBLIC_VERTICAL=golf`, hem på `/golf`: inga lag, matcher, tabeller, lagforum eller priser —
+  de ytorna ligger i `GOLF.hiddenRoutes` och redirectas hem (`context/verticals/golf.md`).
 - **Anropa aldrig Sportmonks direkt.** Konsumera normaliserad data via Supabase.
 - **xG/pressure visas bara när riktiga syncade värden finns.** Aldrig placeholder
   `0.00 xG`, aldrig påhittad xA — dölj fältet i stället.

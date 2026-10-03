@@ -6,7 +6,8 @@ import { VERTICAL, vertical } from "@/lib/vertical";
 
 export const metadata: Metadata = {
   title: `${vertical.aboutLabel} – ${vertical.tagline}`,
-  description: `${vertical.productName}: ${vertical.leagueName} med tabell, matcher och lagforum.`,
+  description:
+    VERTICAL === "golf" ? vertical.leagueDescription : `${vertical.productName}: ${vertical.leagueName} med tabell, matcher och lagforum.`,
   alternates: { canonical: `${getSiteUrl()}/om-oss` },
   robots: { index: true, follow: true },
 };
@@ -20,7 +21,10 @@ export default function OmOssPage() {
         name: vertical.productName,
         url: `${getSiteUrl()}`,
         foundingDate: "2026",
-        description: "AI-driven nyhetsplattform för Allsvenskan med signalscoring, djupstatistik och lagforum.",
+        description:
+          VERTICAL === "football"
+            ? "AI-driven nyhetsplattform för Allsvenskan med signalscoring, djupstatistik och lagforum."
+            : vertical.leagueDescription,
         contactPoint: {
           "@type": "ContactPoint",
           email: CONTACT_EMAIL,
@@ -33,7 +37,9 @@ export default function OmOssPage() {
       <div>
         <h1 className="font-bold text-4xl sm:text-5xl text-foreground mb-4 text-balance">{vertical.aboutLabel}</h1>
         <p className="text-muted-foreground text-lg leading-relaxed">
-          {VERTICAL === "hockey"
+          {VERTICAL === "golf"
+            ? "Nano Golf är Nano Sports Groups yta för golf ur svenskt perspektiv: svenska spelare på de stora tourerna, och majors. Ytan finns nu; nyhetsflöde, den dagliga genomgången och podden startar när den redaktionella bevakningen av golf slås på."
+            : VERTICAL === "hockey"
             ? "Nano Hockey är Nano Sports Groups yta för svensk ishockey. Tabell, spelschema och resultat för SHL uppdateras från officiell matchdata. Nyheter och analys kommer när den redaktionella bevakningen av hockey startar."
             : "Nano Fotboll är en oberoende nyhetsplattform för Allsvenskan. Vi samlar signaler från över 40 svenska och internationella fotbollskällor, värderar dem med AI och presenterar det som faktiskt spelar roll, utan brus."}
         </p>
@@ -45,14 +51,19 @@ export default function OmOssPage() {
           Varje nyhet som når oss passerar genom ett signalscoringssystem. Systemet väger källans trovärdighet, nyhetens aktualitet och hur många oberoende källor som rapporterar om samma händelse. Nyheter med hög signalstyrka — till exempel en bekräftad transfer rapporterad av tre eller fler källor — lyfts upp i flödet.
         </p>
         <p className="text-muted-foreground leading-relaxed">
-          Matchanalyser och sammanfattningar bygger på matchstatistik och nyhetsflödet. Vi publicerar aldrig råtext från tredjepartskällor — allt redaktionellt innehåll är egenproducerat.
+          {VERTICAL === "golf" ? "Sammanfattningar bygger på nyhetsflödet och på resultatdata när den finns." : "Matchanalyser och sammanfattningar bygger på matchstatistik och nyhetsflödet."} Vi publicerar aldrig råtext från tredjepartskällor — allt redaktionellt innehåll är egenproducerat.
         </p>
       </section>
 
       <section>
         <h2 className="font-semibold text-2xl text-foreground mb-3 text-balance">Datakällor</h2>
         <ul className="text-muted-foreground leading-relaxed space-y-2 list-disc list-inside">
-          {VERTICAL === "hockey" ? (
+          {VERTICAL === "golf" ? (
+            <>
+              <li><strong className="text-foreground">Nyheter:</strong> svenska och internationella golfmedier och tourernas officiella kanaler. Intaget startar med bevakningen.</li>
+              <li><strong className="text-foreground">Resultat:</strong> ingen dataleverantör är vald än. Tills dess visas inga ledartavlor — hellre ingenting än siffror vi inte kan stå för.</li>
+            </>
+          ) : VERTICAL === "hockey" ? (
             <li><strong className="text-foreground">Matchdata:</strong> Sportradar, resultat, spelschema och tabell för SHL och HockeyAllsvenskan.</li>
           ) : (
             <>

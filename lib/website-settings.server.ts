@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import {
   DEFAULT_WEBSITE_SETTINGS,
+  GOLF_DEFAULT_WEBSITE_SETTINGS,
   HOCKEY_DEFAULT_WEBSITE_SETTINGS,
   WEBSITE_CONFIG_KEY,
   parseWebsiteSettings,
@@ -10,8 +11,9 @@ import {
 import { VERTICAL } from "@/lib/vertical";
 
 async function loadWebsiteSettings(): Promise<WebsiteSettings> {
-  const fallback = VERTICAL === "hockey" ? HOCKEY_DEFAULT_WEBSITE_SETTINGS : DEFAULT_WEBSITE_SETTINGS;
-  const key = VERTICAL === "hockey" ? "website.hockey" : WEBSITE_CONFIG_KEY;
+  const fallback =
+    VERTICAL === "hockey" ? HOCKEY_DEFAULT_WEBSITE_SETTINGS : VERTICAL === "golf" ? GOLF_DEFAULT_WEBSITE_SETTINGS : DEFAULT_WEBSITE_SETTINGS;
+  const key = VERTICAL === "football" ? WEBSITE_CONFIG_KEY : `website.${VERTICAL}`;
   if (!isSupabaseConfigured()) return fallback;
   try {
     const db = createServerClient();

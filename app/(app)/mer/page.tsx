@@ -11,7 +11,11 @@ import {
 } from "lucide-react";
 import { ListGroup } from "@/components/ui/ListGroup";
 import { ListRow } from "@/components/ui/ListRow";
+import { BOTTOM_NAV_ITEMS } from "@/lib/nav";
 import { vertical } from "@/lib/vertical";
+
+/** Syns inte här: vertikalens dolda ytor och det som redan är en flik i bottenraden. */
+const hidden = (href: string) => vertical.hiddenRoutes.includes(href) || BOTTOM_NAV_ITEMS.some((tab) => tab.href === href);
 
 /** Utforska-raderna. Vertikalens dolda ytor (hiddenRoutes) visas inte. */
 const DISCOVER = [
@@ -37,14 +41,14 @@ export default function MerPage() {
       </h1>
 
       <ListGroup>
-        {DISCOVER.filter((row) => !vertical.hiddenRoutes.includes(row.href)).map((row) => (
+        {DISCOVER.filter((row) => !hidden(row.href)).map((row) => (
           <ListRow key={row.href} href={row.href} leading={row.icon} title={row.title} subtitle={row.subtitle} />
         ))}
       </ListGroup>
 
       <ListGroup>
         <ListRow href="/konto" leading={<User />} title="Konto" />
-        <ListRow href="/prenumerera" leading={<CreditCard />} title="Prenumeration" />
+        {!hidden("/prenumerera") && <ListRow href="/prenumerera" leading={<CreditCard />} title="Prenumeration" />}
         <ListRow href="/om-oss" leading={<Info />} title={vertical.aboutLabel} />
       </ListGroup>
     </div>

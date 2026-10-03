@@ -28,20 +28,24 @@ export function Footer() {
                 Nyheter
               </Link>
             </li>
-            <li>
-              <Link href={leagueHref()} className="hover:text-foreground transition-colors">
-                {vertical.leagueName}
-              </Link>
-            </li>
-            <li>
-              <Link href="/podcast" className="hover:text-foreground transition-colors">
-                Podcasts
-              </Link>
-            </li>
+            {vertical.id !== "golf" && (
+              <li>
+                <Link href={leagueHref()} className="hover:text-foreground transition-colors">
+                  {vertical.leagueName}
+                </Link>
+              </li>
+            )}
+            {!vertical.hiddenRoutes.includes("/podcast") && (
+              <li>
+                <Link href="/podcast" className="hover:text-foreground transition-colors">
+                  Podcasts
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
 
-        <div>
+        <div className={vertical.id === "golf" ? "hidden" : undefined}>
           <div className="font-medium text-foreground mb-3">Lag</div>
           <ul className="space-y-2 text-muted-foreground">
             {vertical.featuredTeams.map((team) => (
@@ -60,11 +64,13 @@ export function Footer() {
         <div>
           <div className="font-medium text-foreground mb-3">Om</div>
           <ul className="space-y-2 text-muted-foreground">
-            <li>
-              <Link href="/prenumerera" className="hover:text-foreground transition-colors">
-                Bli PRO
-              </Link>
-            </li>
+            {!vertical.hiddenRoutes.includes("/prenumerera") && (
+              <li>
+                <Link href="/prenumerera" className="hover:text-foreground transition-colors">
+                  Bli PRO
+                </Link>
+              </li>
+            )}
             <li>
               <Link href="/integritetspolicy" className="hover:text-foreground transition-colors">
                 Integritet

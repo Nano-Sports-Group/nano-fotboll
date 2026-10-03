@@ -5,7 +5,11 @@ import { ImageResponse } from "next/og";
  * Statisk OG-fallback för alla sidor utan egen bild — tidigare delades
  * länkar helt utan bild (audit T9). Genereras vid build.
  */
-export const alt = `${vertical.productName} — ${vertical.id === "hockey" ? "SHL:s" : "Allsvenskans"} digitala hemmaplan`;
+const LINE =
+  vertical.id === "golf" ? "Svensk golf, varje dag" : `${vertical.id === "hockey" ? "SHL:s" : "Allsvenskans"} digitala hemmaplan`;
+const SURFACES = vertical.id === "golf" ? "Flöde · Spelare · Tourer · Forum" : "Tabell · Matcher · Statistik · Forum";
+
+export const alt = `${vertical.productName} — ${LINE}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -29,10 +33,10 @@ export default function OgImage() {
           {vertical.wordmark}
         </div>
         <div style={{ fontSize: 34, color: "#5FA98C", marginTop: 12, display: "flex" }}>
-          {vertical.id === "hockey" ? "SHL:s" : "Allsvenskans"} digitala hemmaplan
+          {LINE}
         </div>
         <div style={{ fontSize: 22, color: "#a1a1aa", marginTop: 28, display: "flex" }}>
-          Tabell · Matcher · Statistik · Forum
+          {SURFACES}
         </div>
       </div>
     ),

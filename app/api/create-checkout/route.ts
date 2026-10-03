@@ -90,6 +90,10 @@ export async function POST(req: Request & { headers: Headers }) {
   if (combo && !isComboEnabled()) {
     return NextResponse.json({ error: "Kombo är inte tillgänglig" }, { status: 400 });
   }
+  // Golf har inget pris än — kassan finns inte där.
+  if (VERTICAL === "golf") {
+    return NextResponse.json({ error: "Nano Golf säljer inget än" }, { status: 400 });
+  }
   // Omfånget kommer från deployen (eller kombo-valet), aldrig fritt ur bodyn.
   const scope: SubscriptionScope = combo ? "both" : VERTICAL;
   // Hockey säljer ingen Elite ensamt (bara i Elite Kombo).

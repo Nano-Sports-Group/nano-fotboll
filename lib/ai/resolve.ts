@@ -8,7 +8,8 @@ function getDb() {
 }
 
 // Supporternamn → kanoniskt namnfragment, per sport. "Malmö" är MFF i fotboll men Redhawks i hockey.
-const TEAM_ALIASES: Record<'football' | 'hockey', Record<string, string>> = {
+const TEAM_ALIASES: Record<'football' | 'hockey' | 'golf', Record<string, string>> = {
+  golf: {},
   football: {
     bajen: 'Hammarby',
     djurgarn: 'Djurgårdens',

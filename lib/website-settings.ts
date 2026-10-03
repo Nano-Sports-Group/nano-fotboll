@@ -127,6 +127,31 @@ export const HOCKEY_DEFAULT_WEBSITE_SETTINGS: WebsiteSettings = {
   },
 };
 
+export const GOLF_DEFAULT_WEBSITE_SETTINGS: WebsiteSettings = {
+  ...DEFAULT_WEBSITE_SETTINGS,
+  identity: {
+    ...DEFAULT_WEBSITE_SETTINGS.identity,
+    siteName: "Nano Golf",
+    tagline: "Svensk golf, varje dag.",
+    titleTemplate: "%s | Nano Golf",
+    contactEmail: CONTACT_EMAIL,
+  },
+  seo: {
+    defaultTitle: "Nano Golf — svenska spelare, tourerna och majors",
+    defaultDescription:
+      "Golf ur svenskt perspektiv: svenska spelare på PGA Tour, DP World Tour, LPGA och LET, och majors. Följ golfen varje dag, inte bara på söndagen.",
+    homeTitle: "Nano Golf – svenska spelare, tourerna och majors",
+    homeDescription:
+      "Golf ur svenskt perspektiv: svenska spelare på de stora tourerna och majors, samlat på ett ställe.",
+  },
+  sharing: {
+    ...DEFAULT_WEBSITE_SETTINGS.sharing,
+    homeOgTitle: "Nano Golf – svenska spelare, tourerna och majors",
+    homeOgDescription: "Golf ur svenskt perspektiv: svenska spelare, tourerna och majors.",
+    nyhetDescriptionTemplate: "Nano Golf följer händelsen. Originalet hos {source}.",
+  },
+};
+
 export type ShareContext =
   | { kind: "home" }
   | { kind: "default" }

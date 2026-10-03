@@ -8,9 +8,14 @@
 
 import Link from "next/link";
 import { useAuth, SignInButton, UserButton } from "@clerk/nextjs";
+import { vertical } from "@/lib/vertical";
+
+/** Vertikaler utan pris (golf) har ingen prissida — då finns ingen PRO-knapp heller. */
+const SELLS = !vertical.hiddenRoutes.includes("/prenumerera");
 
 // ─── Fallback (ingen Clerk) ────────────────────────────────────────────────────
 function FallbackAuth() {
+  if (!SELLS) return null;
   return (
     <Link
       href="/prenumerera"
@@ -37,12 +42,14 @@ function ClerkAuth() {
             Logga in
           </button>
         </SignInButton>
-        <Link
-          href="/prenumerera"
-          className="inline-flex min-h-11 items-center text-sm px-4 rounded-full pitch-gradient text-white font-medium hover:opacity-90 transition-opacity"
-        >
-          PRO
-        </Link>
+        {SELLS && (
+          <Link
+            href="/prenumerera"
+            className="inline-flex min-h-11 items-center text-sm px-4 rounded-full pitch-gradient text-white font-medium hover:opacity-90 transition-opacity"
+          >
+            PRO
+          </Link>
+        )}
       </div>
     );
   }

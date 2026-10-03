@@ -7,7 +7,9 @@
 const FALLBACK =
   process.env.NEXT_PUBLIC_VERTICAL === "hockey"
     ? "https://hockey.nanosport.se"
-    : "https://fotboll.nanosport.se";
+    : process.env.NEXT_PUBLIC_VERTICAL === "golf"
+      ? "https://golf.nanosport.se"
+      : "https://fotboll.nanosport.se";
 
 /** Publik kontaktadress. Mejlen tas emot i Workspace på nanosportsgroup.se (aliasdomän). */
 export const CONTACT_EMAIL = "hello@nanosport.se";

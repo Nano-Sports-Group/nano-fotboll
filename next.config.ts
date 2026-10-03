@@ -6,10 +6,11 @@
 
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
-import { HOCKEY } from "./lib/vertical";
+import { GOLF, HOCKEY } from "./lib/vertical";
 
 const isHockey = process.env.NEXT_PUBLIC_VERTICAL === "hockey";
-const leagueHome = isHockey ? "/shl" : "/allsvenskan";
+const isGolf = process.env.NEXT_PUBLIC_VERTICAL === "golf";
+const leagueHome = isGolf ? "/golf" : isHockey ? "/shl" : "/allsvenskan";
 
 const nextConfig: NextConfig = {
   // Turbopack root — fix för pnpm workspace med mehrere lockfiles
@@ -33,6 +34,14 @@ const nextConfig: NextConfig = {
             ]),
           ]
         : []),
+      // Golf har inga lag, matcher eller tabeller och säljer inget (lib/vertical.ts → GOLF.hiddenRoutes).
+      // I fotboll och hockey finns ingen golfsida: /golf skickas hem (sidans notFound() ger 200 bakom loading.tsx).
+      ...(isGolf
+        ? GOLF.hiddenRoutes.flatMap((route) => [
+            { source: route, destination: "/golf", permanent: false },
+            { source: `${route}/:path*`, destination: "/golf", permanent: false },
+          ])
+        : [{ source: "/golf", destination: leagueHome, permanent: false }]),
       { source: "/sammanfattning", destination: "/mitt-lag", permanent: true },
       { source: "/feed", destination: "/mitt-lag", permanent: true },
       // Lagsektionerna bytte namn nar `?tab=` blev riktiga routes. Redirecten

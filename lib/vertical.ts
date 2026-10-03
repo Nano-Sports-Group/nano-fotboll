@@ -1,10 +1,11 @@
 /**
- * En motor, två ytor. Odefinierad miljö är fotboll — samma beteende som innan
- * vertikalen fanns. Hockey är en egen deploy: NEXT_PUBLIC_VERTICAL=hockey.
- * Intag, Helix och dataleverantör är pausade; ytan är densamma.
+ * En motor, flera ytor. Odefinierad miljö är fotboll — samma beteende som innan
+ * vertikalen fanns. Hockey och golf är egna deployer: NEXT_PUBLIC_VERTICAL=hockey | golf.
+ * Golf har spelare och tävlingar, inte lag och serie: alla lag-, match- och tabellytor är
+ * dolda (hiddenRoutes) och startsidan är golfens egen (components/golf/GolfFront).
  */
 
-export type VerticalId = "football" | "hockey";
+export type VerticalId = "football" | "hockey" | "golf";
 
 export type VerticalPack = {
   id: VerticalId;
@@ -24,13 +25,14 @@ export type VerticalPack = {
   leagueEntities: readonly string[];
   /** Ligaväxlare på tabell/spelschema/resultat. Första = huvudligan (ingen ?liga=). */
   leagues: readonly { name: string; param: string | null }[];
-  leaguePath: "/allsvenskan" | "/shl";
+  /** Vertikalens hem. Golf har ingen serie — /golf är golfens egen startsida. */
+  leaguePath: "/allsvenskan" | "/shl" | "/golf";
   leagueTitle: string;
   leagueDescription: string;
   leagueShareDescription: string;
   leagueSubtitle: string;
   leagueJsonLdDescription: string;
-  schemaSport: "Soccer" | "IceHockey";
+  schemaSport: "Soccer" | "IceHockey" | "Golf";
   paused: boolean;
   seoKeywords: readonly string[];
   featuredTeams: readonly { href: string; label: string }[];
@@ -144,18 +146,73 @@ export const HOCKEY: VerticalPack = {
   hiddenRoutes: ["/analys", "/daily", "/kronika", "/brev", "/narrativ", "/allsvenskan/xp-tabell", "/allsvenskan/talanger", "/statistik"],
 };
 
+/**
+ * Golf: ytan finns, innehållet kommer. Intaget är pausat i motorn (`golf_intake_enabled`),
+ * ingen dataleverantör är vald och inget pris är satt — därför visas bara ytor som tål att
+ * vara tomma (hem, flöde, konto) och aldrig tabeller, matcher, lagforum eller en kassa.
+ */
+export const GOLF: VerticalPack = {
+  id: "golf",
+  productName: "Nano Golf",
+  wordmark: "NANO GOLF",
+  tagline: "Svensk golfintelligens",
+  dailyName: "Nano Golf Daily",
+  aboutLabel: "Om Nano Golf",
+  leagueName: "Tourerna",
+  leagueHeading: "GOLF",
+  leagueEntity: "Golf",
+  leagueEntities: [],
+  leagues: [{ name: "Golf", param: null }],
+  leaguePath: "/golf",
+  leagueTitle: "Nano Golf – svenska spelare och de stora tourerna",
+  leagueDescription:
+    "Golf ur svenskt perspektiv: svenska spelare på PGA Tour, DP World Tour, LPGA och LET, och majors.",
+  leagueShareDescription: "Golf ur svenskt perspektiv: svenska spelare, tourerna och majors.",
+  leagueSubtitle: "Svenska spelare, tourerna och majors.",
+  leagueJsonLdDescription: "Nano Golf följer svenska golfspelare och de stora tourerna.",
+  schemaSport: "Golf",
+  paused: true,
+  seoKeywords: [
+    "svensk golf",
+    "golf nyheter",
+    "svenska golfspelare",
+    "PGA Tour",
+    "DP World Tour",
+    "LPGA",
+    "Ladies European Tour",
+    "majors golf",
+    "Ryder Cup",
+    "Solheim Cup",
+  ],
+  featuredTeams: [],
+  scorersLabel: "Ledartavla",
+  // Allt som förutsätter lag, serie, matcher eller pris. Öppnas yta för yta när golfen har
+  // material där: /daily och /podcast vid påslag, ledartavlor när dataleverantören är vald.
+  hiddenRoutes: [
+    "/allsvenskan", "/shl", "/match", "/lag", "/mitt-lag", "/statistik", "/analys", "/daily",
+    "/podcast", "/ai", "/kronika", "/brev", "/narrativ", "/prenumerera", "/spelare", "/vaenta",
+    "/onboarding", "/elite", "/dashboard",
+    // Forumet är byggt per lag (/forum/[teamSlug]). Golf får ett eget när det finns en tavla utan lag.
+    "/forum", "/skriv",
+  ],
+};
+
 export function resolveVertical(raw: string | undefined): VerticalId {
-  return raw === "hockey" ? "hockey" : "football";
+  return raw === "hockey" ? "hockey" : raw === "golf" ? "golf" : "football";
 }
 
 export const VERTICAL: VerticalId = resolveVertical(process.env.NEXT_PUBLIC_VERTICAL);
 
-export const vertical: VerticalPack = VERTICAL === "hockey" ? HOCKEY : FOOTBALL;
+const PACKS: Record<VerticalId, VerticalPack> = { football: FOOTBALL, hockey: HOCKEY, golf: GOLF };
+
+export const vertical: VerticalPack = PACKS[VERTICAL];
 
 /** Kolumnen `sport` i Supabase. Fotbollsdeployen läser och skriver "football". */
 export const SPORT = VERTICAL;
 
 export function leagueHrefFor(id: VerticalId, subpath = ""): string {
+  // Golf har ingen ligasida: allt under den pekar på golfens hem.
+  if (id === "golf") return "/golf";
   const base = id === "hockey" ? "/shl" : "/allsvenskan";
   if (!subpath) return base;
   return `${base}${subpath.startsWith("/") ? subpath : `/${subpath}`}`;

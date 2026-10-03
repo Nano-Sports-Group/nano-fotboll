@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const resolved = resolveShareMetadata(settings, { kind: "home" });
   return {
     ...toNextMetadata(settings, resolved),
-    keywords: VERTICAL === "hockey" ? [...vertical.seoKeywords] : SEO_KEYWORDS,
+    keywords: VERTICAL === "football" ? SEO_KEYWORDS : [...vertical.seoKeywords],
   };
 }
 
@@ -77,7 +77,7 @@ function LandingJsonLd() {
         url: SITE,
         inLanguage: "sv-SE",
         description:
-          VERTICAL === "hockey"
+          VERTICAL !== "football"
             ? vertical.leagueDescription
             : "Allsvenskan 2026 — tabell, resultat, matcher, skytteliga, statistik, matchanalyser och forum för alla 16 lag.",
         potentialAction: {
@@ -99,7 +99,8 @@ function LandingJsonLd() {
 }
 
 export default async function LandingPage() {
-  if (VERTICAL === "hockey") redirect(vertical.leaguePath);
+  // Hockey och golf har sitt hem på en egen väg (/shl, /golf) inne i app-skalet.
+  if (VERTICAL !== "football") redirect(vertical.leaguePath);
   // Inloggad-redirect hanteras i proxy.ts (edge, ingen currentUser()-call här)
   // så denna route förblir statisk/ISR-cachebar (revalidate=120) för alla
   // utloggade besökare — se LCP-utredning i proxy.ts.
@@ -130,7 +131,7 @@ export default async function LandingPage() {
 
 /** Riktig sportpuls i heron: live-match eller nästa avspark + serieledaren. */
 async function getHeroPulse() {
-  if (VERTICAL === "hockey") {
+  if (VERTICAL !== "football") {
     return { live: false, matchName: null, matchId: null, kickoff: null, leaderName: null, leaderPoints: null };
   }
   try {
@@ -163,7 +164,7 @@ async function getHeroPulse() {
 
 /** Alla 16 klubbar för hero-klubbväljaren. */
 async function getClubChips() {
-  if (VERTICAL === "hockey") return [];
+  if (VERTICAL !== "football") return [];
   try {
     const { fetchTeamsWithSlugs } = await import("@/lib/db/fixtures");
     const teams = await fetchTeamsWithSlugs();

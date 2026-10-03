@@ -10,6 +10,7 @@ import { MobileNav } from "@/components/layout/MobileNav";
 import { PullToRefreshShell } from "@/components/layout/PullToRefreshShell";
 import { EdgeSwipeBack } from "@/components/layout/EdgeSwipeBack";
 import { ScrollRestore } from "@/components/ux/ScrollRestore";
+import { VERTICAL } from "@/lib/vertical";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const clerkEnabled =
@@ -38,7 +39,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <CommandPalette />
       {clerkEnabled && (
         <>
-          <TeamSelectionModal />
+          {VERTICAL !== "golf" && <TeamSelectionModal />}
           <PwaInstallBanner />
         </>
       )}

@@ -13,12 +13,19 @@ export const metadata: Metadata = {
  * Utan egna vägar vidare blir den en återvändsgränd, så sidan bär sin egen
  * wayfinding till de fyra ytor folk faktiskt söker.
  */
-const DESTINATIONS = [
-  { href: vertical.leaguePath, label: vertical.leagueName, desc: "Tabell, resultat och spelschema", icon: Trophy },
-  { href: "/nyheter", label: "Flöde", desc: vertical.id === "hockey" ? "Senaste kring svensk hockey" : "Senaste kring svensk fotboll", icon: Newspaper },
-  { href: "/mitt-lag", label: "Mitt lag", desc: "Allt om din klubb", icon: Shield },
-  { href: "/match", label: "Matcher", desc: "Kommande och pågående", icon: CalendarDays },
-] as const;
+const DESTINATIONS =
+  vertical.id === "golf"
+    ? [
+        { href: "/golf", label: "Hem", desc: "Nano Golf", icon: Trophy },
+        { href: "/nyheter", label: "Flöde", desc: "Senaste kring svensk golf", icon: Newspaper },
+        { href: "/om-oss", label: "Om Nano Golf", desc: "Vad som finns och vad som kommer", icon: Shield },
+      ]
+    : [
+        { href: vertical.leaguePath, label: vertical.leagueName, desc: "Tabell, resultat och spelschema", icon: Trophy },
+        { href: "/nyheter", label: "Flöde", desc: vertical.id === "hockey" ? "Senaste kring svensk hockey" : "Senaste kring svensk fotboll", icon: Newspaper },
+        { href: "/mitt-lag", label: "Mitt lag", desc: "Allt om din klubb", icon: Shield },
+        { href: "/match", label: "Matcher", desc: "Kommande och pågående", icon: CalendarDays },
+      ];
 
 export default function NotFound() {
   return (

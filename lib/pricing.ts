@@ -42,7 +42,10 @@ interface PlanPricing {
  * poddar och AI-chatt byggs upp först; PRO är billigare så länge innehållet är tunnare.
  * `hockey.elite` finns bara för att typen ska vara hel: `ELITE_AVAILABLE` stoppar försäljningen.
  */
-export const SPORT_PRICING: Record<VerticalId, Record<PaidPlan, PlanPricing>> = {
+/** Vertikaler som har ett pris. Golf har inget (founder-beslut saknas) och säljer därför inget. */
+export type PricedVertical = Exclude<VerticalId, "golf">;
+
+export const SPORT_PRICING: Record<PricedVertical, Record<PaidPlan, PlanPricing>> = {
   football: {
     pro: { label: "PRO", monthly: 8900, yearly: 84900 },
     elite: { label: "Elite", monthly: 16900, yearly: 161900 },
@@ -54,7 +57,11 @@ export const SPORT_PRICING: Record<VerticalId, Record<PaidPlan, PlanPricing>> = 
 };
 
 /** Den här deployens priser — alla befintliga anropare läser härifrån. */
-export const PRICING: Record<PaidPlan, PlanPricing> = SPORT_PRICING[VERTICAL];
+/** Säljer den här deployen något? Golf: nej — prissidan är dold och kassan nekar. */
+export const SELLS: boolean = VERTICAL !== "golf";
+
+// Golf: värdet finns bara för att typen ska vara hel. Det visas aldrig (SELLS = false).
+export const PRICING: Record<PaidPlan, PlanPricing> = SPORT_PRICING[VERTICAL === "golf" ? "football" : VERTICAL];
 
 /** Säljs Elite i den här vertikalen? Styr både prissidan och checkout. */
 export const ELITE_AVAILABLE: boolean = VERTICAL === "football";

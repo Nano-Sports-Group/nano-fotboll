@@ -41,13 +41,22 @@ export interface NavItem {
  *
  * Max 5 poster. Behöver en sjätte destination plats hör den under Mer.
  */
-export const BOTTOM_NAV_ITEMS: NavItem[] = [
+const TEAM_SPORT_NAV: NavItem[] = [
   { href: "/mitt-lag", label: "Hem", icon: House, iosSymbol: "house.fill" },
   { href: "/nyheter", label: "Flöde", icon: Newspaper, iosSymbol: "newspaper.fill" },
   { href: "/match", label: "Matcher", icon: CalendarDays, iosSymbol: "calendar" },
   { href: leagueHref(), label: "Tabellen", icon: Trophy, iosSymbol: "trophy.fill" },
   { href: "/profil", label: "Profil", icon: User, iosSymbol: "person.crop.circle.fill" },
 ];
+
+/** Golf har varken lag, matcher eller tabell: hem, flöde, profil. */
+const GOLF_NAV: NavItem[] = [
+  { href: "/golf", label: "Hem", icon: House, iosSymbol: "house.fill" },
+  { href: "/nyheter", label: "Flöde", icon: Newspaper, iosSymbol: "newspaper.fill" },
+  { href: "/profil", label: "Profil", icon: User, iosSymbol: "person.crop.circle.fill" },
+];
+
+export const BOTTOM_NAV_ITEMS: NavItem[] = vertical.id === "golf" ? GOLF_NAV : TEAM_SPORT_NAV;
 
 /** Bottenraden får aldrig växa förbi detta. Låst av `lib/nav.test.ts`. */
 export const MAX_BOTTOM_NAV_ITEMS = 5;
@@ -81,9 +90,9 @@ const ALL_SECONDARY_NAV_ITEMS: NavItem[] = [
   { href: "/om-oss", label: vertical.aboutLabel, icon: Info, iosSymbol: "info.circle" },
 ];
 
-/** Vertikalens dolda ytor (lib/vertical.ts → hiddenRoutes) syns inte i menyn. */
+/** Vertikalens dolda ytor (lib/vertical.ts → hiddenRoutes) och det som redan är en flik syns inte i menyn. */
 export const SECONDARY_NAV_ITEMS: NavItem[] = ALL_SECONDARY_NAV_ITEMS.filter(
-  (item) => !vertical.hiddenRoutes.includes(item.href),
+  (item) => !vertical.hiddenRoutes.includes(item.href) && !BOTTOM_NAV_ITEMS.some((tab) => tab.href === item.href),
 );
 
 /** @deprecated Använd BOTTOM_NAV_ITEMS — behålls för tillfälliga imports. */
