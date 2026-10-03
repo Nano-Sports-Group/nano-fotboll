@@ -1,4 +1,5 @@
-import { SPORT, leagueHref } from "@/lib/vertical";
+import { SPORT, VERTICAL, leagueHref } from "@/lib/vertical";
+import { GOLF_PLAYERS, GOLF_TOURS } from "@/lib/golf/catalog";
 import type { MetadataRoute } from "next";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import { getSiteUrl } from "@/lib/site-url";
@@ -7,7 +8,40 @@ export const dynamic = 'force-dynamic';
 
 const BASE = getSiteUrl();
 
+/** Golf har inga lag-, match- eller ligasidor: hem, flöde, spelare, tourer och egna texter. */
+async function golfSitemap(): Promise<MetadataRoute.Sitemap> {
+  const now = new Date();
+  const routes: MetadataRoute.Sitemap = [
+    { url: `${BASE}/golf`, lastModified: now, changeFrequency: "daily", priority: 1 },
+    { url: `${BASE}/nyheter`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE}/golf/spelare`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE}/golf/tourer`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    ...GOLF_PLAYERS.map((p) => ({ url: `${BASE}/golf/spelare/${p.slug}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.7 })),
+    ...GOLF_TOURS.map((t) => ({ url: `${BASE}/golf/tourer/${t.slug}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.7 })),
+  ];
+  if (!isSupabaseConfigured()) return routes;
+  try {
+    const { data } = await createServerClient()
+      .from("articles")
+      .select("slug, published_at, rights_status, is_athopia_generated")
+      .eq("status", "published")
+      .eq("sport", SPORT)
+      .order("published_at", { ascending: false })
+      .limit(1000);
+    for (const a of data ?? []) {
+      const rights = a.rights_status ?? (a.is_athopia_generated ? "owned" : "link_only");
+      if (a.slug && (rights === "owned" || rights === "licensed")) {
+        routes.push({ url: `${BASE}/artikel/${a.slug}`, lastModified: new Date(a.published_at), changeFrequency: "weekly", priority: 0.7 });
+      }
+    }
+  } catch {
+    // Utan databas: de statiska sidorna räcker.
+  }
+  return routes;
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  if (VERTICAL === "golf") return golfSitemap();
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: BASE, lastModified: new Date(), changeFrequency: "daily", priority: 1 },
     { url: `${BASE}/nyheter`, lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },

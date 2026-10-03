@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BOTTOM_NAV_ITEMS } from "@/lib/nav";
+import { BOTTOM_NAV_ITEMS, isNavActive } from "@/lib/nav";
 import "./GlassNav.css";
 
 /**
@@ -40,9 +40,7 @@ export function GlassNav({ clerkEnabled: _clerkEnabled }: { clerkEnabled?: boole
 
   if (hideOnThread) return null;
 
-  const activeIndex = BOTTOM_NAV_ITEMS.findIndex(
-    ({ href }) => pathname === href || pathname.startsWith(`${href}/`),
-  );
+  const activeIndex = BOTTOM_NAV_ITEMS.findIndex((item) => isNavActive(item, pathname));
 
   return (
     // Docken är mobilnavigationen. Från `md` tar AppSidebar över med exakt
@@ -61,8 +59,8 @@ export function GlassNav({ clerkEnabled: _clerkEnabled }: { clerkEnabled?: boole
           style={{ opacity: activeIndex === -1 ? 0 : 1 }}
         />
 
-        {BOTTOM_NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(`${href}/`);
+        {BOTTOM_NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => {
+          const active = isNavActive({ href, exact }, pathname);
           return (
             <Link
               key={href}

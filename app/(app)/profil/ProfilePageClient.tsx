@@ -1,5 +1,6 @@
 "use client";
-import { SPORT } from "@/lib/vertical";
+import { Following } from "@/components/golf/Following";
+import { SPORT, VERTICAL } from "@/lib/vertical";
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -245,8 +246,18 @@ export function ProfilePageClient({
         </button>
       </section>
 
+      {/* Golf: det man följer är spelare och tourer, inte ett lag. */}
+      {VERTICAL === "golf" && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground text-balance">
+            Du följer
+          </h2>
+          <Following manage />
+        </section>
+      )}
+
       {/* Byt favoritlag */}
-      <section className="space-y-3">
+      <section className={VERTICAL === "golf" ? "hidden" : "space-y-3"}>
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground text-balance">
           Mitt lag
         </h2>
@@ -262,7 +273,7 @@ export function ProfilePageClient({
         </select>
       </section>
 
-      <section className="space-y-3">
+      <section className={VERTICAL === "golf" ? "hidden" : "space-y-3"}>
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground text-balance">
           Nano Fotboll Lagbrief
         </h2>

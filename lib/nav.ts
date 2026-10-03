@@ -12,6 +12,7 @@ import {
   Info,
   FileSearch,
   Ellipsis,
+  Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { leagueHref, vertical } from "@/lib/vertical";
@@ -49,14 +50,27 @@ const TEAM_SPORT_NAV: NavItem[] = [
   { href: "/profil", label: "Profil", icon: User, iosSymbol: "person.crop.circle.fill" },
 ];
 
-/** Golf har varken lag, matcher eller tabell: hem, flöde, profil. */
+/**
+ * Golf har varken lag, matcher eller tabell. Där fotbollen har Matcher och Tabellen har golfen
+ * Spelare och Tourer — det man följer. Hem matchar bara exakt, annars lyser den på undersidorna.
+ */
 const GOLF_NAV: NavItem[] = [
-  { href: "/golf", label: "Hem", icon: House, iosSymbol: "house.fill" },
+  { href: "/golf", label: "Hem", icon: House, iosSymbol: "house.fill", exact: true },
   { href: "/nyheter", label: "Flöde", icon: Newspaper, iosSymbol: "newspaper.fill" },
+  { href: "/golf/spelare", label: "Spelare", icon: Users, iosSymbol: "person.2.fill" },
+  { href: "/golf/tourer", label: "Tourer", icon: Trophy, iosSymbol: "trophy.fill" },
   { href: "/profil", label: "Profil", icon: User, iosSymbol: "person.crop.circle.fill" },
 ];
 
 export const BOTTOM_NAV_ITEMS: NavItem[] = vertical.id === "golf" ? GOLF_NAV : TEAM_SPORT_NAV;
+
+/**
+ * Är fliken aktiv på den här sökvägen? En väg för alla navigationer (docka, sidobar, meny):
+ * `exact` matchar bara sidan själv — golfens Hem (/golf) ska inte lysa på /golf/spelare.
+ */
+export function isNavActive(item: Pick<NavItem, "href" | "exact">, pathname: string): boolean {
+  return pathname === item.href || (!item.exact && pathname.startsWith(`${item.href}/`));
+}
 
 /** Bottenraden får aldrig växa förbi detta. Låst av `lib/nav.test.ts`. */
 export const MAX_BOTTOM_NAV_ITEMS = 5;

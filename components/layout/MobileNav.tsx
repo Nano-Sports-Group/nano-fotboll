@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X, Search, Users } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { BOTTOM_NAV_ITEMS, SECONDARY_NAV_ITEMS } from "@/lib/nav";
+import { BOTTOM_NAV_ITEMS, SECONDARY_NAV_ITEMS, isNavActive } from "@/lib/nav";
 import { useModalA11y } from "@/hooks/useModalA11y";
 import { openSearchPalette } from "@/hooks/useCommandPalette";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -79,8 +79,8 @@ export function MobileNav() {
               <p className="px-3 pb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Snabbvägar
               </p>
-              {BOTTOM_NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-                const active = pathname === href || pathname.startsWith(href + "/");
+              {BOTTOM_NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => {
+                const active = isNavActive({ href, exact }, pathname);
                 return (
                   <Link
                     key={href}

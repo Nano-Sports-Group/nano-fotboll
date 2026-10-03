@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   BOTTOM_NAV_ITEMS,
   MAX_BOTTOM_NAV_ITEMS,
+  isNavActive,
   SECONDARY_NAV_ITEMS,
   SIDEBAR_NAV_ITEMS,
 } from "./nav";
@@ -49,4 +50,18 @@ test("overflow dubblerar aldrig en bottenflik", () => {
 test("sidobaren är bottenraden plus exakt en overflow-ingång", () => {
   assert.equal(SIDEBAR_NAV_ITEMS.length, BOTTOM_NAV_ITEMS.length + 1);
   assert.equal(SIDEBAR_NAV_ITEMS.at(-1)?.href, "/mer");
+});
+
+test("exakt flik lyser inte på undersidor", () => {
+  assert.equal(isNavActive({ href: "/golf", exact: true }, "/golf"), true);
+  assert.equal(isNavActive({ href: "/golf", exact: true }, "/golf/spelare"), false);
+  assert.equal(isNavActive({ href: "/golf/spelare" }, "/golf/spelare/ludvig-aberg"), true);
+  assert.equal(isNavActive({ href: "/nyheter" }, "/nyheter-arkiv"), false);
+});
+
+test("högst en bottenflik är aktiv på en given sida", () => {
+  for (const path of [...BOTTOM_NAV_ITEMS.map((i) => i.href), "/golf/spelare/x", "/golf/tourer/x", "/lag/aik"]) {
+    const active = BOTTOM_NAV_ITEMS.filter((item) => isNavActive(item, path));
+    assert.ok(active.length <= 1, `${path}: ${active.map((i) => i.label).join(" + ")}`);
+  }
 });

@@ -41,7 +41,10 @@ const nextConfig: NextConfig = {
             { source: route, destination: "/golf", permanent: false },
             { source: `${route}/:path*`, destination: "/golf", permanent: false },
           ])
-        : [{ source: "/golf", destination: leagueHome, permanent: false }]),
+        : [
+            { source: "/golf", destination: leagueHome, permanent: false },
+            { source: "/golf/:path*", destination: leagueHome, permanent: false },
+          ]),
       { source: "/sammanfattning", destination: "/mitt-lag", permanent: true },
       { source: "/feed", destination: "/mitt-lag", permanent: true },
       // Lagsektionerna bytte namn nar `?tab=` blev riktiga routes. Redirecten

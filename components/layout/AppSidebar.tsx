@@ -9,15 +9,14 @@ import { cn } from "@/lib/utils";
 import {
   BOTTOM_NAV_ITEMS,
   SIDEBAR_NAV_ITEMS,
+  isNavActive,
   type NavItem as NavItemConfig,
 } from "@/lib/nav";
 
 function NavItem({ href, label, icon: Icon, exact }: NavItemConfig) {
   const { open, animate } = useSidebar();
   const pathname = usePathname();
-  const isActive = exact
-    ? pathname === href
-    : pathname === href || pathname.startsWith(href + "/");
+  const isActive = isNavActive({ href, exact }, pathname);
 
   return (
     <Link
