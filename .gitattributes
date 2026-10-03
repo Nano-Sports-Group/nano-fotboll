@@ -1,0 +1,2 @@
+# Generatorn skriver LF; utan detta visar autocrlf filerna som ändrade fast innehållet är identiskt.
+contracts/generated/*.json text eol=lf
