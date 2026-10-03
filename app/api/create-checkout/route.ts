@@ -57,6 +57,12 @@ import { getSiteUrl } from "@/lib/site-url";
 import { VERTICAL, vertical } from "@/lib/vertical";
 
 export async function POST(req: Request & { headers: Headers }) {
+  // Golf har inget pris än — kassan finns inte där. Först av allt: golf har ingen Stripe-nyckel,
+  // och new Stripe() utan nyckel kastar (500 i stället för ett rent nej).
+  if (VERTICAL === "golf") {
+    return NextResponse.json({ error: "Nano Golf säljer inget än" }, { status: 400 });
+  }
+
   // Lazy-init Stripe för att undvika build-time env-krav
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: "2026-04-22.dahlia",
@@ -89,10 +95,6 @@ export async function POST(req: Request & { headers: Headers }) {
   // Kombo säljs bara när founder godkänt priset (lib/pricing → isComboEnabled).
   if (combo && !isComboEnabled()) {
     return NextResponse.json({ error: "Kombo är inte tillgänglig" }, { status: 400 });
-  }
-  // Golf har inget pris än — kassan finns inte där.
-  if (VERTICAL === "golf") {
-    return NextResponse.json({ error: "Nano Golf säljer inget än" }, { status: 400 });
   }
   // Omfånget kommer från deployen (eller kombo-valet), aldrig fritt ur bodyn.
   const scope: SubscriptionScope = combo ? "both" : VERTICAL;
