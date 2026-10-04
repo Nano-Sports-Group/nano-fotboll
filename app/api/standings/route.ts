@@ -1,14 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { fetchStandingsFull, fetchStandingsCoveredThrough } from "@/lib/db/fixtures";
 import { freshnessOf } from "@/lib/data-freshness";
 import { jsonContract } from "@/lib/api-contract";
 import { StandingsResponseSchema } from "@/lib/api-schemas";
+import { leagueFromParam } from "@/lib/vertical";
 
 export const revalidate = 300;
 
-export async function GET() {
+/** `?liga=superettan` / `?liga=hockeyallsvenskan` väljer serie. Utan param = huvudligan. */
+export async function GET(request: NextRequest) {
+  const league = leagueFromParam(request.nextUrl.searchParams.get("liga") ?? undefined);
   const [rows, coveredThrough] = await Promise.all([
-    fetchStandingsFull(),
+    fetchStandingsFull(league),
     fetchStandingsCoveredThrough(),
   ]);
   const standings = rows.map((r, i) => ({
