@@ -4,6 +4,8 @@ import { createHash } from "crypto";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase";
 import { logFunnelEvent } from "@/lib/funnel";
+import { sendNewsletterConfirmEmail } from "@/lib/newsletter/email";
+import { newsletterTokenSecret, verifyNewsletterToken } from "@/lib/newsletter/token";
 import {
   NEWSLETTER_POLICY_VERSION,
   NEWSLETTER_SPORT,
@@ -218,7 +220,116 @@ export async function subscribeToNewsletter(input: {
     });
   }
 
+  // Dubbel bekräftelse: inget brev skickas förrän adressen är bekräftad. Mejlet går även vid en
+  // upprepad anmälan — den som tappat bort det första ska kunna be om ett nytt.
+  if (subscriber.status === "pending_confirmation") {
+    const mail = await sendNewsletterConfirmEmail(input.identity.email, subscriber.id, input.team.name);
+    if (mail.sent) {
+      await db.from("newsletter_consent_events").insert({
+        subscriber_id: subscriber.id,
+        event_type: "confirmation_requested",
+        source,
+        policy_version: NEWSLETTER_POLICY_VERSION,
+        email_hash: newsletterEmailHash(input.identity.email),
+        metadata: { sport: NEWSLETTER_SPORT, team_slug: input.team.slug },
+      });
+    }
+  }
+
   return { state: duplicate ? "duplicate" : "pending" };
+}
+
+export type NewsletterTokenOutcome = "ok" | "already" | "invalid";
+
+async function subscriberForToken(
+  purpose: "confirm" | "unsubscribe",
+  token: string,
+): Promise<SubscriberRow | null> {
+  const id = verifyNewsletterToken(newsletterTokenSecret(), purpose, token);
+  if (!id) return null;
+  const { data } = await createServiceClient()
+    .from("newsletter_subscribers")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  return data ?? null;
+}
+
+/** Läser bara: vad skulle hända om länken användes? Länkskannrar får inte bekräfta eller avsluta något. */
+export async function peekNewsletterToken(
+  purpose: "confirm" | "unsubscribe",
+  token: string,
+): Promise<NewsletterTokenOutcome> {
+  const subscriber = await subscriberForToken(purpose, token);
+  if (!subscriber) return "invalid";
+  if (purpose === "confirm") return subscriber.status === "pending_confirmation" ? "ok" : subscriber.status === "active" ? "already" : "invalid";
+  return subscriber.status === "unsubscribed" ? "already" : "ok";
+}
+
+/** Bekräftar adressen. Bara en obekräftad prenumerant blir aktiv — en avslutad väcks aldrig av en gammal länk. */
+export async function confirmNewsletterByToken(token: string): Promise<NewsletterTokenOutcome> {
+  const subscriber = await subscriberForToken("confirm", token);
+  if (!subscriber) return "invalid";
+  if (subscriber.status === "active") return "already";
+  if (subscriber.status !== "pending_confirmation") return "invalid";
+  const db = createServiceClient();
+  const now = new Date().toISOString();
+  const { error } = await db
+    .from("newsletter_subscribers")
+    .update({ status: "active", confirmed_at: now, sync_status: "synced", last_sync_error: null })
+    .eq("id", subscriber.id)
+    .eq("status", "pending_confirmation");
+  if (error) throw new Error(`Newsletter confirm failed: ${error.message}`);
+  await db.from("newsletter_consent_events").insert({
+    subscriber_id: subscriber.id,
+    event_type: "confirmed",
+    source: "email_link",
+    policy_version: NEWSLETTER_POLICY_VERSION,
+    email_hash: newsletterEmailHash(String(subscriber.email)),
+    metadata: { sport: NEWSLETTER_SPORT },
+  });
+  await logFunnelEvent("newsletter_confirmed", subscriber.clerk_user_id, {});
+  return "ok";
+}
+
+/** Avslutar via länken i ett brev, utan inloggning. Går att göra om utan att något händer. */
+export async function unsubscribeNewsletterByToken(token: string): Promise<NewsletterTokenOutcome> {
+  const subscriber = await subscriberForToken("unsubscribe", token);
+  if (!subscriber) return "invalid";
+  if (subscriber.status === "unsubscribed") return "already";
+  const db = createServiceClient();
+  const now = new Date().toISOString();
+  const { error: preferenceError } = await db
+    .from("newsletter_preferences")
+    .update({ enabled: false })
+    .eq("subscriber_id", subscriber.id);
+  if (preferenceError) throw new Error(`Newsletter disable failed: ${preferenceError.message}`);
+  const { error } = await db
+    .from("newsletter_subscribers")
+    .update({ status: "unsubscribed", unsubscribed_at: now, sync_status: "synced", last_sync_error: null })
+    .eq("id", subscriber.id);
+  if (error) throw new Error(`Newsletter unsubscribe failed: ${error.message}`);
+  await db.from("newsletter_consent_events").insert({
+    subscriber_id: subscriber.id,
+    event_type: "unsubscribed",
+    source: "email_link",
+    policy_version: NEWSLETTER_POLICY_VERSION,
+    email_hash: newsletterEmailHash(String(subscriber.email)),
+    metadata: { sport: NEWSLETTER_SPORT },
+  });
+  return "ok";
+}
+
+/** Studs eller klagomål från Resend: adressen får aldrig fler brev. */
+export async function markNewsletterUndeliverable(email: string, status: "bounced" | "complained"): Promise<boolean> {
+  const { data, error } = await createServiceClient()
+    .from("newsletter_subscribers")
+    .update({ status, sync_status: "synced", last_sync_error: null })
+    .eq("email", email.trim().toLowerCase())
+    .in("status", ["active", "pending_confirmation", "paused"])
+    .select("id");
+  if (error) throw new Error(`Newsletter undeliverable mark failed: ${error.message}`);
+  return (data?.length ?? 0) > 0;
 }
 
 export async function getOwnNewsletterPreferences(
