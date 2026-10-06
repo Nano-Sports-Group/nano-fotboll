@@ -1,4 +1,4 @@
-import { SPORT, VERTICAL } from "@/lib/vertical";
+import { SPORT, VERTICAL, vertical } from "@/lib/vertical";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
@@ -352,7 +352,7 @@ export default async function MatchPage({ params }: PageProps) {
     ...(kickoff ? { startDate: kickoff } : {}),
     homeTeam: { "@type": "SportsTeam", name: homeName },
     awayTeam: { "@type": "SportsTeam", name: awayName },
-    location: { "@type": "Place", name: "Allsvenskan" },
+    location: { "@type": "Place", name: String(fix.competition ?? vertical.leagueName) },
     ...(fix.status === "FT" ? {
       subEvent: [{
         "@type": "Report",
@@ -374,7 +374,7 @@ export default async function MatchPage({ params }: PageProps) {
       {/* Resultat-header */}
       <div className="bg-card border border-border rounded-2xl p-6">
         <p className="text-xs text-muted-foreground text-center mb-3">
-          Allsvenskan {kickoff ? new Date(kickoff).toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm", weekday: "long", day: "numeric", month: "long" }) : ""}
+          {String(fix.competition ?? vertical.leagueName)} {kickoff ? new Date(kickoff).toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm", weekday: "long", day: "numeric", month: "long" }) : ""}
           {/* text-red-500 matte 3.81:1 pa vit yta — destructive-ink ar den
               kontrastmatta valoren per tema (globals.css). Ett live-marke som
               ar svarlast ar illa i en sportprodukt. */}
@@ -566,17 +566,31 @@ export default async function MatchPage({ params }: PageProps) {
                       ? "truncate font-semibold text-foreground"
                       : "truncate text-foreground/80";
                     // Hemmalaget speglas så att ikonerna möts vid mittrännan.
+                    // Hockey: namnet på första raden, detaljen under. En rad räcker inte på 390 px —
+                    // "2 min · Utvisning · Namn" klipptes före namnet.
+                    const detail = isGoal
+                      ? `${e.result ?? "Mål"}${related ? ` · ass. ${related}` : ""}`
+                      : `${EVENT_LABELS[type] ?? type}${e.result ? ` ${e.result}` : ""}`;
+                    const body = (mirrored: boolean) =>
+                      VERTICAL === "hockey" ? (
+                        <span className={`flex min-w-0 flex-col ${mirrored ? "items-end text-right" : ""}`}>
+                          <span className={`max-w-full ${textClass}`}>{player ?? EVENT_LABELS[type] ?? type}</span>
+                          <span className="max-w-full truncate text-xs text-muted-foreground tabular-nums">{detail}</span>
+                        </span>
+                      ) : (
+                        <span className={textClass}>{text}</span>
+                      );
                     const cell = (mirrored: boolean) => (
                       <span className="flex min-w-0 items-center gap-1.5">
                         {mirrored ? (
                           <>
-                            <span className={textClass}>{text}</span>
+                            {body(true)}
                             <span aria-hidden className="shrink-0">{icon}</span>
                           </>
                         ) : (
                           <>
                             <span aria-hidden className="shrink-0">{icon}</span>
-                            <span className={textClass}>{text}</span>
+                            {body(false)}
                           </>
                         )}
                       </span>
