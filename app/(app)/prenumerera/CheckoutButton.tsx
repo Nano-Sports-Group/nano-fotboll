@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
@@ -14,9 +15,11 @@ interface Props {
   variant?: "primary" | "outline";
   /** Fotboll + Hockey i en prenumeration. */
   combo?: boolean;
+  /** "Har du redan PRO? Logga in" under knappen för utloggade. Av när flera knappar delar ett kort. */
+  showSignIn?: boolean;
 }
 
-export function CheckoutButton({ plan, interval, label, variant = "primary", combo = false }: Props) {
+export function CheckoutButton({ plan, interval, label, variant = "primary", combo = false, showSignIn = true }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { isSignedIn } = useAuth();
@@ -43,7 +46,8 @@ export function CheckoutButton({ plan, interval, label, variant = "primary", com
       const { url, error: apiError } = await res.json();
 
       if (apiError || !url) {
-        setError("Vi kunde inte öppna betalningen. Försök igen om en stund.");
+        // 409 = redan prenumerant: servern förklarar på svenska, och det är sant — visa den.
+        setError(res.status === 409 && typeof apiError === "string" ? apiError : "Vi kunde inte öppna betalningen. Försök igen om en stund.");
         return;
       }
 
@@ -80,6 +84,14 @@ export function CheckoutButton({ plan, interval, label, variant = "primary", com
           label
         )}
       </button>
+      {isSignedIn === false && showSignIn && (
+        <Link
+          href="/sign-in?redirect_url=/prenumerera"
+          className="mt-1 flex min-h-11 items-center justify-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+        >
+          Har du redan PRO? Logga in
+        </Link>
+      )}
       {error && (
         <p role="alert" className="mt-2 text-sm text-destructive-ink">
           {error}

@@ -26,7 +26,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { enforceRateLimit } from "@/lib/ratelimit";
@@ -57,6 +57,19 @@ import { getSiteUrl } from "@/lib/site-url";
 import { VERTICAL, vertical } from "@/lib/vertical";
 import { catalogRef } from "@/lib/stripe-catalog";
 import { catalogPriceId } from "@/lib/stripe-price";
+import { getEntitlements } from "@/lib/billing/entitlements";
+import { billingDb } from "@/lib/billing/db";
+import { getOrCreateStripeCustomer } from "@/lib/billing/stripe-customer";
+
+/** Slås på i system_config (billing.stripe_tax_enabled) när Stripe Tax är konfigurerat. Av = oförändrat beteende. */
+async function isStripeTaxEnabled(): Promise<boolean> {
+  try {
+    const { data } = await billingDb().from("system_config").select("value").eq("key", "billing").maybeSingle();
+    return (data as { value?: { stripe_tax_enabled?: unknown } } | null)?.value?.stripe_tax_enabled === true;
+  } catch {
+    return false;
+  }
+}
 
 export async function POST(req: Request & { headers: Headers }) {
   // Golf har inget pris än — kassan finns inte där. Först av allt: golf har ingen Stripe-nyckel,
@@ -105,6 +118,22 @@ export async function POST(req: Request & { headers: Headers }) {
     return NextResponse.json({ error: "Elite finns inte för hockey än" }, { status: 400 });
   }
 
+  // Ett andra köp av något man redan har blir dubbeldebitering. Kollen sker FÖRE Founder-reservationen,
+  // så ingen plats behöver släppas på den här vägen. Misslyckas läsningen blockerar vi inte köpet.
+  try {
+    const owned = await getEntitlements(userId);
+    const duplicatesFootball = (scope === "football" || scope === "both") && (owned.football_pro || owned.football_elite);
+    const duplicatesHockey = (scope === "hockey" || scope === "both") && owned.hockey_pro;
+    if (duplicatesFootball || duplicatesHockey) {
+      return NextResponse.json(
+        { error: "Du har redan en aktiv prenumeration som täcker det här. Hantera den under Konto." },
+        { status: 409 },
+      );
+    }
+  } catch (err) {
+    console.error("[create-checkout] kunde inte läsa rättigheter, släpper igenom:", err instanceof Error ? err.message : err);
+  }
+
   const planMeta = combo ? COMBO_PRICING[plan] : SPORT_PRICING[VERTICAL][plan];
 
   // ── Founder-grind ─────────────────────────────────────────────────────────
@@ -142,8 +171,21 @@ export async function POST(req: Request & { headers: Headers }) {
   const priceId = await catalogPriceId(stripe, catalogRef(scope, plan, interval, { founder }).lookupKey, unitAmount, interval);
 
   try {
+    // EN Stripe-kund per användare (fakturor, portal och återbetalningar samlas på samma kund).
+    const email = (await currentUser())?.primaryEmailAddress?.emailAddress ?? null;
+    const customer = await getOrCreateStripeCustomer(stripe, userId, email);
+    const taxEnabled = await isStripeTaxEnabled();
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
+      customer,
+      ...(taxEnabled
+        ? {
+            automatic_tax: { enabled: true },
+            customer_update: { address: "auto" as const },
+            billing_address_collection: "required" as const,
+          }
+        : {}),
       payment_method_types: ["card"],
       line_items: [
         priceId

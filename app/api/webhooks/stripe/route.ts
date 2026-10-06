@@ -1,16 +1,21 @@
 /**
  * app/api/webhooks/stripe/route.ts
  * ─────────────────────────────────────────────────────────────────────────────
- * Stripe Webhook-handler för Nano Fotboll.
+ * Stripe Webhook-handler för Nano Fotboll — mottagare i betalningskärnan
+ * (docs/billing/ARCHITECTURE.md §6):
  *
- * Hanterar:
- *  - checkout.session.completed → sätter Clerk publicMetadata.plan='pro|elite'
- *  - customer.subscription.deleted → sätter plan='free'
+ *   signatur → billing_claim_webhook → hämta om från Stripe → billing_apply_event
+ *     → projektion till Clerk → billing_finish_webhook
  *
  * Beslut:
  * - Signaturverifiering via stripe.webhooks.constructEvent() – ALDRIG hoppa över.
- * - Clerk Admin SDK (clerkClient) används server-side för att uppdatera metadata.
  * - Raw body läses med req.text() (Next.js App Router kräver detta).
+ * - Webhookar kommer i oordning, så prenumerationen HÄMTAS OM från Stripe i stället för att
+ *   tro på payloaden. Belopp läses ur fakturan/återbetalningen hos Stripe, aldrig ur klienten.
+ * - Planen (publicMetadata.plan / plans.hockey) skrivs bara av projectEntitlementsToClerk.
+ * - Handlerfel → händelsen markeras `failed` och vi svarar 500 så Stripe försöker igen.
+ * - Maps och TV bokförs här (huvudboken är kontoomfattande) men deras Clerk-fack ägs av
+ *   apparnas egna webhookar och rörs aldrig.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -18,9 +23,7 @@ import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import { logFunnelEvent } from "@/lib/funnel";
-import { updatePlanSource } from "@/lib/entitlements";
 import { recordUtmMilestone } from "@/lib/utm-attribution";
-import { markNewsletterPlanDirty } from "@/lib/newsletter/service";
 import { createServiceClient } from "@/lib/supabase";
 import { releaseFounderSeat } from "@/lib/waitlist/cohort";
 import { grantReferralCreditsOnFirstPayment } from "@/lib/waitlist/referral";
@@ -29,9 +32,20 @@ import {
   subscriptionFromInvoice,
   subscriptionIdFrom,
 } from "@/lib/waitlist/invoice-clerk";
-import { writeHockeyPlan } from "@/lib/hockey-plan";
+import { claimWebhook, finishWebhook, payloadHash } from "@/lib/billing/apply";
+import { ownsClerkProjection } from "@/lib/billing/products";
+import {
+  handleChargeRefunded,
+  handleDisputeCreated,
+  handleInvoicePaid,
+  syncSubscription,
+  vertical,
+} from "@/lib/billing/stripe-sync";
 
-// Lazy — initieras i POST() för att undvika build-time env-fel;
+type Outcome = "processed" | "ignored";
+
+/** Fotbollsgrenens bieffekter (funnel, trial-milestone, Founder) gäller bara fotboll och kombo — som förut. */
+const isFootballFlow = (v: string | undefined) => v === undefined || v === "football" || v === "both";
 
 export async function POST(req: Request) {
   // Lazy-init för att undvika build-time krav på env-vars
@@ -58,27 +72,36 @@ export async function POST(req: Request) {
     );
   }
 
-  // Nano Maps Pro och Nano TV Plus säljs i samma Stripe-konto men ägs av apparnas egna
-  // webhookar (`plans.maps`, `plans.tv`). Utan den här spärren föll ett Maps-köp ner i
-  // fotbollsgrenen och gav fotbolls-PRO för 49 kr.
-  const eventMeta = (event.data.object as { metadata?: Record<string, string> | null }).metadata;
-  if (eventMeta?.vertical === "maps" || eventMeta?.vertical === "tv") {
+  let claim;
+  try {
+    claim = await claimWebhook("stripe", event.id, event.type, payloadHash(body));
+  } catch (err) {
+    // Utan claim vet vi inte om händelsen redan är hanterad — Stripe får försöka igen.
+    console.error("[stripe-webhook] claim misslyckades:", err instanceof Error ? err.message : err);
+    return NextResponse.json({ error: "Kunde inte registrera händelsen" }, { status: 500 });
+  }
+  if (claim === "done") return NextResponse.json({ received: true, duplicate: true });
+  if (claim === "busy") return NextResponse.json({ error: "Händelsen hanteras redan" }, { status: 409 });
+
+  try {
+    const outcome = await handle(stripe, event);
+    await finishWebhook("stripe", event.id, outcome);
     return NextResponse.json({ received: true });
-  }
-
-  const clerk = await clerkClient();
-  async function markNewsletterPlan(clerkUserId: string, plan: string) {
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[stripe-webhook] ${event.type} ${event.id} misslyckades:`, message);
     try {
-      await markNewsletterPlanDirty(clerkUserId, plan);
-    } catch (error) {
-      console.error(
-        "[stripe-webhook] newsletter dirty mark failed",
-        error instanceof Error ? error.message : "unknown",
-      );
+      await finishWebhook("stripe", event.id, "failed", message);
+    } catch (finishError) {
+      console.error("[stripe-webhook] kunde inte markera failed:", finishError instanceof Error ? finishError.message : finishError);
     }
+    return NextResponse.json({ error: "Händelsen kunde inte hanteras" }, { status: 500 });
   }
+}
 
-  // ─── Hantera events ────────────────────────────────────────────────────────
+async function handle(stripe: Stripe, event: Stripe.Event): Promise<Outcome> {
+  const clerk = await clerkClient();
+
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
@@ -88,40 +111,23 @@ export async function POST(req: Request) {
 
       if (!clerkUserId) {
         console.error("[stripe-webhook] Saknar clerkUserId i session", session.id);
-        break;
+        return "ignored";
       }
 
-      // Kombo: hockeyfacket skrivs här, sedan fortsätter fotbollsgrenen nedan.
-      if (session.metadata?.vertical === "both") {
-        await writeHockeyPlan(clerk, clerkUserId, session.metadata?.plan === "elite" ? "elite" : "pro", {
-          customerId: typeof session.customer === "string" ? session.customer : null,
-          subscriptionId: typeof session.subscription === "string" ? session.subscription : null,
-        });
+      const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
+      if (!subscriptionId) {
+        console.warn("[stripe-webhook] Session utan prenumeration", session.id);
+        return "ignored";
       }
-
-      if (session.metadata?.vertical === "hockey") {
-        const hockeyPlan = session.metadata?.plan === "elite" ? "elite" : "pro";
-        await writeHockeyPlan(clerk, clerkUserId, hockeyPlan, {
-          customerId: typeof session.customer === "string" ? session.customer : null,
-          subscriptionId: typeof session.subscription === "string" ? session.subscription : null,
-        });
-        console.log(`[stripe-webhook] Hockey ${hockeyPlan.toUpperCase()} för ${clerkUserId}`);
-        break;
-      }
-
       if (!session.metadata?.plan) {
         console.warn("[stripe-webhook] Saknar plan i session.metadata", session.id);
       }
-      const plan = session.metadata?.plan === "elite" ? "elite" : "pro";
 
-      const effectivePlan = await updatePlanSource(clerkUserId, "stripe", plan);
-      await clerk.users.updateUserMetadata(clerkUserId, {
-        privateMetadata: {
-          stripeCustomerId: session.customer as string,
-          stripeSubscriptionId: session.subscription as string,
-        },
-      });
-      await markNewsletterPlan(clerkUserId, effectivePlan);
+      const synced = await syncSubscription(stripe, clerk, subscriptionId, event, { clerkUserId });
+      const scope = session.metadata?.vertical;
+      if (!synced || !isFootballFlow(scope)) return synced ? "processed" : "ignored";
+
+      const plan = session.metadata?.plan === "elite" ? "elite" : "pro";
 
       // Founder-märket sätts först här: det ska bevisa ett genomfört köp till
       // Founder-pris, inte en plats i en kö. Platsen är redan reserverad i
@@ -144,137 +150,36 @@ export async function POST(req: Request) {
       // (inte här — checkout kan vara direktbetalning utan trial).
 
       console.log(`[stripe-webhook] ${plan.toUpperCase()} aktiverat för ${clerkUserId}`);
-      break;
+      return "processed";
     }
 
     case "customer.subscription.created":
-    case "customer.subscription.updated": {
-      const subscription = event.data.object as Stripe.Subscription;
-      const clerkUserId = subscription.metadata?.clerkUserId;
-      if (!clerkUserId) break;
-
-      // Omfångsbyte (lägg till/ta bort sport): den sport som föll bort blir free.
-      const previousScope = (
-        (event.data as { previous_attributes?: { metadata?: Record<string, string> } }).previous_attributes?.metadata
-      )?.vertical;
-      const scope = subscription.metadata?.vertical ?? "football";
-      if (previousScope === "both" && scope === "football") {
-        await writeHockeyPlan(clerk, clerkUserId, "free", { subscriptionId: null });
-      }
-      if (previousScope === "both" && scope === "hockey") {
-        const effective = await updatePlanSource(clerkUserId, "stripe", "free");
-        await clerk.users.updateUserMetadata(clerkUserId, { privateMetadata: { stripeSubscriptionId: null } });
-        await markNewsletterPlan(clerkUserId, effective);
-      }
-      if (scope === "both") {
-        const alive = subscription.status === "active" || subscription.status === "trialing";
-        await writeHockeyPlan(clerk, clerkUserId, !alive ? "free" : subscription.metadata?.plan === "elite" ? "elite" : "pro", {
-          customerId: typeof subscription.customer === "string" ? subscription.customer : null,
-          subscriptionId: subscription.id,
-        });
-      }
-
-      if (subscription.metadata?.vertical === "hockey") {
-        const alive = subscription.status === "active" || subscription.status === "trialing";
-        const hockeyPlan = !alive ? "free" : subscription.metadata?.plan === "elite" ? "elite" : "pro";
-        await writeHockeyPlan(clerk, clerkUserId, hockeyPlan, {
-          customerId: typeof subscription.customer === "string" ? subscription.customer : null,
-          subscriptionId: subscription.id,
-        });
-        break;
-      }
-
-      // Nyare API-versioner (basil och framåt) har periodslutet på raden, inte på prenumerationen.
-      const periodEndTs =
-        (subscription as unknown as { current_period_end?: number }).current_period_end ??
-        (subscription.items?.data?.[0] as unknown as { current_period_end?: number } | undefined)?.current_period_end;
-      const currentPeriodEnd = periodEndTs
-        ? new Date(periodEndTs * 1000).toISOString()
-        : undefined;
-
-      if (
-        subscription.status === "past_due" ||
-        subscription.status === "unpaid" ||
-        subscription.status === "canceled"
-      ) {
-        const effectivePlan = await updatePlanSource(clerkUserId, "stripe", "free");
-        await clerk.users.updateUserMetadata(clerkUserId, {
-          privateMetadata: {
-            stripeCustomerId: subscription.customer as string,
-            stripeSubscriptionId: subscription.id,
-            subscription: {
-              id: subscription.id,
-              status: subscription.status,
-              currentPeriodEnd,
-              cancelAtPeriodEnd: subscription.cancel_at_period_end,
-            },
-          },
-        });
-        await markNewsletterPlan(clerkUserId, effectivePlan);
-      } else if (subscription.status === "active" || subscription.status === "trialing") {
-        const plan = subscription.metadata?.plan === "elite" ? "elite" : "pro";
-        const effectivePlan = await updatePlanSource(clerkUserId, "stripe", plan);
-        await clerk.users.updateUserMetadata(clerkUserId, {
-          privateMetadata: {
-            stripeCustomerId: subscription.customer as string,
-            stripeSubscriptionId: subscription.id,
-            subscription: {
-              id: subscription.id,
-              status: subscription.status,
-              plan,
-              currentPeriodEnd,
-              cancelAtPeriodEnd: subscription.cancel_at_period_end,
-            },
-          },
-        });
-        await markNewsletterPlan(clerkUserId, effectivePlan);
-        if (subscription.status === "trialing") {
-          await recordUtmMilestone({
-            event: "trial_start",
-            clerkUserId,
-            path: "/prenumerera",
-            properties: {
-              plan,
-              source: `subscription.${event.type.split(".").pop()}`,
-              subscriptionId: subscription.id,
-            },
-            skipCookie: true,
-          });
-        }
-      }
-      console.log(`[stripe-webhook] subscription.${event.type.split(".").pop()} för ${clerkUserId}`);
-      break;
-    }
-
+    case "customer.subscription.updated":
     case "customer.subscription.deleted": {
       const subscription = event.data.object as Stripe.Subscription;
-      const clerkUserId = subscription.metadata?.clerkUserId;
+      const synced = await syncSubscription(stripe, clerk, subscription.id, event);
+      if (!synced) return "ignored";
 
-      if (!clerkUserId) {
-        console.error("[stripe-webhook] Saknar clerkUserId i subscription", subscription.id);
-        break;
-      }
-
-      if (subscription.metadata?.vertical === "hockey" || subscription.metadata?.vertical === "both") {
-        await writeHockeyPlan(clerk, clerkUserId, "free", {
-          subscriptionId: null,
+      if (
+        event.type !== "customer.subscription.deleted" &&
+        synced.sub.status === "trialing" &&
+        isFootballFlow(vertical(synced.sub)) &&
+        ownsClerkProjection(vertical(synced.sub))
+      ) {
+        await recordUtmMilestone({
+          event: "trial_start",
+          clerkUserId: synced.clerkUserId,
+          path: "/prenumerera",
+          properties: {
+            plan: synced.sub.metadata?.plan === "elite" ? "elite" : "pro",
+            source: `subscription.${event.type.split(".").pop()}`,
+            subscriptionId: synced.sub.id,
+          },
+          skipCookie: true,
         });
-        console.log(`[stripe-webhook] Hockey-prenumeration avbruten för ${clerkUserId}`);
-        // Kombo: fotbollen avslutas också — fortsätt till fotbollsgrenen.
-        if (subscription.metadata?.vertical === "hockey") break;
       }
-
-      const effectivePlan = await updatePlanSource(clerkUserId, "stripe", "free");
-      await clerk.users.updateUserMetadata(clerkUserId, {
-        privateMetadata: {
-          stripeSubscriptionId: null,
-          subscription: null,
-        },
-      });
-      await markNewsletterPlan(clerkUserId, effectivePlan);
-
-      console.log(`[stripe-webhook] Prenumeration avbruten för ${clerkUserId}`);
-      break;
+      console.log(`[stripe-webhook] ${event.type} för ${synced.clerkUserId}`);
+      return "processed";
     }
 
     /**
@@ -287,8 +192,23 @@ export async function POST(req: Request) {
       if (session.metadata?.founder === "true") {
         await releaseFounderSeat(session.metadata?.founderClaimedPot === "true");
         console.log(`[stripe-webhook] Founder-plats släppt (utgången checkout ${session.id})`);
+        return "processed";
       }
-      break;
+      return "ignored";
+    }
+
+    case "invoice.paid":
+      return handleInvoicePaid(stripe, clerk, event, event.data.object as Stripe.Invoice);
+
+    /**
+     * Betalning misslyckades: prenumerationen blir past_due hos Stripe och hämtas om här.
+     * Hur länge åtkomsten består avgör databasen (billing.stripe_past_due_grace_days).
+     */
+    case "invoice.payment_failed": {
+      const invoice = event.data.object as Stripe.Invoice;
+      const subscriptionId = subscriptionIdFrom(subscriptionFromInvoice(invoice));
+      if (!subscriptionId) return "ignored";
+      return (await syncSubscription(stripe, clerk, subscriptionId, event)) ? "processed" : "ignored";
     }
 
     /**
@@ -307,13 +227,13 @@ export async function POST(req: Request) {
           userId = sub.metadata?.clerkUserId;
         }
       }
-      if (!userId) break;
+      if (!userId) return "ignored";
 
       const paidSubscriptionId = subscriptionIdFrom(subRef);
       if (paidSubscriptionId) {
         try {
           const paidSub = await stripe.subscriptions.retrieve(paidSubscriptionId);
-          if (paidSub.metadata?.vertical === "hockey" || paidSub.metadata?.vertical === "maps") break;
+          if (paidSub.metadata?.vertical === "hockey" || paidSub.metadata?.vertical === "maps") return "ignored";
         } catch {
           // Fotbollens värvningskredit får inte blockeras av ett misslyckat uppslag.
         }
@@ -325,13 +245,17 @@ export async function POST(req: Request) {
         clerkUserId: userId,
         amountPaidOre: invoice.amount_paid ?? 0,
       });
-      break;
+      return "processed";
     }
+
+    case "charge.refunded":
+      return handleChargeRefunded(stripe, event, event.data.object as Stripe.Charge);
+
+    case "charge.dispute.created":
+      return handleDisputeCreated(stripe, event, event.data.object as Stripe.Dispute);
 
     default:
       // Ignorera övriga events
-      break;
+      return "ignored";
   }
-
-  return NextResponse.json({ received: true });
 }

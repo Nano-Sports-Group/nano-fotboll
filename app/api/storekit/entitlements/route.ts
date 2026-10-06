@@ -2,7 +2,8 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { fetchAuthoritativeTransaction } from "@/lib/app-store";
 import { enforceRateLimit } from "@/lib/ratelimit";
-import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { getOrCreateAccountToken } from "@/lib/billing/store-account";
 import { syncStoreKitTransaction } from "@/lib/storekit-entitlements";
 import { parseBody, z } from "@/lib/validation";
 import { jsonContract } from "@/lib/api-contract";
@@ -11,31 +12,6 @@ import { StoreAccountTokenResponseSchema, StoreEntitlementSyncResponseSchema } f
 const TransactionSchema = z.object({
   transactionId: z.string().regex(/^[0-9]{5,40}$/),
 });
-
-async function getOrCreateAccountToken(userId: string): Promise<string> {
-  const supabase = createServerClient();
-  const { data: existing } = await supabase
-    .from("app_store_accounts")
-    .select("app_account_token")
-    .eq("clerk_user_id", userId)
-    .maybeSingle();
-  if (existing) return existing.app_account_token;
-
-  const { data, error } = await supabase
-    .from("app_store_accounts")
-    .insert({ clerk_user_id: userId })
-    .select("app_account_token")
-    .single();
-  if (!error && data) return data.app_account_token;
-
-  const { data: raced, error: racedError } = await supabase
-    .from("app_store_accounts")
-    .select("app_account_token")
-    .eq("clerk_user_id", userId)
-    .single();
-  if (racedError || !raced) throw racedError ?? new Error("Account token missing");
-  return raced.app_account_token;
-}
 
 export async function GET() {
   const { userId } = await auth();

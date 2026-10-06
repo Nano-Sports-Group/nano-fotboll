@@ -26,10 +26,9 @@ import {
   type BillingInterval,
   type SubscriptionScope,
 } from "@/lib/pricing";
-import { writeHockeyPlan } from "@/lib/hockey-plan";
 import { catalogRef } from "@/lib/stripe-catalog";
 import { catalogPriceId } from "@/lib/stripe-price";
-import { updatePlanSource } from "@/lib/entitlements";
+import { syncSubscription } from "@/lib/billing/stripe-sync";
 
 /** Reservväg när katalogpriset saknas: Stripe kräver en produkt-id när en prenumerations pris byts. */
 async function productFor(stripe: Stripe, productId: string, name: string): Promise<string> {
@@ -129,14 +128,17 @@ export async function POST(req: Request & { headers: Headers }) {
     proration_behavior: "create_prorations",
   });
 
-  // Webhooken (subscription.updated) skriver planerna. Den borttagna sporten nollas redan här
-  // så att åtkomsten försvinner direkt, även om webhooken dröjer.
-  if (action === "remove" && sport === "hockey") {
-    await writeHockeyPlan(clerk, userId, "free", { subscriptionId: null });
-  }
-  if (action === "remove" && sport === "football") {
-    await updatePlanSource(userId, "stripe", "free");
-    await clerk.users.updateUserMetadata(userId, { privateMetadata: { stripeSubscriptionId: null } });
+  // Webhooken (subscription.updated) gör samma sak, men den borttagna sporten ska försvinna direkt
+  // även om webhooken dröjer: bokför och projicera den uppdaterade prenumerationen nu. Idempotent.
+  try {
+    await syncSubscription(stripe, clerk, subscription.id, {
+      id: `sports:${subscription.id}`,
+      type: "customer.subscription.updated",
+      created: Math.floor(Date.now() / 1000),
+      livemode: subscription.livemode,
+    });
+  } catch (err) {
+    console.error("[billing/sports] direktsynk misslyckades, webhooken tar över:", err instanceof Error ? err.message : err);
   }
 
   return NextResponse.json({ ok: true, scope: target, amount: unitAmount, interval });

@@ -6,6 +6,10 @@
     {
       "path": "/api/gamification/weekly-reset",
       "schedule": "1 0 * * 1"
+    },
+    {
+      "path": "/api/cron/billing-sweep",
+      "schedule": "*/10 * * * *"
     }
   ]
 }

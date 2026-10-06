@@ -105,6 +105,11 @@ Ny kod läggs i befintlig feature-mapp. Skapa inte parallella mönster —
   **Per sport** (2026-09-30): hockey PRO 69 kr (ingen hockey-Elite, `ELITE_AVAILABLE`), PRO Kombo 129,
   Elite Kombo 209. En källa: `SPORT_PRICING`/`COMBO_PRICING` i `lib/pricing.ts`. Se `context/offer_catalog.md`.
   Veckopris (`formatWeeklyKr`) är alltid andra rad och muted — hero är det Stripe drar.
+- **Rättigheter kommer ur databasen, inte ur webhooken** (2026-10-07). Köp → normaliserad händelse →
+  `billing_apply_event()` → `user_entitlements` → `lib/billing/project.ts`, som är det ENDA stället som
+  skriver `publicMetadata.plan` och `plans.hockey`. Ingen ny `if stripe/apple/google → plan`. Belopp och
+  status läses ur leverantörens objekt hämtade på servern, aldrig ur bodyn. Finansiella rader ändras
+  aldrig — en rättelse är en ny rad. Se `../docs/billing/ARCHITECTURE.md` och workspace-`CLAUDE.md` §8.
 - **Founder är en pott, aldrig en boolean.** `isFounderOfferPublic()` i `lib/founder-offer.ts`
   läser `founder_offer_state` (cache 30 s). Klientkomponenter tar `founderPublic` som prop från
   en server parent — de får aldrig gissa. Är potten slut försvinner Founder ur ALL publik UI.

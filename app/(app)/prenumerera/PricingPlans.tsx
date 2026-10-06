@@ -179,7 +179,7 @@ function ComboCard({ interval }: { interval: BillingInterval }) {
         </p>
       </div>
       <div className="mt-4 flex flex-col gap-2 sm:mt-0 sm:w-56 shrink-0">
-        <CheckoutButton plan="pro" interval={interval} combo label="Välj Nano Sport PRO" variant="outline" />
+        <CheckoutButton plan="pro" interval={interval} combo label="Välj Nano Sport PRO" variant="outline" showSignIn={false} />
         <CheckoutButton plan="elite" interval={interval} combo label="Välj Nano Sport Elite" variant="outline" />
       </div>
     </section>

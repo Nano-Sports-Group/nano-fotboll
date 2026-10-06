@@ -21,8 +21,9 @@ const ROOTS = ['app', 'components', 'lib', 'hooks']
 const SERVER_ONLY = [
   'lib/supabase.ts',
   'lib/user-plan.ts',
-  'lib/entitlements.ts',
-  'lib/plan-lock.ts',
+  'lib/billing/apply.ts',
+  'lib/billing/project.ts',
+  'lib/billing/entitlements.ts',
   'lib/app-store.ts',
   'lib/storekit-entitlements.ts',
 ]

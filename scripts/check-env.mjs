@@ -69,6 +69,12 @@ const REQUIRED = [
 const LAUNCH_REQUIRED = ['RESEND_API_KEY', 'WAITLIST_EMAIL_FROM', 'WAITLIST_MODE'];
 
 /**
+ * Google Play-köp (docs/billing). Varnar men failar ALDRIG: saknas de svarar
+ * /api/webhooks/google-play och /api/google-play/purchases 503 — Android säljer inget än.
+ */
+const WARN_ONLY = ['GOOGLE_PLAY_SERVICE_ACCOUNT_JSON', 'GOOGLE_PLAY_PACKAGE_NAME', 'GOOGLE_PLAY_RTDN_TOKEN'];
+
+/**
  * Publika till sin natur, alltså meningslösa att göra sensitive — och därför de
  * enda vars VÄRDE går att kontrollera härifrån. Sätt dem med `--no-sensitive`.
  */
@@ -105,6 +111,7 @@ for (const line of raw.split('\n')) {
 
 const missing = REQUIRED.filter((k) => !values.has(k));
 const launchMissing = LAUNCH_REQUIRED.filter((k) => !values.has(k));
+const warnMissing = WARN_ONLY.filter((k) => !values.has(k));
 const readableButEmpty = MUST_BE_READABLE.filter((k) => values.has(k) && values.get(k) === '');
 const unverifiable = REQUIRED.filter(
   (k) => values.has(k) && values.get(k) === '' && !MUST_BE_READABLE.includes(k),
@@ -126,6 +133,12 @@ if (launchMissing.length) {
   for (const k of launchMissing) console.log(`  ${k}`);
   console.log('  → Utan RESEND_API_KEY skickas inget bekräftelsemejl (route svarar 503).');
   console.log('  → Utan WAITLIST_MODE är kön avstängd. Det är korrekt tills Hampus slår på den.');
+  console.log('');
+}
+
+if (warnMissing.length) {
+  console.log('VARNING — Google Play-variabler saknas (rutterna svarar 503 tills de finns):');
+  for (const k of warnMissing) console.log(`  ${k}`);
   console.log('');
 }
 

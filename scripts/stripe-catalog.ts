@@ -30,6 +30,11 @@ const WEBHOOK_EVENTS: Record<string, Stripe.WebhookEndpointUpdateParams.EnabledE
     "customer.subscription.updated",
     "customer.subscription.deleted",
     "invoice.payment_succeeded",
+    // Betalningskärnan (docs/billing): försäljning, misslyckad betalning, återbetalning, tvist.
+    "invoice.paid",
+    "invoice.payment_failed",
+    "charge.refunded",
+    "charge.dispute.created",
   ],
   "/webhooks/stripe/maps": ["checkout.session.completed", "customer.subscription.updated", "customer.subscription.deleted"],
   "/webhooks/stripe/tv": ["checkout.session.completed", "customer.subscription.updated", "customer.subscription.deleted"],
