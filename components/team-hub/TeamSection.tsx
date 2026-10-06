@@ -1,5 +1,6 @@
 "use client";
 
+import { VERTICAL } from "@/lib/vertical";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
@@ -176,6 +177,15 @@ function Oversikt({ hub, plan, insights, onFixture }: { hub: TeamHubPayload; pla
       </SectionCard>
 
       <SectionCard title="Ledare" icon={Trophy}>
+        {/* Hockeyns huvudtabell är poäng (mål + assist). */}
+        {VERTICAL === "hockey" && (
+          <LeaderList
+            title="Poängliga"
+            rows={[...hub.squad].sort((a, b) => b.goals + b.assists - (a.goals + a.assists)).slice(0, 5)}
+            value={(r) => r.goals + r.assists}
+            suffix="p"
+          />
+        )}
         <LeaderList title="Skytteliga" rows={hub.topScorers} statKey="goals" suffix="mål" />
         <LeaderList title="Assist" rows={hub.topAssists} statKey="assists" suffix="ast" />
         {hub.topScorers.length === 0 && <p className="text-sm text-muted-foreground">Ingen spelardata ännu.</p>}
@@ -447,8 +457,9 @@ function StatTextRow({ label, value, children }: { label: string; value?: string
   );
 }
 
-function LeaderList({ title, rows, statKey, suffix }: { title: string; rows: LeaderRow[]; statKey: "goals" | "assists"; suffix: string }) {
-  if (rows.length === 0 || rows.every((r) => r[statKey] === 0)) return null;
+function LeaderList({ title, rows, statKey = "goals", value, suffix }: { title: string; rows: LeaderRow[]; statKey?: "goals" | "assists"; value?: (r: LeaderRow) => number; suffix: string }) {
+  const stat = value ?? ((r: LeaderRow) => r[statKey]);
+  if (rows.length === 0 || rows.every((r) => stat(r) === 0)) return null;
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">{title}</p>
@@ -457,8 +468,13 @@ function LeaderList({ title, rows, statKey, suffix }: { title: string; rows: Lea
           <div key={r.player_id} className="flex items-center gap-2.5">
             <span className="text-xs text-muted-foreground w-3 font-mono tabular-nums">{i + 1}</span>
             {r.image && <span className="relative w-6 h-6 rounded-full overflow-hidden bg-muted shrink-0"><PlayerAvatar src={r.image} alt="" sizes="24px" /></span>}
-            <Link href={`/spelare/${r.slug ?? r.player_id}`} className="flex-1 text-sm text-foreground hover:text-pitch-ink truncate">{r.fullname}</Link>
-            <span className="text-sm font-bold text-foreground font-mono tabular-nums">{r[statKey]}</span>
+            {/* Spelarsidan är byggd för fotbollens siffror (matcher, minuter, betyg) — hockeyn länkar inte dit än. */}
+            {VERTICAL === "hockey" ? (
+              <span className="flex-1 text-sm text-foreground truncate">{r.fullname}</span>
+            ) : (
+              <Link href={`/spelare/${r.slug ?? r.player_id}`} className="flex-1 text-sm text-foreground hover:text-pitch-ink truncate">{r.fullname}</Link>
+            )}
+            <span className="text-sm font-bold text-foreground font-mono tabular-nums">{stat(r)}</span>
             <span className="text-xs text-muted-foreground w-6">{suffix}</span>
           </div>
         ))}
