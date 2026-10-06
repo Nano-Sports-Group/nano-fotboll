@@ -1,5 +1,6 @@
 "use client";
 
+import { fixtureHref } from "@/lib/match/slug";
 import { VERTICAL } from "@/lib/vertical";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -115,7 +116,7 @@ function MatchQuickview({ fixture, smId, onClose }: { fixture: FixtureRow | null
             )}
 
             <Link
-              href={`/match/${f.sportmonks_id}`}
+              href={fixtureHref(f)}
               className="flex items-center justify-center gap-1.5 rounded-xl bg-pitch px-4 py-3 text-sm font-medium text-white transition-opacity active:opacity-80"
             >
               Till matchsidan <ArrowRight className="h-4 w-4" />

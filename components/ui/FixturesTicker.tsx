@@ -4,6 +4,7 @@
  * scrollbara pills; live-matcher markeras. Varje pill → /match/[id].
  */
 
+import { smFixtureHref } from "@/lib/match/slug";
 import Image from "next/image";
 import Link from "next/link";
 import { fetchAllsvenskanFixtures, parseFixtureScore } from "@/lib/db/fixtures";
@@ -39,7 +40,7 @@ function TickerItem({ fixture }: { fixture: SMFixture }) {
 
   return (
     <Link
-      href={`/match/${fixture.id}`}
+      href={smFixtureHref(fixture)}
       className={cn(
         "flex min-h-11 items-center gap-2 shrink-0 rounded-full border border-border bg-card px-3",
         "text-xs transition-colors hover:border-pitch/40",

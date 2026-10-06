@@ -1,3 +1,4 @@
+import { fixtureHref } from "@/lib/match/slug";
 import Link from "next/link";
 import { MessageSquare, Newspaper } from "lucide-react";
 import type { TeamHubPayload } from "@/lib/team-hub/queries";
@@ -35,7 +36,7 @@ export function MittLagWidgets({
             Nästa match
           </p>
           <Link
-            href={`/match/${next.sportmonks_id}`}
+            href={fixtureHref(next)}
             className="mt-2 block hover:opacity-90 transition-opacity"
           >
             <p className="text-lg font-semibold text-foreground">

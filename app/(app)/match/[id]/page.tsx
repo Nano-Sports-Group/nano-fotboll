@@ -1,3 +1,4 @@
+import { resolveMatchParam } from "@/lib/match/resolve";
 import { SPORT, VERTICAL, vertical } from "@/lib/vertical";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -150,8 +151,9 @@ async function getData(fixtureId: number) {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const fid = parseInt(id, 10);
-  if (isNaN(fid)) return { title: "Match | Nano Fotboll" };
+  const resolved = await resolveMatchParam(id);
+  if (!resolved) return { title: "Match" };
+  const fid = resolved.id;
   const db = createServerClient();
   const { data } = await db
     .from("fixtures")
@@ -186,7 +188,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       homeScore,
       awayScore,
       when,
-      path: `/match/${fid}`,
+      path: resolved.path,
     }),
   );
 }
@@ -293,8 +295,10 @@ function FormDots({ form }: { form: string[] }) {
 
 export default async function MatchPage({ params }: PageProps) {
   const { id } = await params;
-  const fid = parseInt(id, 10);
-  if (isNaN(fid)) return <p className="text-center py-16 text-muted-foreground">Ogiltigt match-ID.</p>;
+  // Adressen är läsbar (/match/hemma-borta-2026-10-03) eller numerisk (äldre länkar, djuplänkar).
+  const resolved = await resolveMatchParam(id);
+  if (!resolved) return <p className="text-center py-16 text-muted-foreground">Vi hittar ingen match på den adressen.</p>;
+  const fid = resolved.id;
 
   const d = await getData(fid);
   const fix = d?.fix as Record<string, unknown> | null;
@@ -348,7 +352,7 @@ export default async function MatchPage({ params }: PageProps) {
     "@type": "SportsEvent",
     name: `${homeName} – ${awayName}`,
     sport: "Soccer",
-    url: `${getSiteUrl()}/match/${fid}`,
+    url: `${getSiteUrl()}${resolved.path}`,
     ...(kickoff ? { startDate: kickoff } : {}),
     homeTeam: { "@type": "SportsTeam", name: homeName },
     awayTeam: { "@type": "SportsTeam", name: awayName },

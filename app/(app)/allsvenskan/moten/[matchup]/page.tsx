@@ -1,3 +1,4 @@
+import { smFixtureHref } from "@/lib/match/slug";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -162,7 +163,7 @@ function MatchList({ fixtures }: { fixtures: Awaited<ReturnType<typeof fetchH2HF
         const played = f.state.short_name === "FT";
         return (
           <li key={f.id} className="hover:bg-muted/20 transition-colors">
-            <Link href={`/match/${f.id}`} className="flex items-center justify-between px-4 py-3 gap-3">
+            <Link href={smFixtureHref(f)} className="flex items-center justify-between px-4 py-3 gap-3">
               <span className="flex-1 text-right font-medium text-foreground truncate">{home?.name}</span>
               <span className={`px-3 py-1 rounded-lg text-sm font-bold font-mono tabular-nums ${played ? "bg-muted text-foreground" : "text-muted-foreground"}`}>
                 {played && hg != null && ag != null

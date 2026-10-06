@@ -1,3 +1,4 @@
+import { smFixtureHref } from "@/lib/match/slug";
 import { vertical } from "@/lib/vertical";
 import Link from "next/link";
 import Image from "next/image";
@@ -96,7 +97,7 @@ export async function SportFront({ articles }: { articles: LandingArticle[] }) {
             />
             <div className="flex flex-col gap-2">
               {matchList.items.map((f) => (
-                <Link key={f.id} href={`/match/${f.id}`}>
+                <Link key={f.id} href={smFixtureHref(f)}>
                   <ScoreWidget fixture={f} />
                 </Link>
               ))}

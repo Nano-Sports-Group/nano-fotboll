@@ -1,5 +1,6 @@
 "use client";
 
+import { fixtureHref } from "@/lib/match/slug";
 import Link from "next/link";
 import { MessageSquare, Newspaper, Podcast, Star } from "lucide-react";
 import type { TeamFeedItem, FixtureRow } from "@/lib/team-hub/queries";
@@ -126,7 +127,7 @@ function FeedRow({ item, teamSlug, teamName, plan }: { item: TeamFeedItem; teamS
 
 function FixtureRowCard({ fixture: f }: { fixture: FixtureRow }) {
   return (
-    <Link href={`/match/${f.sportmonks_id}`} className={rowClass}>
+    <Link href={fixtureHref(f)} className={rowClass}>
       <span className="text-sm text-foreground group-hover:text-pitch-ink">
         {f.home_team_name} <span className="font-semibold font-mono tabular-nums">{f.home_score}–{f.away_score}</span> {f.away_team_name}
       </span>

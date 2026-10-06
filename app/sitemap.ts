@@ -1,3 +1,4 @@
+import { fixtureHref } from "@/lib/match/slug";
 import { SPORT, VERTICAL, leagueHref } from "@/lib/vertical";
 import { GOLF_PLAYERS, GOLF_TOURS } from "@/lib/golf/catalog";
 import type { MetadataRoute } from "next";
@@ -127,13 +128,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Matchsidor: färdigspelade (matchrapporter, permanent SEO-värde) + kommande
     const { data: fixtures } = await supabase
       .from("fixtures")
-      .select("sportmonks_id, kickoff_at, status, updated_at")
+      .select("sportmonks_id, kickoff_at, status, updated_at, home_team_name, away_team_name")
       .eq("sport", SPORT)
       .in("status", ["FT", "NS", "LIVE"])
       .order("kickoff_at", { ascending: false })
       .limit(500);
     matchRoutes = (fixtures ?? []).map((f) => ({
-      url: `${BASE}/match/${f.sportmonks_id}`,
+      url: `${BASE}${fixtureHref(f)}`,
       lastModified: f.updated_at ? new Date(f.updated_at) : new Date(),
       changeFrequency: (f.status === "FT" ? "monthly" : "hourly") as "monthly" | "hourly",
       priority: f.status === "FT" ? 0.6 : 0.75,

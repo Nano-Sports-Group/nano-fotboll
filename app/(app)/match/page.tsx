@@ -1,3 +1,4 @@
+import { smFixtureHref } from "@/lib/match/slug";
 import { vertical } from "@/lib/vertical";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -19,7 +20,7 @@ function FixtureList({ fixtures }: { fixtures: SMFixture[] }) {
       {fixtures.map((fixture, i) => (
         <Link
           key={fixture.id}
-          href={`/match/${fixture.id}`}
+          href={smFixtureHref(fixture)}
           className={i < 4 ? `animate-fade-up stagger-${i + 1}` : undefined}
         >
           <ScoreWidget fixture={fixture} />

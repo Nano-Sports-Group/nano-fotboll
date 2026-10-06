@@ -1,3 +1,4 @@
+import { fixtureHref } from "@/lib/match/slug";
 import Link from "next/link";
 import { Clock, Radio } from "lucide-react";
 import { formatKickoff } from "@/lib/matchday/helpers";
@@ -24,7 +25,7 @@ export async function FeedMatchHero() {
         </h2>
       </div>
       <Link
-        href={`/match/${match.sportmonks_id}`}
+        href={fixtureHref(match)}
         className="group flex flex-col gap-2 rounded-xl border border-border bg-card px-4 py-3 transition-colors hover:bg-muted/40 sm:flex-row sm:items-center sm:justify-between"
       >
         <div className="flex min-w-0 items-center gap-2">

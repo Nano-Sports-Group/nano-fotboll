@@ -1,3 +1,4 @@
+import { smFixtureHref } from "@/lib/match/slug";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { fetchAllsvenskanFixtures } from "@/lib/db/fixtures";
@@ -98,7 +99,7 @@ export default async function AllsvenskanResultatPage({
             return (
               <Link
                 key={f.id}
-                href={`/match/${f.id}`}
+                href={smFixtureHref(f)}
                 className="flex items-center justify-between rounded-xl border border-border bg-card p-4 hover:border-pitch/50 transition-colors"
               >
                 <span className="font-medium w-[38%] text-right truncate">{home}</span>
