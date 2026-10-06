@@ -552,7 +552,8 @@ export default async function MatchPage({ params }: PageProps) {
                 <ul className="space-y-1.5">
                   {timelineEvents.map((e) => {
                     const isHome = String(e.teamId) === homeTeamId;
-                    const icon = EVENT_ICONS[e.eventType] ?? "•";
+                    // En fotboll för ett hockeymål ser fel ut.
+                    const icon = VERTICAL === "hockey" && e.eventType === "GOAL" ? "🏒" : EVENT_ICONS[e.eventType] ?? "•";
                     const type = e.eventType;
                     const player = e.playerName ?? eventPlayerName(playerMap, e.playerId);
                     const related = eventPlayerName(playerMap, e.relatedPlayerId);
