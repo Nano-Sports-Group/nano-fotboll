@@ -184,7 +184,10 @@ export async function POST(req: Request) {
         break;
       }
 
-      const periodEndTs = (subscription as unknown as { current_period_end?: number }).current_period_end;
+      // Nyare API-versioner (basil och framåt) har periodslutet på raden, inte på prenumerationen.
+      const periodEndTs =
+        (subscription as unknown as { current_period_end?: number }).current_period_end ??
+        (subscription.items?.data?.[0] as unknown as { current_period_end?: number } | undefined)?.current_period_end;
       const currentPeriodEnd = periodEndTs
         ? new Date(periodEndTs * 1000).toISOString()
         : undefined;

@@ -56,6 +56,19 @@ export const SPORT_PRICING: Record<PricedVertical, Record<PaidPlan, PlanPricing>
   },
 };
 
+/**
+ * Golfens PRO-pris (2026-10-06): samma som hockey så länge innehållet är tunt. SÄLJS INTE —
+ * `SELLS` är false för golf. Finns för katalogen i Stripe och för att "alla sporter" ska ha ett facit.
+ */
+export const GOLF_PLANNED_PRICING: PlanPricing = { label: "PRO", monthly: 6900, yearly: 65900 };
+
+/**
+ * Nano Maps Pro. Speglar `nano-maps/lib/pricing.ts` (eget repo, egen kassa) — ändras det ena ändras
+ * det andra. Årsrabatten är 32 %, ett medvetet avsteg från 20 %-regeln (ADR-006).
+ * Maps Pro ingår i varje PRO/Elite på en sport (`nano-maps/lib/player.ts`).
+ */
+export const MAPS_PRICING: PlanPricing = { label: "Maps Pro", monthly: 4900, yearly: 39900 };
+
 /** Den här deployens priser — alla befintliga anropare läser härifrån. */
 /** Säljer den här deployen något? Golf: nej — prissidan är dold och kassan nekar. */
 export const SELLS: boolean = VERTICAL !== "golf";
@@ -152,16 +165,19 @@ export function monthlyEquivalent(plan: PaidPlan): number {
   return Math.round(PRICING[plan].yearly / 12);
 }
 
-// ── Kombo: Fotboll + Hockey i en prenumeration ───────────────────────────────
+// ── Nano Sport: alla sporter i en prenumeration ──────────────────────────────
 
 /**
- * Kombopris (båda sporterna). Founder-godkänt 2026-09-30. Säljs bakom `isComboEnabled()`.
- * Årspris = 20 % rabatt på 12 × månad, avrundat nedåt till …9 som övriga planer.
+ * Paketet för alla sporter (hette "Kombo" till 2026-10-06; beloppen är founder-godkända 2026-09-30
+ * och oförändrade). I dag fotboll + hockey; golf följer med utan påslag när golfens PRO öppnar.
+ * Ett paket, inte en trappa per antal sporter — två val (en sport eller alla) säljer bättre än fyra.
+ * Säljs bakom `isComboEnabled()`. Årspris = 20 % rabatt på 12 × månad, avrundat nedåt till …9.
+ * I koden heter omfånget fortfarande `both` (Stripe-metadata på befintliga prenumerationer).
  */
 export const COMBO_PRICING: Record<PaidPlan, PlanPricing> = {
-  pro: { label: "PRO Kombo", monthly: 12900, yearly: 122900 },
-  // Elite Kombo = fotbollens Elite + hockeyns PRO (hockey saknar Elite).
-  elite: { label: "Elite Kombo", monthly: 20900, yearly: 199900 },
+  pro: { label: "Nano Sport PRO", monthly: 12900, yearly: 122900 },
+  // Nano Sport Elite = fotbollens Elite + PRO på övriga sporter (bara fotboll har Elite).
+  elite: { label: "Nano Sport Elite", monthly: 20900, yearly: 199900 },
 };
 
 /** Vilka sporter en prenumeration ger. 'both' = kombo. */

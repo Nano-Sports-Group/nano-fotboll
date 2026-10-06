@@ -47,6 +47,7 @@ const PRO_FEATURES =
         "AI-chatt om lagen, tabellerna och nyheterna",
         "Poddintelligens — sök bland 20 hockeypoddar",
         "Daglig lagbild för ditt lag",
+        "Nano Maps Pro ingår — kartspelet utan reklam",
       ]
     : [
         "Daglig AI-brief — text & ljud, 07:00",
@@ -55,6 +56,7 @@ const PRO_FEATURES =
         "Ryktesradar — transfer före kollegorna",
         "Poddintelligens — sök i Allsvenskans poddar",
         "xG, filter & AI-chat på match/lag",
+        "Nano Maps Pro ingår — kartspelet utan reklam",
       ];
 
 /** Hockeyn är påslagen 2026-09-30, men lagbild och poddsammanfattningar byggs upp — säg det. */
@@ -148,7 +150,7 @@ function FeatureList({ features, paid, hero }: { features: string[]; paid: boole
   );
 }
 
-/** Båda sporterna i en prenumeration. Priset kommer från COMBO_PRICING — aldrig räknat i klienten. */
+/** Alla sporter i en prenumeration. Priset kommer från COMBO_PRICING — aldrig räknat i klienten. */
 function ComboCard({ interval }: { interval: BillingInterval }) {
   const pro = COMBO_PRICING.pro;
   const elite = COMBO_PRICING.elite;
@@ -162,10 +164,10 @@ function ComboCard({ interval }: { interval: BillingInterval }) {
     >
       <div>
         <h2 id="kombo-rubrik" className="font-semibold text-xl text-foreground text-balance">
-          Fotboll + Hockey
+          Nano Sport: alla sporter
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          PRO på båda sporterna i en prenumeration. Lägg till eller ta bort en sport när du vill under Konto.
+          PRO på fotboll och hockey i en prenumeration. Golf följer med när den öppnar, utan påslag. Nano Maps Pro ingår.
         </p>
         <div className="mt-3 flex items-baseline gap-1">
           <span className="text-3xl font-bold text-foreground tabular-nums">{amount / 100}</span>
@@ -173,12 +175,12 @@ function ComboCard({ interval }: { interval: BillingInterval }) {
         </div>
         <WeeklyLine ore={amount} interval={interval} />
         <p className="mt-2 text-xs text-muted-foreground">
-          Elite Kombo (fotbollens Elite + hockeyns PRO): {formatKr(eliteAmount)} / {unit}
+          Nano Sport Elite (fotbollens Elite + PRO på övriga sporter): {formatKr(eliteAmount)} / {unit}
         </p>
       </div>
       <div className="mt-4 flex flex-col gap-2 sm:mt-0 sm:w-56 shrink-0">
-        <CheckoutButton plan="pro" interval={interval} combo label="Välj PRO Kombo" variant="outline" />
-        <CheckoutButton plan="elite" interval={interval} combo label="Välj Elite Kombo" variant="outline" />
+        <CheckoutButton plan="pro" interval={interval} combo label="Välj Nano Sport PRO" variant="outline" />
+        <CheckoutButton plan="elite" interval={interval} combo label="Välj Nano Sport Elite" variant="outline" />
       </div>
     </section>
   );

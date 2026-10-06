@@ -5,8 +5,8 @@
  *
  * Beslut:
  * - Plan (pro/elite) + intervall (month/year) kommer från request-body, valideras
- *   mot lib/pricing.ts. Pris byggs via inline price_data (inga Stripe Price-ID:n
- *   behövs i dashboarden).
+ *   mot lib/pricing.ts. Priset är katalogpriset i Stripe (lib/stripe-catalog.ts, uppslaget på
+ *   lookup_key); saknas det eller stämmer det inte med koden byggs priset inline som förut.
  * - clerkUserId + plan + interval sparas i metadata → webhooken sätter rätt plan.
  * - success_url → /konto?checkout=success, cancel_url → /prenumerera.
  *
@@ -55,6 +55,8 @@ import {
 } from "@/lib/waitlist/cohort";
 import { getSiteUrl } from "@/lib/site-url";
 import { VERTICAL, vertical } from "@/lib/vertical";
+import { catalogRef } from "@/lib/stripe-catalog";
+import { catalogPriceId } from "@/lib/stripe-price";
 
 export async function POST(req: Request & { headers: Headers }) {
   // Golf har inget pris än — kassan finns inte där. Först av allt: golf har ingen Stripe-nyckel,
@@ -137,27 +139,30 @@ export async function POST(req: Request & { headers: Headers }) {
   const discountPct = Math.round(ANNUAL_DISCOUNT * 100);
 
   const base = getSiteUrl();
+  const priceId = await catalogPriceId(stripe, catalogRef(scope, plan, interval, { founder }).lookupKey, unitAmount, interval);
 
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [
-        {
-          price_data: {
-            currency: "sek",
-            product_data: {
-              name: combo ? `Nano ${planMeta.label} (Fotboll + Hockey)` : `${vertical.productName} ${planMeta.label}`,
-              description:
-                interval === "year"
-                  ? `${planMeta.label}-prenumeration, årsvis (${discountPct} % rabatt)`
-                  : `${planMeta.label}-prenumeration, månadsvis`,
+        priceId
+          ? { price: priceId, quantity: 1 }
+          : {
+              price_data: {
+                currency: "sek",
+                product_data: {
+                  name: combo ? `${planMeta.label} (alla sporter)` : `${vertical.productName} ${planMeta.label}`,
+                  description:
+                    interval === "year"
+                      ? `${planMeta.label}-prenumeration, årsvis (${discountPct} % rabatt)`
+                      : `${planMeta.label}-prenumeration, månadsvis`,
+                },
+                unit_amount: unitAmount,
+                recurring: { interval },
+              },
+              quantity: 1,
             },
-            unit_amount: unitAmount,
-            recurring: { interval },
-          },
-          quantity: 1,
-        },
       ],
       client_reference_id: userId,
       metadata: { clerkUserId: userId, plan, interval, founder: founderFlag, founderClaimedPot: String(claimedPot), vertical: scope },

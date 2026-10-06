@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
+import { isFounderOfferPublic } from "@/lib/founder-offer";
+import { isWaitlistMode } from "@/lib/waitlist/mode";
+import { SELLS } from "@/lib/pricing";
 import { OnboardingClient } from "./OnboardingClient";
 import { recordUtmMilestone } from "@/lib/utm-attribution";
 import { VERTICAL } from "@/lib/vertical";
@@ -47,5 +50,7 @@ export default async function OnboardingPage() {
     if (typeof team === "string" && team.length > 0) presetTeam = team;
   }
 
-  return <OnboardingClient presetTeam={presetTeam} />;
+  // Founder-priset visas bara medan potten är öppen — klienten får aldrig gissa (lib/founder-offer).
+  const founderPublic = SELLS && VERTICAL === "football" && !isWaitlistMode() && (await isFounderOfferPublic());
+  return <OnboardingClient presetTeam={presetTeam} founderPublic={founderPublic} />;
 }

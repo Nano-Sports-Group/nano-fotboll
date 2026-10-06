@@ -27,21 +27,17 @@ import {
   type SubscriptionScope,
 } from "@/lib/pricing";
 import { writeHockeyPlan } from "@/lib/hockey-plan";
+import { catalogRef } from "@/lib/stripe-catalog";
+import { catalogPriceId } from "@/lib/stripe-price";
 import { updatePlanSource } from "@/lib/entitlements";
 
-const PRODUCT_NAMES: Record<SubscriptionScope, string> = {
-  football: "Nano Fotboll",
-  hockey: "Nano Hockey",
-  both: "Nano Kombo (Fotboll + Hockey)",
-};
-
-/** Stripe kräver en produkt-id när en prenumerations pris byts. Skapas en gång, återanvänds. */
-async function productFor(stripe: Stripe, scope: SubscriptionScope, planLabel: string): Promise<string> {
-  const key = `nano_${scope}_${planLabel.toLowerCase().replace(/\s+/g, "_")}`;
-  const found = await stripe.products.search({ query: `metadata['nano_key']:'${key}'`, limit: 1 });
-  if (found.data[0]) return found.data[0].id;
-  const created = await stripe.products.create({ name: `${PRODUCT_NAMES[scope]} ${planLabel}`, metadata: { nano_key: key } });
-  return created.id;
+/** Reservväg när katalogpriset saknas: Stripe kräver en produkt-id när en prenumerations pris byts. */
+async function productFor(stripe: Stripe, productId: string, name: string): Promise<string> {
+  try {
+    return (await stripe.products.retrieve(productId)).id;
+  } catch {
+    return (await stripe.products.create({ id: productId, name })).id;
+  }
 }
 
 export async function POST(req: Request & { headers: Headers }) {
@@ -108,13 +104,27 @@ export async function POST(req: Request & { headers: Headers }) {
   if (!item) return NextResponse.json({ error: "Prenumerationen saknar rad" }, { status: 409 });
 
   const label = target === "both" ? COMBO_PRICING[plan].label : SPORT_PRICING[target][plan].label;
-  const product = await productFor(stripe, target, label);
+  const founder = subscription.metadata?.founder === "true";
   // Founder-priset gäller bara fotboll ensam (kombo = ordinarie kombopris), men märket ligger
   // kvar i metadata: tar en founder bort hockey igen får hen tillbaka 69 kr ("för alltid").
-  const unitAmount = scopeAmountFor(target, plan, interval, { founder: subscription.metadata?.founder === "true" });
+  const unitAmount = scopeAmountFor(target, plan, interval, { founder });
+  const ref = catalogRef(target, plan, interval, { founder });
+  const priceId = await catalogPriceId(stripe, ref.lookupKey, unitAmount, interval);
 
   await stripe.subscriptions.update(subscription.id, {
-    items: [{ id: item.id, price_data: { currency: "sek", product, unit_amount: unitAmount, recurring: { interval } } }],
+    items: [
+      priceId
+        ? { id: item.id, price: priceId }
+        : {
+            id: item.id,
+            price_data: {
+              currency: "sek",
+              product: await productFor(stripe, ref.productId, target === "both" ? label : `Nano ${target === "hockey" ? "Hockey" : "Fotboll"} ${label}`),
+              unit_amount: unitAmount,
+              recurring: { interval },
+            },
+          },
+    ],
     metadata: { ...subscription.metadata, vertical: target, plan },
     proration_behavior: "create_prorations",
   });

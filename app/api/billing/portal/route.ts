@@ -17,8 +17,13 @@ export async function POST(req: Request) {
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2026-04-22.dahlia" });
   try {
+    // Utan sparad standardkonfiguration i dashboarden vägrar Stripe skapa sessionen i live-läge.
+    // `pnpm stripe:catalog --apply` skapar en; den pekas ut här när ingen standard finns.
+    const configs = await stripe.billingPortal.configurations.list({ active: true, limit: 10 });
+    const configuration = configs.data.some((c) => c.is_default) ? undefined : configs.data[0]?.id;
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
+      ...(configuration ? { configuration } : {}),
       return_url: absoluteUrl("/konto"),
       locale: "sv",
     });

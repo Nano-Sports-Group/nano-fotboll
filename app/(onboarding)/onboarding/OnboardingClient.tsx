@@ -15,6 +15,7 @@ import { usePushPermission, useServiceWorker } from "@/hooks/usePwa";
 import { createClient } from "@/lib/supabase-browser";
 import { trackEvent } from "@/lib/track";
 import { getSiteHost } from "@/lib/site-url";
+import { FOUNDER_OFFER, PRICING, SELLS, TRIAL_DAYS, formatWeeklyKr, proPriceLabel } from "@/lib/pricing";
 
 interface Team {
   id: string;
@@ -97,7 +98,10 @@ function FormDots({ form }: { form: ("W" | "D" | "L")[] }) {
  * `presetTeam` kommer från waitlist-speglingen i `user.created`. Finns det ett
  * lag startar wizarden på steg 2 — lagsteget är redan besvarat.
  */
-export function OnboardingClient({ presetTeam = null }: { presetTeam?: string | null } = {}) {
+export function OnboardingClient({
+  presetTeam = null,
+  founderPublic = false,
+}: { presetTeam?: string | null; founderPublic?: boolean } = {}) {
   const router = useRouter();
   const { setFavoriteTeam, markOnboardingDone } = useFavoriteTeam();
   // Service workern måste vara registrerad innan pushManager.subscribe kan köra.
@@ -513,16 +517,24 @@ export function OnboardingClient({ presetTeam = null }: { presetTeam?: string | 
                   {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
                   {selectedTeam ? "Öppna Mitt lag" : "Öppna flödet"}
                 </button>
-                <p className="text-center text-xs text-muted-foreground pt-1">
-                  PRO kommer efteråt — när du sett värdet.{" "}
-                  <button
-                    type="button"
-                    className="text-pitch-ink hover:underline"
-                    onClick={() => router.push("/prenumerera")}
-                  >
-                    Se priser
-                  </button>
-                </p>
+                {SELLS && (
+                  <div className="text-center text-xs text-muted-foreground pt-1">
+                    <p>
+                      PRO {proPriceLabel(founderPublic)}, {TRIAL_DAYS} dagar gratis. Välj efteråt, när du sett värdet.{" "}
+                      <button
+                        type="button"
+                        className="text-pitch-ink hover:underline"
+                        onClick={() => router.push("/prenumerera")}
+                      >
+                        Se priser
+                      </button>
+                    </p>
+                    {/* Veckopriset är alltid andra rad, aldrig hero (context/offer_catalog.md). */}
+                    <p className="mt-0.5 tabular-nums">
+                      {formatWeeklyKr(founderPublic ? FOUNDER_OFFER.pricing.monthly : PRICING.pro.monthly)}
+                    </p>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
