@@ -9,7 +9,9 @@ import { NATIONAL_INTEREST_LEVELS, parseNationalInterest } from "@/lib/national-
 
 function getDb() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_KEY;
+  // Kanoniskt namn är SUPABASE_SERVICE_ROLE_KEY (det enda som finns i Vercel). Det gamla namnet läses som reserv:
+  // utan den raden kastade routen för varje inloggad användare i produktion.
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_KEY;
   if (!url || !key) throw new Error("Missing Supabase env vars");
   return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
 }
