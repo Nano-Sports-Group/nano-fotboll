@@ -1,4 +1,4 @@
-import { SPORT } from "@/lib/vertical";
+import { SPORT, VERTICAL } from "@/lib/vertical";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
@@ -194,6 +194,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 const EVENT_ICONS: Record<string, string> = {
   goal: "⚽", own_goal: "⚽🔴", yellow_card: "🟨", red_card: "🟥", sub: "🔄", missed_pen: "❌",
   GOAL: "⚽", OWN_GOAL: "⚽🔴", YELLOWCARD: "🟨", REDCARD: "🟥", YELLOW_RED_CARD: "🟥", SUBSTITUTION: "🔄", PENALTY_MISSED: "❌",
+  SUSPENSION: "⏱️",
 };
 
 const EVENT_LABELS: Record<string, string> = {
@@ -204,6 +205,8 @@ const EVENT_LABELS: Record<string, string> = {
   YELLOW_RED_CARD: "Andra gula",
   SUBSTITUTION: "Byte",
   PENALTY_MISSED: "Missad straff",
+  // Hockey (Sportradar). Heter inte "penalty": målräkningen i lib/match/events matchar det ordet.
+  SUSPENSION: "Utvisning",
 };
 
 function statValue(value: unknown, suffix = "") {
@@ -531,8 +534,9 @@ export default async function MatchPage({ params }: PageProps) {
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 text-balance">Händelser</h3>
             {timelineEvents.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                Inga matchhändelser synkade ännu — mål, kort och byten dyker upp här
-                allt eftersom matchen synkas.
+                {VERTICAL === "hockey"
+                  ? "Inga matchhändelser synkade ännu — mål och utvisningar dyker upp här efter matchen."
+                  : "Inga matchhändelser synkade ännu — mål, kort och byten dyker upp här allt eftersom matchen synkas."}
               </p>
             ) : (
               <div>
@@ -618,7 +622,7 @@ export default async function MatchPage({ params }: PageProps) {
       </div>
 
       {/* Spelarbetyg efter FT */}
-      {fix.status === "FT" && (homeLup.length > 0 || awayLup.length > 0) && (
+      {VERTICAL !== "hockey" && fix.status === "FT" && (homeLup.length > 0 || awayLup.length > 0) && (
         <PlayerRatingPanel fixtureId={fid} players={await getRatablePlayers(fid, homeLup, awayLup, homeName, awayName)} />
       )}
 
