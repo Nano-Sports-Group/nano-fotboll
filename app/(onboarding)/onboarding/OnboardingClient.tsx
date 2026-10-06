@@ -15,6 +15,7 @@ import { usePushPermission, useServiceWorker } from "@/hooks/usePwa";
 import { createClient } from "@/lib/supabase-browser";
 import { trackEvent } from "@/lib/track";
 import { getSiteHost } from "@/lib/site-url";
+import { FORUM_NAME_HINT, FORUM_NAME_PATTERN } from "@/lib/forum/display-name";
 import { FOUNDER_OFFER, PRICING, SELLS, TRIAL_DAYS, formatWeeklyKr, proPriceLabel } from "@/lib/pricing";
 
 interface Team {
@@ -35,7 +36,7 @@ type Preview = {
 const TOTAL_STEPS = 3;
 const LOAD_TIMEOUT_MS = 8000;
 
-const STEP_TITLES = ["Välj ditt lag", "Din startsida", "Notiser"];
+const STEP_TITLES = ["Välj ditt lag", "Din startsida", "Notiser och namn"];
 
 const slideVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? 40 : -40, opacity: 0 }),
@@ -101,7 +102,10 @@ function FormDots({ form }: { form: ("W" | "D" | "L")[] }) {
 export function OnboardingClient({
   presetTeam = null,
   founderPublic = false,
-}: { presetTeam?: string | null; founderPublic?: boolean } = {}) {
+  signedIn = false,
+}: { presetTeam?: string | null; founderPublic?: boolean; signedIn?: boolean } = {}) {
+  const [forumName, setForumName] = useState("");
+  const [forumNameError, setForumNameError] = useState<string | null>(null);
   const router = useRouter();
   const { setFavoriteTeam, markOnboardingDone } = useFavoriteTeam();
   // Service workern måste vara registrerad innan pushManager.subscribe kan köra.
@@ -242,6 +246,23 @@ export function OnboardingClient({
 
     setSaving(true);
     try {
+      // Forumnamnet är valfritt. Fel (upptaget, ogiltigt) stoppar här så att det går att rätta eller tömma fältet.
+      const wanted = forumName.trim();
+      if (signedIn && wanted) {
+        if (!FORUM_NAME_PATTERN.test(wanted)) {
+          setForumNameError(FORUM_NAME_HINT);
+          return;
+        }
+        const res = await fetch("/api/profile", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nickname: wanted }),
+        });
+        if (!res.ok) {
+          setForumNameError(res.status === 409 ? "Namnet är upptaget. Prova ett annat, eller lämna fältet tomt." : "Namnet gick inte att spara. Lämna fältet tomt så kan du välja det senare under Profil.");
+          return;
+        }
+      }
       if (!selectedTeam) markOnboardingDone();
       router.push(selectedTeam ? "/mitt-lag" : "/nyheter");
     } finally {
@@ -496,7 +517,39 @@ export function OnboardingClient({
                 </div>
               </div>
 
-              <div className="mt-auto space-y-2">
+              {signedIn && (
+                <div className="mt-4 rounded-2xl border border-border bg-card px-5 py-5">
+                  <label htmlFor="forumnamn" className="text-sm font-semibold">
+                    Namn i forumet <span className="font-normal text-muted-foreground">(valfritt)</span>
+                  </label>
+                  <input
+                    id="forumnamn"
+                    type="text"
+                    value={forumName}
+                    onChange={(e) => {
+                      setForumName(e.target.value);
+                      setForumNameError(null);
+                    }}
+                    maxLength={20}
+                    autoComplete="nickname"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    aria-describedby="forumnamn-hjalp"
+                    aria-invalid={forumNameError ? true : undefined}
+                    className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3 text-base text-foreground placeholder:text-muted-foreground"
+                    placeholder="t.ex. Norra_staet"
+                  />
+                  <p id="forumnamn-hjalp" className="mt-2 text-xs text-muted-foreground">
+                    Det här namnet står bredvid det du skriver i forumet och i kommentarer. Hoppar du över det visas bara
+                    ditt förnamn. Du kan byta när du vill under Profil.
+                  </p>
+                  {forumNameError ? (
+                    <p role="alert" className="mt-2 text-xs text-destructive-ink">{forumNameError}</p>
+                  ) : null}
+                </div>
+              )}
+
+              <div className="mt-auto space-y-2 pt-4">
                 {!isSubscribed && !pushDenied && !pushUnsupported && !pushUnconfigured ? (
                   <button
                     type="button"

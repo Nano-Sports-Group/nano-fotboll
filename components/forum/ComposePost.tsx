@@ -66,7 +66,8 @@ export default function ComposePost({
 
   if (!user) return null;
 
-  const name = user.fullName ?? user.username ?? "Anonym";
+  // Bara för initialerna i skrivrutan; namnet på inlägget sätts av servern (forumnamn, annars förnamn).
+  const name = user.firstName ?? "Supporter";
   const max = 500;
   const remaining = max - content.length;
 

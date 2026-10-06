@@ -1,3 +1,4 @@
+import { forumAuthorName } from "@/lib/forum/author-name";
 import { SPORT, vertical, VERTICAL } from "@/lib/vertical";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
@@ -112,6 +113,7 @@ export async function POST(req: NextRequest) {
 
     // Snapshot av profiles.role vid postningstillfället — driver krönikör-
     // badgen på avataren, samma denormaliseringsmönster som author_team.
+    const authorName = await forumAuthorName(user.id, user.firstName);
     const { data: authorProfile } = await supabase
       .from("profiles")
       .select("role")
@@ -172,7 +174,7 @@ export async function POST(req: NextRequest) {
         depth,
         label: label ?? null,
         author_id: user.id,
-        author_name: user.fullName ?? user.username ?? "Anonym",
+        author_name: authorName,
         author_avatar: user.imageUrl ?? null,
         // Supporteridentitet: "Nickname (DIF)" + lagfärgad avatarring i forumet
         author_team: favoriteFromMeta(user.unsafeMetadata as Record<string, unknown>, VERTICAL) ?? null,
@@ -199,7 +201,7 @@ export async function POST(req: NextRequest) {
             user_id: parentAuthorId,
             type: "reply",
             actor_id: user.id,
-            actor_name: user.fullName ?? user.username ?? "Anonym",
+            actor_name: authorName,
             post_id: (post as { id: string }).id,
           });
         } catch {}

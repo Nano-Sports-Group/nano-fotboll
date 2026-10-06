@@ -213,13 +213,13 @@ export function ProfilePageClient({
 
         <div>
           <Field
-            label="Nickname (unikt)"
+            label="Namn i forumet"
             value={nickname}
             onChange={(v) => setNickname(v.replace(/\s/g, ""))}
             placeholder="t.ex. hammarby_hampus"
             prefix="@"
           />
-          <p className="mt-1 text-xs text-muted-foreground">3–20 tecken: bokstäver, siffror, _</p>
+          <p className="mt-1 text-xs text-muted-foreground">Står bredvid det du skriver i forumet och i kommentarer. Utan det visas bara ditt förnamn. 3–20 tecken: a–z, siffror och understreck.</p>
         </div>
 
         <div>

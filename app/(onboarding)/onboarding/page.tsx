@@ -52,5 +52,5 @@ export default async function OnboardingPage() {
 
   // Founder-priset visas bara medan potten är öppen — klienten får aldrig gissa (lib/founder-offer).
   const founderPublic = SELLS && VERTICAL === "football" && !isWaitlistMode() && (await isFounderOfferPublic());
-  return <OnboardingClient presetTeam={presetTeam} founderPublic={founderPublic} />;
+  return <OnboardingClient presetTeam={presetTeam} founderPublic={founderPublic} signedIn={Boolean(user)} />;
 }

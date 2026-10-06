@@ -1,3 +1,4 @@
+import { forumAuthorName } from "@/lib/forum/author-name";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
@@ -27,7 +28,8 @@ export async function POST(req: NextRequest) {
 
     const parsed = await parseBody(req, ReplySchema);
     if (!parsed.ok) return parsed.response;
-    const { thread_id, author_name } = parsed.data;
+    // author_name i bodyn ignoreras: namnet kommer från sessionen (lib/forum/author-name).
+    const { thread_id } = parsed.data;
     // author_id härleds ALLTID från sessionen — aldrig från klient-body (IDOR-skydd)
     const author_id = user.id;
     const content = sanitizeText(parsed.data.content);
@@ -57,7 +59,7 @@ export async function POST(req: NextRequest) {
         thread_id,
         content: content.trim(),
         author_id,
-        author_name: author_name ?? user.fullName ?? user.username ?? "Anonym",
+        author_name: await forumAuthorName(user.id, user.firstName),
       })
       .select("id")
       .single();

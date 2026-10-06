@@ -1,3 +1,4 @@
+import { forumAuthorName } from "@/lib/forum/author-name";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
@@ -25,7 +26,8 @@ export async function POST(req: NextRequest) {
       author_name?: string;
     };
 
-    const { team_id, title, content, author_id, author_name } = body;
+    // author_name i bodyn ignoreras: namnet kommer från sessionen (lib/forum/author-name).
+    const { team_id, title, content, author_id } = body;
 
     if (!team_id || !title?.trim() || !content?.trim()) {
       return NextResponse.json({ message: "Saknade fält: team_id, title, content" }, { status: 400 });
@@ -48,7 +50,7 @@ export async function POST(req: NextRequest) {
         title: title.trim(),
         content: content.trim(),
         author_id,
-        author_name: author_name ?? user.fullName ?? user.username ?? "Anonym",
+        author_name: await forumAuthorName(user.id, user.firstName),
       })
       .select("id")
       .single();
