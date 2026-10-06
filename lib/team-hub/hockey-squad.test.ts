@@ -12,5 +12,8 @@ test("saknat eller orimligt födelsedatum ger ingen ålder", () => {
   assert.equal(ageOn(null, "2026-10-06"), null);
   assert.equal(ageOn("okänt", "2026-10-06"), null);
   // Sportradar lägger ibland 1 januari med fel år; en "ålder" över 60 visas inte.
-  assert.equal(ageOn("1900-01-01", "2026-10-06"), null);
+  assert.equal(ageOn("1900-06-01", "2026-10-06"), null);
+  // 1 januari är källans platshållare när bara året är känt.
+  assert.equal(ageOn("2000-01-01", "2026-10-06"), null);
+  assert.equal(ageOn("2011-03-04", "2026-10-06"), null);
 });

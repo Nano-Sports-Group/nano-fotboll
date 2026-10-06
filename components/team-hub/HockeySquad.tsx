@@ -10,6 +10,9 @@ export function HockeySquad({ rows }: { rows: HockeySquadRow[] }) {
     );
   }
 
+  // Innan lagets första match är hämtad saknas positioner: då är alla "Övriga", och rubriken säger bara Spelare.
+  const onlyUngrouped = rows.every((r) => r.group === "Övriga");
+
   return (
     <div className="space-y-5 px-4 pt-5 sm:px-6">
       {HOCKEY_GROUP_ORDER.map((group) => {
@@ -20,7 +23,7 @@ export function HockeySquad({ rows }: { rows: HockeySquadRow[] }) {
         return (
           <section key={group} aria-labelledby={`trupp-${group}`} className="rounded-xl border border-border bg-card p-4">
             <h2 id={`trupp-${group}`} className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {group} <span className="font-normal tabular-nums">· {players.length}</span>
+              {onlyUngrouped ? "Spelare" : group} <span className="font-normal tabular-nums">· {players.length}</span>
             </h2>
             <table className="w-full text-sm">
               <thead>

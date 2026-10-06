@@ -3,7 +3,7 @@ import { loadTeamSection } from "@/lib/team-hub/loadTeamSection";
 import { TeamSection } from "@/components/team-hub/TeamSection";
 import { ProductEventTracker } from "@/components/analytics/ProductEventTracker";
 import { getSiteUrl } from "@/lib/site-url";
-import { VERTICAL, vertical } from "@/lib/vertical";
+import { VERTICAL } from "@/lib/vertical";
 import { getHockeySquad } from "@/lib/team-hub/hockey-squad";
 import { HockeySquad } from "@/components/team-hub/HockeySquad";
 
@@ -17,7 +17,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const { hub } = await loadTeamSection(slug);
   return {
-    title: `${hub.team.name} — Trupp | ${vertical.productName}`,
+    title: `${hub.team.name} — Trupp`,
     description: `Spelartrupp och nyckelspelare för ${hub.team.name} i ${hub.team.league}.`,
     alternates: { canonical: `${getSiteUrl()}/lag/${slug}/trupp` },
   };
