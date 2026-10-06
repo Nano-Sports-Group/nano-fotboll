@@ -36,7 +36,7 @@ export const TEAM_NAV_ITEMS: TeamNavItem[] = [
   { href: "/nyheter", label: "Nyheter" },
   { href: "/analys", label: "Analys", footballOnly: true },
   { href: "/matcher", label: "Matcher" },
-  { href: "/trupp", label: "Trupp", footballOnly: true },
+  { href: "/trupp", label: "Trupp" },
   { href: "/statistik", label: "Statistik", footballOnly: true },
   { href: "/poddar", label: "Poddar" },
   { href: "/forum", label: "Forum", absolute: "/forum" },
