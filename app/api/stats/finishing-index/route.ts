@@ -1,6 +1,7 @@
 import { SPORT } from "@/lib/vertical";
 import { NextResponse } from "next/server";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
+import { getPlayerInfoMap } from "@/lib/stats/advanced";
 
 export const revalidate = 3600;
 
@@ -21,24 +22,16 @@ export async function GET() {
   if (!data || data.length === 0) return NextResponse.json({ rows: [] });
 
   const playerIds = data.map((r) => r.player_id);
-  const { data: players } = await db
-    .from("player_season_stats")
-    .select("sportsmonks_player_id,player_name,team_name,image_path")
-    .in("sportsmonks_player_id", playerIds)
-    .eq("season_id", seasonId);
-
-  const playerMap = new Map(
-    (players ?? []).map((p) => [p.sportsmonks_player_id, p])
-  );
+  const playerMap = await getPlayerInfoMap(db, playerIds);
 
   const rows = data.map((r, i) => {
     const p = playerMap.get(r.player_id);
     return {
       rank: i + 1,
       playerId: r.player_id,
-      playerName: p?.player_name ?? String(r.player_id),
-      teamName: p?.team_name ?? "",
-      image: p?.image_path ?? null,
+      playerName: p?.name ?? `Spelare ${r.player_id}`,
+      teamName: p?.team ?? "",
+      image: p?.image ?? null,
       goals: r.goals,
       xg: r.xg,
       overperf: r.overperf,

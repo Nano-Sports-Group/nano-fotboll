@@ -28,6 +28,35 @@ export interface ClutchRow {
   trailingGoals: number; levelGoals: number; leadingGoals: number;
 }
 
+export type PlayerInfo = { name: string; team: string; image: string | null };
+
+/**
+ * Namn, lag och bild per spelare. `player_season_stats` bär inga namnkolumner — de tre
+ * ytor som frågade efter `player_name` där fick alltid tomt svar och visade spelar-id:t som namn.
+ */
+export async function getPlayerInfoMap(
+  db: ReturnType<typeof createServerClient>,
+  playerIds: number[],
+): Promise<Map<number, PlayerInfo>> {
+  if (playerIds.length === 0) return new Map();
+  const { data, error } = await db
+    .from("players")
+    .select("sportmonks_id,fullname,image,team_id")
+    .eq("sport", SPORT)
+    .in("sportmonks_id", playerIds);
+  if (error) console.warn("[stats] spelarnamn föll:", error.message);
+  const rows = data ?? [];
+  const teams = await getTeamNameMap(db, [...new Set(rows.map((p) => Number(p.team_id)).filter(Boolean))]);
+  return new Map(
+    rows
+      .filter((p) => p.fullname)
+      .map((p) => [
+        Number(p.sportmonks_id),
+        { name: String(p.fullname), team: teams.get(Number(p.team_id))?.name ?? "", image: (p.image as string | null) ?? null },
+      ]),
+  );
+}
+
 async function teamEntityMap(db: ReturnType<typeof createServerClient>, teamIds: number[]) {
   // entities ensam missade rader för lag vars sync-jobb låg efter — gav rå
   // sportmonks_id (String(r.team_id)) i UI:t. getTeamNameMap slår även upp teams.
@@ -102,20 +131,15 @@ export const getClutchRows = unstable_cache(
       .order("clutch_score", { ascending: false })
       .limit(25);
     if (!data?.length) return [];
-    const { data: players } = await db
-      .from("player_season_stats")
-      .select("sportsmonks_player_id,player_name,team_name,image_path")
-      .in("sportsmonks_player_id", data.map((r) => r.player_id))
-      .eq("season_id", seasonId());
-    const playerMap = new Map((players ?? []).map((p) => [p.sportsmonks_player_id, p]));
+    const playerMap = await getPlayerInfoMap(db, data.map((r) => r.player_id));
     return data.map((r, i) => {
       const p = playerMap.get(r.player_id);
       return {
         rank: i + 1,
         playerId: r.player_id,
-        playerName: (p?.player_name as string) ?? String(r.player_id),
-        teamName: (p?.team_name as string) ?? "",
-        image: (p?.image_path as string | null) ?? null,
+        playerName: p?.name ?? `Spelare ${r.player_id}`,
+        teamName: p?.team ?? "",
+        image: p?.image ?? null,
         goals: r.goals, clutchScore: r.clutch_score,
         trailingGoals: r.trailing_goals, levelGoals: r.level_goals, leadingGoals: r.leading_goals,
       };
