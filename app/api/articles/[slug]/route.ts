@@ -42,8 +42,9 @@ export async function GET(
       slug: article.slug,
       title: article.title,
       sourceName: article.sourceName,
-      // Egna texter bär en platshållare (`/nyheter`, `/lag/<id>`) i articles.url — ingen källa att öppna.
-      sourceUrl: /^https?:\/\//.test(article.sourceUrl ?? "") ? article.sourceUrl : null,
+      // Egna texter har ingen källa att öppna: articles.url är där en adress till den egna sajten
+      // (`<värd>/nyheter`, `/lag/<id>`), och apparna visade den som "Öppna hos källan".
+      sourceUrl: publishable ? null : article.sourceUrl,
       publishedAt: article.publishedAt,
       updatedAt: article.updatedAt,
       imageUrl: article.imageUrl,
