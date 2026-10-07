@@ -56,7 +56,8 @@ export async function getOrCreateStripeCustomer(stripe: Stripe, clerkUserId: str
 
   if (!customerId) {
     const created = await stripe.customers.create(
-      { ...(email ? { email } : {}), metadata: { clerkUserId } },
+      // preferred_locales styr språket i Stripes kvitton och fakturamejl.
+      { ...(email ? { email } : {}), preferred_locales: ["sv"], metadata: { clerkUserId } },
       { idempotencyKey: `customer:${clerkUserId}` },
     );
     customerId = created.id;

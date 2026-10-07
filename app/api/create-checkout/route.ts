@@ -179,6 +179,8 @@ export async function POST(req: Request & { headers: Headers }) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer,
+      // Utan locale följer kassan webbläsarens språk — engelsk telefon gav engelsk kassa.
+      locale: "sv",
       ...(taxEnabled
         ? {
             automatic_tax: { enabled: true },

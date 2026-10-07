@@ -104,6 +104,7 @@ export async function POST(req: Request) {
           const customer = await stripe.customers.create({
             email,
             name: [d.first_name, d.last_name].filter(Boolean).join(" ") || undefined,
+            preferred_locales: ["sv"],
             metadata: { clerkUserId },
           });
           await clerk.users.updateUserMetadata(clerkUserId, {
