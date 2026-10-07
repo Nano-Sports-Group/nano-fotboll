@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { VERTICAL } from "@/lib/vertical";
-import { favoriteFromMeta, onboardingDoneFromMeta, withFavorite, withOnboardingDone } from "@/lib/favorite-meta";
+import { effectiveFavoriteFromMeta, onboardingDoneFromMeta, withFavorite, withOnboardingDone } from "@/lib/favorite-meta";
 
 const LS_KEY = "athopia_favorite_team";
 const LS_ONBOARDING_KEY = "athopia_onboarding_done";
@@ -124,7 +124,8 @@ function useClerkFavoriteTeam(): FavoriteTeamState {
 
     if (user) {
       const meta = user.unsafeMetadata as Record<string, unknown> | undefined;
-      const clerkSlug = favoriteFromMeta(meta, VERTICAL);
+      // Eget val, annars samma förening i den andra sporten (AIK → AIK IF) som förval.
+      const clerkSlug = effectiveFavoriteFromMeta(meta, VERTICAL);
       if (clerkSlug) {
         // eslint-disable-next-line react-hooks/set-state-in-effect -- startar en hämtning; laddnings-/felflaggan sätts synkront innan fetch (synk mot externt system).
         setSlug(clerkSlug);

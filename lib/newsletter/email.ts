@@ -9,6 +9,7 @@
  */
 
 import "server-only";
+import { SPORT_ACCENT } from "@/lib/vertical";
 import { CONTACT_EMAIL, getSiteHost, getSiteUrl } from "@/lib/site-url";
 import { newsletterToken, newsletterTokenSecret } from "@/lib/newsletter/token";
 
@@ -34,7 +35,7 @@ export function newsletterConfirmContent(href: string, teamName: string): { subj
 <div style="max-width:520px;margin:0 auto">
 <p style="font-size:18px;font-weight:600;margin:0 0 24px">Nano Fotboll</p>
 <p>Du har bett om Lagbriefen om ${team}. Bekräfta din e-post så börjar den komma.</p>
-<p style="margin:24px 0"><a href="${esc(href)}" style="background:#2D5349;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:8px;display:inline-block">Bekräfta prenumerationen</a></p>
+<p style="margin:24px 0"><a href="${esc(href)}" style="background:${SPORT_ACCENT.base};color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:8px;display:inline-block">Bekräfta prenumerationen</a></p>
 <p style="font-size:13px;color:#6b6b6b">Fungerar inte knappen? Klistra in den här länken i webbläsaren:<br><span style="word-break:break-all">${esc(href)}</span></p>
 <p style="margin-top:32px;font-size:12px;color:#6b6b6b">Du får det här mejlet för att någon skrev in din adress på ${getSiteHost()}. Var det inte du kan du ignorera det — då skickas inget mer.</p>
 </div></body></html>`,

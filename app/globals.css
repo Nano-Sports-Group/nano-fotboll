@@ -26,16 +26,16 @@
 
   /* "pitch" = Athopias accent (Racing Green sedan brand 1.1 — docs/brand/BRAND.md).
      Namnet behålls för att inte röra 300+ callsites; värdet är accentfärgen. */
-  --color-pitch:       #2D5349;
-  --color-pitch-dark:  #1E3A32;
-  --color-pitch-light: #5FA98C;
+  --color-pitch:       var(--pitch);
+  --color-pitch-dark:  var(--pitch-dark);
+  --color-pitch-light: var(--pitch-light);
 
   /* Accent som TEXT på sidbakgrund. Skild från --color-pitch (som är en YTA:
      bg-pitch/border-pitch med vit text). Racing Green som text på mörkt tema ger
      2.0–2.45:1 — långt under AA — så bläcket måste växla valör med temat medan
      ytan står still. Använd text-pitch-ink, aldrig text-pitch. */
   --color-pitch-ink: var(--pitch-ink);
-  --color-pitch-muted: rgba(45, 83, 73, 0.12);
+  --color-pitch-muted: var(--pitch-muted);
 
   /* Success = grönt, ENDAST positiv status (form, avklarat, stigande) */
   --color-success:       var(--success);
@@ -63,7 +63,7 @@
   --color-orange-400:  var(--orange-400);
   --color-blue-400:    var(--blue-400);
   --color-purple-400:  var(--purple-400);
-  --color-brand:         #2D5349; /* Racing Green — logotyp/hero/marketing */
+  --color-brand:         var(--pitch); /* sportens accent — logotyp/hero/marketing */
 
   /* Feed-kategorier (FeedClient TYPE_META). Basfärgen är ytan (chip-tint,
      ikon), *-ink är bläcket ovanpå tinten — samma yta/bläck-uppdelning som
@@ -133,6 +133,13 @@
 
 /* ── Light mode (default) ──────────────────────────────────────────────────── */
 :root {
+  /* Sportens accent. Fotboll (Racing Green) är grundvärdet; hockey och golf
+     skriver över i blocket "Sportens accent" längre ner. */
+  --pitch: #2D5349;
+  --pitch-dark: #1E3A32;
+  --pitch-light: #5FA98C;
+  --pitch-muted: rgba(45, 83, 73, 0.12);
+
   --background: #FAFAF8;
   --foreground: #111111;
 
@@ -142,7 +149,7 @@
   --popover: #ffffff;
   --popover-foreground: #111111;
 
-  --primary: #2D5349;
+  --primary: var(--pitch);
   --primary-foreground: #ffffff;
 
   --secondary: #F3F2F0;
@@ -177,11 +184,11 @@
 
   --border: #E2E0DC;
   --input: #E2E0DC;
-  --ring: #2D5349;
+  --ring: var(--pitch);
   --radius: 0.75rem;
 
   /* 7.4:1 på #FAFAF8 */
-  --pitch-ink: #2D5349;
+  --pitch-ink: var(--pitch);
 
   /* Feed-kategori-bläck på egen 12.5%-tint (kort/vit yta): 4.67–4.83:1 */
   --cat-forum-ink: #6056D5;
@@ -191,7 +198,7 @@
   /* Jämförelsefärg B (blå) — 4.6:1 på #FAFAF8 */
   --away: #1D5FC2;
 
-  --chart-1: #2D5349;
+  --chart-1: var(--pitch);
   --chart-2: #111111;
   --chart-3: #8A8885;
   --chart-4: #C6C4C0;
@@ -209,7 +216,7 @@
   --popover: #151516;
   --popover-foreground: #F4F4F2;
 
-  --primary: #2D5349;
+  --primary: var(--pitch);
   --primary-foreground: #ffffff;
 
   --secondary: #1B1B1C;
@@ -243,10 +250,10 @@
 
   --border: #2C2C2E;
   --input: #2C2C2E;
-  --ring: #2D5349;
+  --ring: var(--pitch);
 
   /* Ljus valör enligt BRAND.md — 7.9:1 på #000, 6.4:1 på #1B1B1C */
-  --pitch-ink: #5FA98C;
+  --pitch-ink: var(--pitch-light);
 
   /* Feed-kategori-bläck på egen 12.5%-tint (kort/svart yta): 4.62–4.72:1 */
   --cat-forum-ink: #8E87E1;
@@ -256,12 +263,35 @@
   /* Jämförelsefärg B — 7.96:1 på #000, 6.53:1 på #1B1B1C */
   --away: #51A2FF;
 
-  --chart-1: #5FA98C;
+  --chart-1: var(--pitch-light);
   --chart-2: #F4F4F2;
   --chart-3: #7D7D7A;
   --chart-4: #3A3A3C;
   --chart-5: #B5B5B3;
 }
+
+/* ── Sportens accent ──────────────────────────────────────────────────────────
+   En färg per sport (docs/brand/BRAND.md): fotboll Racing Green, hockey isblå,
+   golf sand. Sätts av <html data-vertical> i app/layout.tsx. Allt annat
+   (--primary, --ring, --pitch-ink, --chart-1, bg-pitch …) härleds ur de här fyra,
+   så en ny sport är ett block här och en rad i SPORT_ACCENT (lib/vertical.ts). */
+html[data-vertical="hockey"] {
+  --pitch: #1F4E79;       /* vit text 8.7:1 */
+  --pitch-dark: #163A5B;
+  --pitch-light: #6FA8DC; /* 8.3:1 på #000 */
+  --pitch-muted: rgba(31, 78, 121, 0.12);
+  --accent: #E9EFF5;
+}
+html[data-vertical="hockey"].dark { --accent: #131B24; }
+
+html[data-vertical="golf"] {
+  --pitch: #8A6A2B;       /* vit text 5.0:1 */
+  --pitch-dark: #6B5120;
+  --pitch-light: #D2B06A; /* 10.2:1 på #000 */
+  --pitch-muted: rgba(138, 106, 43, 0.12);
+  --accent: #F3EEE4;
+}
+html[data-vertical="golf"].dark { --accent: #201A0F; }
 
 /* ── Base ─────────────────────────────────────────────────────────────────── */
 @layer base {
@@ -354,7 +384,7 @@
 @layer utilities {
   /* Background gradient for hero/CTA */
   .pitch-gradient {
-    background: linear-gradient(135deg, #2D5349 0%, #1E3A32 100%);
+    background: linear-gradient(135deg, var(--pitch) 0%, var(--pitch-dark) 100%);
   }
 
   /*
@@ -469,7 +499,7 @@
 
   /* Pitch glow for live indicators */
   .pitch-glow {
-    box-shadow: 0 0 16px rgba(45, 83, 73, 0.35);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--pitch) 35%, transparent);
   }
 
   /* Live dot */
@@ -594,7 +624,7 @@
 
 /* ── Selection ────────────────────────────────────────────────────────────── */
 ::selection {
-  background: rgba(45, 83, 73, 0.2);
+  background: color-mix(in srgb, var(--pitch) 20%, transparent);
   color: inherit;
 }
 

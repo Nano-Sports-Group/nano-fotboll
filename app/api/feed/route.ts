@@ -115,6 +115,18 @@ export async function GET(req: Request) {
       filterTeamIds = feedConfig!.followed_team_ids!;
     }
 
+    // "Följ lag": följda lag ger uppdateringar i ett flöde som redan är personligt.
+    // De gör aldrig ett ofiltrerat flöde smalare — utan favoritlag visas allt som förut.
+    if (filterTeamIds.length > 0 && !teamSlug) {
+      const { data: follows } = await db
+        .from("user_follows")
+        .select("entity_id")
+        .eq("user_id", userId)
+        .eq("sport", SPORT);
+      const followIds = (follows ?? []).map((f) => String(f.entity_id));
+      if (followIds.length > 0) filterTeamIds = [...new Set([...filterTeamIds, ...followIds])];
+    }
+
     if (!typeFilter) {
       contentTypeTags = interestsToNewsTags(feedConfig?.content_types ?? null);
     }

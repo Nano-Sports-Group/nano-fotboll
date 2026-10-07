@@ -14,7 +14,8 @@ import { BrandBadge, AvatarWriterBadge } from "@/components/brand/BrandBadge";
 import { ListGroup } from "@/components/ui/ListGroup";
 import { ListRow } from "@/components/ui/ListRow";
 import { useFavoriteTeam } from "@/hooks/useFavoriteTeam";
-import { getTeamColors } from "@/lib/team-colors";
+import { getTeamAccent, getTeamColors } from "@/lib/team-colors";
+import { FollowButton } from "@/components/dashboard/follow-button";
 import { NewsletterPreferencesSettings } from "@/components/newsletter/NewsletterPreferencesSettings";
 
 function WelcomePopup({ onClose }: { onClose: () => void }) {
@@ -65,12 +66,14 @@ export function ProfilePageClient({
   firstName: initialFirst,
   lastName: initialLast,
   favouriteTeamId,
+  followedTeams,
 }: {
   initialProfile: PublicProfile;
   email: string | null;
   firstName: string | null;
   lastName: string | null;
   favouriteTeamId: string | null;
+  followedTeams: { id: string; name: string; slug: string }[];
 }) {
   const { user } = useUser();
   const { signIn } = useSignIn();
@@ -271,6 +274,30 @@ export function ProfilePageClient({
             <option key={t.id} value={t.slug ?? t.id}>{t.name}</option>
           ))}
         </select>
+      </section>
+
+      {/* Följda lag: uppdateringar i flödet, aldrig tema eller "Mitt lag" — det äger favoritlaget. */}
+      <section className={VERTICAL === "golf" ? "hidden" : "space-y-3"}>
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground text-balance">
+          Lag du följer
+        </h2>
+        {followedTeams.length === 0 ? (
+          <p className="rounded-2xl border border-border bg-card p-4 text-sm leading-relaxed text-muted-foreground">
+            Följ upp till fem lag utöver ditt eget, så kommer deras nyheter i ditt flöde. Tryck på Följ lag på lagets sida.
+          </p>
+        ) : (
+          <ul className="divide-y divide-border rounded-2xl border border-border bg-card">
+            {followedTeams.map((t) => (
+              <li key={t.id} className="flex items-center justify-between gap-3 p-3">
+                <Link href={`/lag/${t.slug}`} className="flex min-h-11 min-w-0 items-center gap-3 text-sm font-medium text-foreground">
+                  <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: getTeamAccent(t.slug) }} aria-hidden />
+                  <span className="truncate">{t.name}</span>
+                </Link>
+                <FollowButton entityId={t.id} initialFollowing />
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section className={VERTICAL === "golf" ? "hidden" : "space-y-3"}>

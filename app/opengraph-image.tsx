@@ -1,4 +1,4 @@
-import { vertical } from "@/lib/vertical";
+import { vertical, SPORT_ACCENT } from "@/lib/vertical";
 import { ImageResponse } from "next/og";
 
 /**
@@ -32,7 +32,7 @@ export default function OgImage() {
         <div style={{ fontSize: 96, fontWeight: 800, letterSpacing: -2, display: "flex" }}>
           {vertical.wordmark}
         </div>
-        <div style={{ fontSize: 34, color: "#5FA98C", marginTop: 12, display: "flex" }}>
+        <div style={{ fontSize: 34, color: SPORT_ACCENT.light, marginTop: 12, display: "flex" }}>
           {LINE}
         </div>
         <div style={{ fontSize: 22, color: "#a1a1aa", marginTop: 28, display: "flex" }}>

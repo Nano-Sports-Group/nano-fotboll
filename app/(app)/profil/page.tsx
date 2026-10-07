@@ -4,6 +4,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import { ProfilePageClient } from "./ProfilePageClient";
 import type { PublicProfile } from "@/components/profile/ProfileCard";
+import { getFollowedTeams } from "@/lib/dashboard/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,8 @@ export default async function ProfilPage() {
     const res = await db.from("profiles").select("*").eq("clerk_user_id", userId).maybeSingle();
     row = res.data ?? null;
   }
+
+  const followedTeams = await getFollowedTeams(userId);
 
   const createdAt =
     (row?.created_at as string | undefined) ??
@@ -49,6 +52,7 @@ export default async function ProfilPage() {
       firstName={user?.firstName ?? null}
       lastName={user?.lastName ?? null}
       favouriteTeamId={(row?.favourite_team_id as string | null) ?? null}
+      followedTeams={followedTeams.map((t) => ({ id: t.id, name: t.name, slug: t.slug }))}
     />
   );
 }

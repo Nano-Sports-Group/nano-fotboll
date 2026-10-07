@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { SPORT_ACCENT } from "@/lib/vertical";
 
 /**
  * Apple touch icon. iOS accepterar inte SVG, så den renderas till PNG vid
@@ -17,7 +18,7 @@ export default function AppleIcon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#2D5349",
+          background: SPORT_ACCENT.base,
         }}
       >
         <svg width="104" height="91" viewBox="0 0 445 390">

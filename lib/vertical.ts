@@ -207,6 +207,17 @@ const PACKS: Record<VerticalId, VerticalPack> = { football: FOOTBALL, hockey: HO
 
 export const vertical: VerticalPack = PACKS[VERTICAL];
 
+/**
+ * Sportens accent för ytor som inte når CSS-variablerna (e-post, OG-bild, ikon).
+ * Samma värden som blocket "Sportens accent" i app/globals.css — ändra båda.
+ */
+export const SPORT_ACCENTS: Record<VerticalId, { base: string; light: string }> = {
+  football: { base: "#2D5349", light: "#5FA98C" },
+  hockey: { base: "#1F4E79", light: "#6FA8DC" },
+  golf: { base: "#8A6A2B", light: "#D2B06A" },
+};
+export const SPORT_ACCENT = SPORT_ACCENTS[VERTICAL];
+
 /** Kolumnen `sport` i Supabase. Fotbollsdeployen läser och skriver "football". */
 export const SPORT = VERTICAL;
 

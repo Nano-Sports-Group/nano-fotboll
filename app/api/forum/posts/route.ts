@@ -8,7 +8,7 @@ import { parseBody, z } from "@/lib/validation";
 import { sanitizeText } from "@/lib/sanitize";
 import { jsonContract } from "@/lib/api-contract";
 import { ForumPostsResponseSchema } from "@/lib/api-schemas";
-import { favoriteFromMeta } from "@/lib/favorite-meta";
+import { effectiveFavoriteFromMeta } from "@/lib/favorite-meta";
 
 const ForumPostSchema = z.object({
   content: z.string().trim().min(1, "content krävs").max(500, "Max 500 tecken"),
@@ -177,7 +177,7 @@ export async function POST(req: NextRequest) {
         author_name: authorName,
         author_avatar: user.imageUrl ?? null,
         // Supporteridentitet: "Nickname (DIF)" + lagfärgad avatarring i forumet
-        author_team: favoriteFromMeta(user.unsafeMetadata as Record<string, unknown>, VERTICAL) ?? null,
+        author_team: effectiveFavoriteFromMeta(user.unsafeMetadata as Record<string, unknown>, VERTICAL) ?? null,
         author_role: authorProfile?.role ?? null,
       })
       .select()

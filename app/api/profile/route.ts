@@ -1,5 +1,5 @@
 import { SPORT, vertical, VERTICAL } from "@/lib/vertical";
-import { favoriteFromMeta, withFavorite } from "@/lib/favorite-meta";
+import { effectiveFavoriteFromMeta, withFavorite } from "@/lib/favorite-meta";
 import { planForVertical } from "@/lib/plan-for-vertical";
 import { auth, currentUser, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
@@ -31,7 +31,7 @@ export async function GET() {
   // Fotbollens favorit bor i profiles.favourite_team_id; hockeyns i Clerk (lib/favorite-meta).
   const favouriteTeamId = VERTICAL === "football" ? data?.favourite_team_id : null;
   const hockeyFavourite =
-    VERTICAL === "football" ? null : favoriteFromMeta(user?.unsafeMetadata as Record<string, unknown>, VERTICAL) ?? null;
+    VERTICAL === "football" ? null : effectiveFavoriteFromMeta(user?.unsafeMetadata as Record<string, unknown>, VERTICAL) ?? null;
   const { data: favouriteTeam } = favouriteTeamId
     ? await createServerClient()
         .from("entities")

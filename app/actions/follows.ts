@@ -8,6 +8,12 @@ import { createServerClient, isSupabaseConfigured } from '@/lib/supabase'
 
 type Result = { ok: boolean; following?: boolean; error?: string }
 
+/**
+ * Följda lag ger uppdateringar i flödet — de äger aldrig temat eller "Mitt lag"
+ * (det gör favoritlaget). Taket håller flödet till "mina lag" i stället för alla lag.
+ */
+const MAX_FOLLOWED_TEAMS = 5
+
 export async function toggleFollow(entityId: string): Promise<Result> {
   const { userId } = await auth()
   if (!userId) return { ok: false, error: 'unauthorized' }
@@ -30,8 +36,26 @@ export async function toggleFollow(entityId: string): Promise<Result> {
       .eq('id', existing.id)
     if (error) return { ok: false, error: error.message }
     revalidatePath('/dashboard')
+    revalidatePath('/profil')
     return { ok: true, following: false }
   }
+
+  // Bara lag i den här sporten går att följa — id:t kommer från klienten.
+  const { data: team } = await supabase
+    .from('entities')
+    .select('id')
+    .eq('id', entityId)
+    .eq('type', 'team')
+    .eq('sport', SPORT)
+    .maybeSingle()
+  if (!team) return { ok: false, error: 'unknown_team' }
+
+  const { count } = await supabase
+    .from('user_follows')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('sport', SPORT)
+  if ((count ?? 0) >= MAX_FOLLOWED_TEAMS) return { ok: false, error: 'limit' }
 
   const { error } = await supabase
     .from('user_follows')

@@ -78,6 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const content = (
     <html
       lang="sv"
+      data-vertical={vertical.id}
       className={`${geist.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >

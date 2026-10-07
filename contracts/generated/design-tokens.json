@@ -11,6 +11,20 @@
     "successDark": "#25C48F",
     "destructive": "#D61F1F"
   },
+  "sports": {
+    "football": {
+      "base": "#2D5349",
+      "onDark": "#5FA98C"
+    },
+    "hockey": {
+      "base": "#1F4E79",
+      "onDark": "#6FA8DC"
+    },
+    "golf": {
+      "base": "#8A6A2B",
+      "onDark": "#D2B06A"
+    }
+  },
   "light": {
     "background": "#FAFAF8",
     "foreground": "#111111",

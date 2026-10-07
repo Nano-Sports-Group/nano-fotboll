@@ -25,7 +25,7 @@ export function FavoriteTeamHighlight() {
     const rows = document.querySelectorAll<HTMLTableRowElement>("tbody tr[data-team-slug]");
     rows.forEach((row) => {
       if (row.dataset["teamSlug"] === slug) {
-        row.style.setProperty("background-color", "rgba(45,83,73,0.08)");
+        row.style.setProperty("background-color", "color-mix(in srgb, var(--pitch) 8%, transparent)");
         row.style.setProperty("box-shadow", `inset 2px 0 0 var(--color-pitch)`);
         // Scrolla till raden om den inte är synlig
         row.scrollIntoView({ behavior: "smooth", block: "nearest" });

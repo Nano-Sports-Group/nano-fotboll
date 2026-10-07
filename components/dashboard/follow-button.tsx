@@ -22,7 +22,11 @@ export function FollowButton({
       const res = await toggleFollow(entityId)
       if (!res.ok) {
         setFollowing(!next)
-        toast.error('Kunde inte uppdatera. Försök igen.')
+        toast.error(
+          res.error === 'limit'
+            ? 'Du följer redan fem lag. Sluta följa ett för att lägga till ett nytt.'
+            : 'Kunde inte uppdatera. Försök igen.',
+        )
         return
       }
       setFollowing(!!res.following)

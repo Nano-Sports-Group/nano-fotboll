@@ -1,4 +1,5 @@
 import type { VerticalId } from "./vertical";
+import { sisterClubSlug } from "./team-colors";
 
 /**
  * Favoritlag och avklarad introduktion i Clerk `unsafeMetadata`, per sport.
@@ -16,6 +17,19 @@ export function favoriteFromMeta(meta: Meta | null | undefined, vertical: Vertic
   const byVertical = meta.favoriteTeams;
   const value = byVertical && typeof byVertical === "object" ? (byVertical as Meta)[vertical] : undefined;
   return typeof value === "string" ? value : undefined;
+}
+
+/**
+ * Favoriten att VISA: det egna valet, annars samma förening i den andra sporten
+ * (AIK i fotboll → AIK IF i hockey). Ett antagande, inget sparat val — det skrivs
+ * aldrig till metadata och försvinner så fort användaren väljer själv.
+ */
+export function effectiveFavoriteFromMeta(meta: Meta | null | undefined, vertical: VerticalId): string | undefined {
+  const own = favoriteFromMeta(meta, vertical);
+  if (own || vertical === "golf") return own;
+  const other = vertical === "football" ? "hockey" : "football";
+  const theirs = favoriteFromMeta(meta, other);
+  return theirs ? sisterClubSlug(theirs, vertical) : undefined;
 }
 
 export function onboardingDoneFromMeta(meta: Meta | null | undefined, vertical: VerticalId): boolean {

@@ -4,12 +4,18 @@ import { getTeamInk } from '../../lib/team-colors'
 /**
  * getTeamInk() ska ge en klubbfärg som klarar WCAG AA som TEXT i båda teman.
  * Kontrastsvepet i contrast.spec.ts ser bara de klubbar som råkar renderas —
- * det här täcker alla 16 plus fallbacken.
+ * det här täcker alla klubbar i fotboll och hockey plus fallbacken.
  */
 const CLUBS = [
   'aik', 'djurgarden', 'hammarby', 'malmo-ff', 'ifk-goteborg', 'if-elfsborg',
   'bk-hacken', 'sirius', 'halmstad', 'brommapojkarna', 'mjallby', 'degerfors',
   'gais', 'kalmar-ff', 'vasteras-sk', 'orgryte',
+  // SHL + HockeyAllsvenskan
+  'aik-if', 'djurgardens-if', 'brynas-if', 'farjestads-bk', 'frolunda-hc', 'hv71', 'if-bjorkloven',
+  'linkopings-hc', 'lulea-hf', 'malmo-redhawks', 'orebro-hk', 'rogle-bk', 'skelleftea-aik', 'timra-ik',
+  'vaxjo-lakers', 'almtuna-is', 'bik-karlskoga', 'ik-oskarshamn', 'kalmar-hc', 'leksands-if',
+  'modo-hockey', 'mora-ik', 'nybro-vikings-if', 'ostersunds-ik', 'sodertalje-sk', 'vasteras-ik',
+  'vimmerby-hc', 'visby-roma-hk',
   'finns-inte', // fallback
 ]
 

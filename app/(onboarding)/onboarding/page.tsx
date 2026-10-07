@@ -7,7 +7,7 @@ import { SELLS } from "@/lib/pricing";
 import { OnboardingClient } from "./OnboardingClient";
 import { recordUtmMilestone } from "@/lib/utm-attribution";
 import { VERTICAL } from "@/lib/vertical";
-import { favoriteFromMeta, onboardingDoneFromMeta } from "@/lib/favorite-meta";
+import { effectiveFavoriteFromMeta, onboardingDoneFromMeta } from "@/lib/favorite-meta";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +46,7 @@ export default async function OnboardingPage() {
     // aldrig sett push-frågan, och att tysta bort den vore mer överraskande än
     // att visa den. Tidigare redirectade den här raden på `favoriteTeam` och
     // gjorde just det.
-    const team = favoriteFromMeta(meta, VERTICAL);
+    const team = effectiveFavoriteFromMeta(meta, VERTICAL);
     if (typeof team === "string" && team.length > 0) presetTeam = team;
   }
 
