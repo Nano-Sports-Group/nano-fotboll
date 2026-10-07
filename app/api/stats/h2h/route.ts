@@ -3,6 +3,7 @@ import { fetchH2HFixtures } from "@/lib/db/fixtures";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import { jsonContract } from "@/lib/api-contract";
 import { H2HResponseSchema } from "@/lib/api-schemas";
+import { SPORT, vertical } from "@/lib/vertical";
 
 export const revalidate = 3600;
 
@@ -17,8 +18,9 @@ async function resolveTeam(slug: string): Promise<TeamRow | null> {
   const { data } = await createServerClient()
     .from("entities")
     .select("name,slug,sportmonks_id,sportsmonks_id")
+    .eq("sport", SPORT)
     .eq("type", "team")
-    .eq("metadata->>league", "Allsvenskan")
+    .in("metadata->>league", [...vertical.leagueEntities])
     .eq("slug", slug)
     .maybeSingle();
   if (!data?.slug) return null;

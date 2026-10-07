@@ -13,6 +13,14 @@ import * as Sentry from "@sentry/nextjs";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import { getTeamSlugMap } from "@/lib/db/fixtures";
 import { getTeamNameMap } from "@/lib/team-names";
+import { SPORT } from "@/lib/vertical";
+
+/**
+ * `player_season_stats` saknar sportkolumn och SEASON_IDS är fotbollens säsonger. Utan den här
+ * spärren svarade hockeyns /api/stats/leaderboard med Allsvenskans skytteliga.
+ * ponytail: hockeyns poängliga kräver egen säsongsuppslagning (seasonIdForTeam) — bygg då.
+ */
+const HAS_PLAYER_LEADERS = SPORT === "football";
 
 export const SEASON_IDS: Record<string, string> = {
   "2026": process.env.SPORTSMONKS_SEASON_ID_2026 ?? "26806",
@@ -329,7 +337,7 @@ const cachedPlayers = unstable_cache(
 
 const cachedLeaderRows = unstable_cache(
   async (seasonId: string, orderCol: LeaderMetric): Promise<Record<string, unknown>[]> => {
-    if (!isSupabaseConfigured()) return [];
+    if (!isSupabaseConfigured() || !HAS_PLAYER_LEADERS) return [];
     try {
       const db = createServerClient();
       let query = db
@@ -353,7 +361,7 @@ const cachedLeaderRows = unstable_cache(
 
 const cachedAllPlayerRows = unstable_cache(
   async (seasonId: string): Promise<Record<string, unknown>[]> => {
-    if (!isSupabaseConfigured()) return [];
+    if (!isSupabaseConfigured() || !HAS_PLAYER_LEADERS) return [];
     try {
       const db = createServerClient();
       const { data } = await db

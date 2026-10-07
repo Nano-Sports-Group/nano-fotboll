@@ -42,7 +42,8 @@ export async function GET(
       slug: article.slug,
       title: article.title,
       sourceName: article.sourceName,
-      sourceUrl: article.sourceUrl,
+      // Egna texter bär en platshållare (`/nyheter`, `/lag/<id>`) i articles.url — ingen källa att öppna.
+      sourceUrl: /^https?:\/\//.test(article.sourceUrl ?? "") ? article.sourceUrl : null,
       publishedAt: article.publishedAt,
       updatedAt: article.updatedAt,
       imageUrl: article.imageUrl,
