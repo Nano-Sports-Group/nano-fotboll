@@ -11,7 +11,9 @@
 import { useState } from "react";
 import type { Plan } from "@/lib/access-rules";
 import { Check, Star } from "lucide-react";
+import Link from "next/link";
 import { CheckoutButton } from "./CheckoutButton";
+import { ELITE_FEATURES } from "./plan-copy";
 import { VERTICAL } from "@/lib/vertical";
 import {
   COMBO_PRICING,
@@ -63,12 +65,6 @@ const PRO_FEATURES =
 const HOCKEY_PRO_NOTE =
   "Hockeyn är ny: lagbilden och poddsammanfattningarna byggs upp under hösten. Du kan avsluta när du vill.";
 
-const ELITE_FEATURES = [
-  "Allt i PRO",
-  "Cross-source clustering",
-  "Vad som spelar roll idag för ditt lag",
-  "Trend detection (eskalerande rykten)",
-];
 
 /**
  * Veckopriset är ALLTID andra rad och alltid muted. Hero är det Stripe faktiskt
@@ -293,6 +289,15 @@ export function PricingPlans({
             <FeatureList features={ELITE_FEATURES} paid />
             {currentPlan === "elite" ? (
               <NuvarandePlan />
+            ) : currentPlan === "pro" ? (
+              // En PRO-prenumerant uppgraderar på sin befintliga prenumeration (kredit + ny period).
+              // Kassan svarar 409 för den som redan prenumererar, så knappen går till uppgraderingssidan.
+              <Link
+                href="/konto/uppgradera"
+                className="w-full h-11 rounded-xl font-medium text-sm flex items-center justify-center border border-pitch/40 text-foreground hover:border-pitch"
+              >
+                Uppgradera till Elite
+              </Link>
             ) : (
               <CheckoutButton plan="elite" interval={interval} label="Välj Elite" variant="outline" />
             )}

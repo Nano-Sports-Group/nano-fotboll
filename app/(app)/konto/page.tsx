@@ -24,6 +24,7 @@ import {
   PRICING,
   FOUNDER_OFFER,
   isComboEnabled,
+  ELITE_AVAILABLE,
 } from "@/lib/pricing";
 import { isFounderOfferPublic } from "@/lib/founder-offer";
 import { planForVertical } from "@/lib/plan-for-vertical";
@@ -59,7 +60,7 @@ async function getBillingPortalUrl(customerId: string): Promise<string | null> {
 export default async function KontoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ checkout?: string }>;
+  searchParams: Promise<{ checkout?: string; upgraded?: string }>;
 }) {
   const { userId } = await auth();
   const user = await currentUser();
@@ -79,7 +80,7 @@ export default async function KontoPage({
   const plan = publicMeta.plan ?? "free";
   const isPaid = plan === "pro" || plan === "elite";
   const planLabel = plan === "elite" ? "ELITE" : plan === "pro" ? "PRO" : "GRATIS";
-  const { checkout } = await searchParams;
+  const { checkout, upgraded } = await searchParams;
 
   const periodEndFormatted = privateMeta.subscription?.currentPeriodEnd
     ? new Date(privateMeta.subscription.currentPeriodEnd).toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm",
@@ -113,6 +114,25 @@ export default async function KontoPage({
           >
             Gå till din feed
           </Link>
+        </div>
+      )}
+      {/* Efter uppgradering PRO → Elite (/konto/uppgradera). Rutten synkar rättigheterna före svaret,
+          men Clerk-sessionen kan ligga ett ögonblick efter. */}
+      {upgraded === "elite" && plan === "elite" && (
+        <div className="mb-8 p-5 rounded-xl border border-pitch/40 bg-pitch/10">
+          <p className="flex items-center gap-2 text-pitch-ink text-sm font-medium">
+            <Check className="w-4 h-4" />
+            Du har Elite. Uppgraderingen är genomförd.
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Du har nu clustering, trend detection och &rdquo;vad som spelar roll idag&rdquo; för ditt lag.
+          </p>
+        </div>
+      )}
+      {upgraded === "elite" && plan !== "elite" && (
+        <div className="mb-8 p-4 rounded-xl border border-amber-500/40 bg-amber-500/10 text-sm flex items-center gap-2 text-amber-400">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          Uppgraderingen är genomförd — Elite aktiveras inom någon minut. Ladda om sidan om det dröjer.
         </div>
       )}
       {checkout === "success" && !isPaid && (
@@ -216,6 +236,14 @@ export default async function KontoPage({
             <ListRow
               title="Förnyas"
               trailing={<span className="text-foreground text-sm">{periodEndFormatted}</span>}
+            />
+          )}
+          {plan === "pro" && ELITE_AVAILABLE && !privateMeta.subscription?.cancelAtPeriodEnd && (
+            <ListRow
+              href="/konto/uppgradera"
+              title="Uppgradera till Elite"
+              subtitle="Det du redan betalat avräknas"
+              trailing={<Check className="w-4 h-4 text-pitch-ink" />}
             />
           )}
           {isPaid && portalUrl ? (

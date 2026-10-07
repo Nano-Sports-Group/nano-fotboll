@@ -16,6 +16,7 @@ export const FUNNEL_EVENTS = [
   "paywall_cta_click",
   "checkout_start",
   "checkout_success",
+  "upgrade_elite",
   "push_opt_in",
   "newsletter_landing_view",
   "newsletter_signup_started",

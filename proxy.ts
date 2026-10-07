@@ -104,9 +104,13 @@ async function route(auth: ClerkMiddlewareAuth, req: NextRequest) {
     // att skicka besökaren till inloggningen. En utloggad som klickade "Konto"
     // från /mer möttes alltså av en 404-sida. Lokalt syntes det aldrig,
     // eftersom .env.local har variabeln satt.
-    await auth.protect({
-      unauthenticatedUrl: new URL("/sign-in", req.url).toString(),
-    });
+    // Uppgraderingssidan nås också från appar och mejl: efter inloggning ska man tillbaka dit.
+    // Bara den egna sökvägen (aldrig en adress ur begäran) skickas med som redirect_url.
+    const signIn = new URL("/sign-in", req.url);
+    if (req.nextUrl.pathname === "/konto/uppgradera") {
+      signIn.searchParams.set("redirect_url", `${req.nextUrl.pathname}${req.nextUrl.search}`);
+    }
+    await auth.protect({ unauthenticatedUrl: signIn.toString() });
   }
 
   // LCP-fix: landningssidan (/) körde tidigare currentUser() i render-trädet
