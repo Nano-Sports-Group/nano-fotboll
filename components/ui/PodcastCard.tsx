@@ -31,7 +31,7 @@ export function PodcastCard({ podcast }: PodcastCardProps) {
   return (
     <Link
       href={`/podcast/${podcast.id}`}
-      className="group relative flex gap-4 p-4 rounded-2xl border border-border bg-card hover:border-pitch/40 transition-all duration-200 hover:shadow-[0_0_16px_rgba(45,83,73,0.08)] overflow-hidden"
+      className="group relative flex gap-4 p-4 rounded-2xl border border-border bg-card hover:border-pitch/40 transition-all duration-200 hover:shadow-[0_0_16px_color-mix(in_srgb,var(--pitch)_8%,transparent)] overflow-hidden"
     >
       {/* Thumbnail */}
       <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-secondary shrink-0">

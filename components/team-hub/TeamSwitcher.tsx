@@ -89,7 +89,7 @@ export function TeamSwitcher({
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Byt lag"
-        className="relative inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-md text-[28px] font-bold tracking-tight text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation"
+        className="relative inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-md text-[22px] sm:text-[28px] font-bold tracking-tight text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation"
       >
         <span className="truncate">{current?.name ?? currentSlug}</span>
         <ChevronDown aria-hidden className="h-5 w-5 shrink-0 text-muted-foreground" />

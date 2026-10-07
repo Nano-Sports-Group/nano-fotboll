@@ -77,7 +77,7 @@ function TabBar({ active }: { active: "hem" | "matcher" | "utforska" | "profil" 
         {tabs.map(({ id, label, Icon }) =>
           id === "fab" ? (
             <div key={id} className="-mt-7 flex flex-col items-center">
-              <div className="pitch-gradient flex h-12 w-12 items-center justify-center rounded-full shadow-[0_8px_20px_-4px_rgba(45,83,73,0.5)] ring-4 ring-[#F2F3F1]">
+              <div className="pitch-gradient flex h-12 w-12 items-center justify-center rounded-full shadow-[0_8px_20px_-4px_color-mix(in_srgb,var(--pitch)_50%,transparent)] ring-4 ring-[#F2F3F1]">
                 <Icon className="h-5 w-5 text-white" strokeWidth={2.5} />
               </div>
             </div>
@@ -299,7 +299,7 @@ export function ScreenExplore() {
               key={p}
               className={`shrink-0 rounded-full px-3 py-1.5 text-[10px] font-semibold ${
                 i === 0
-                  ? "pitch-gradient text-white shadow-[0_4px_12px_-2px_rgba(45,83,73,0.45)]"
+                  ? "pitch-gradient text-white shadow-[0_4px_12px_-2px_color-mix(in_srgb,var(--pitch)_45%,transparent)]"
                   : "border border-white/70 bg-white/80 text-zinc-600"
               }`}
             >

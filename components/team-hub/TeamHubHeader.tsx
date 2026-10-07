@@ -11,6 +11,7 @@ import { StatNumber } from "@/components/ui/StatNumber";
 import { Card as TactileCard } from "@/components/ui/TactileCard";
 import type { TeamSeasonRow } from "@/lib/team-hub/queries";
 import { formLetter, formLabel } from "@/lib/form-letter";
+import { getTeamColors, getTeamShort } from "@/lib/team-colors";
 
 // Global Header är sticky h-12 (48px). TeamNav är sticky top-12 och ~44px
 // hög — kompaktraden fastnar under båda.
@@ -73,7 +74,8 @@ export function TeamHubHeader({
             <button
               onClick={refresh}
               aria-label="Uppdatera lagdata"
-              className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 transition-colors touch-manipulation active:bg-muted"
+              // Mobil: dra-för-att-uppdatera gör samma sak, och knappen kapade lagnamnet ("Frölu…").
+              className="hidden sm:inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 transition-colors touch-manipulation active:bg-muted"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${pending ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">Uppdatera</span>
@@ -84,8 +86,11 @@ export function TeamHubHeader({
         titleContent={
           <div className="flex items-center gap-4">
             <div className="relative w-14 h-14 rounded-2xl overflow-hidden bg-card border border-border shrink-0">
-              {team.logo_url && (
+              {team.logo_url ? (
                 <Image src={team.logo_url} alt="" fill className="object-contain p-1.5" sizes="56px" />
+              ) : (
+                // Ingen logotyp i källan (hela hockeyn): kortnamn i klubbfärg i stället för en tom ruta.
+                <TeamMonogram slug={currentSlug} name={team.name} />
               )}
             </div>
             <div className="flex-1 min-w-0">
@@ -158,5 +163,20 @@ function KeyStat({ label, value, accent, signed }: { label: string; value: numbe
       )}
       <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
     </TactileCard>
+  );
+}
+
+function TeamMonogram({ slug, name }: { slug: string; name: string }) {
+  const colors = getTeamColors(slug);
+  const label = getTeamShort(slug) ?? name.slice(0, 3).toUpperCase();
+  return (
+    <span
+      aria-hidden
+      className="absolute inset-0 flex items-center justify-center font-heading font-bold tracking-tight"
+      // Svart huvudfärg (AIK, Brynäs, Luleå): andra klubbfärgen bär bokstäverna.
+      style={{ background: colors.primary, color: colors.primary === "#111111" ? colors.secondary : colors.text, fontSize: label.length > 3 ? 13 : 16 }}
+    >
+      {label}
+    </span>
   );
 }

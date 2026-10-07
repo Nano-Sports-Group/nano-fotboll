@@ -14,6 +14,7 @@
  * ingen AI-rad.
  */
 
+import { SPORT_ACCENT } from "@/lib/vertical";
 import "server-only";
 import { CONTACT_EMAIL, getSiteHost, getSiteUrl } from "@/lib/site-url";
 
@@ -38,7 +39,7 @@ ${bodyHtml}
 }
 
 function button(href: string, label: string): string {
-  return `<p style="margin:24px 0"><a href="${href}" style="background:#2D5349;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:8px;display:inline-block">${label}</a></p>
+  return `<p style="margin:24px 0"><a href="${href}" style="background:${SPORT_ACCENT.base};color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:8px;display:inline-block">${label}</a></p>
 <p style="font-size:13px;color:#6b6b6b">Fungerar inte knappen? Klistra in den här länken i webbläsaren:<br><span style="word-break:break-all">${href}</span></p>`;
 }
 
