@@ -91,7 +91,8 @@ export function TeamSwitcher({
         aria-label="Byt lag"
         className="relative inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-md text-[22px] sm:text-[28px] font-bold tracking-tight text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation"
       >
-        <span className="truncate">{current?.name ?? currentSlug}</span>
+        {/* Två rader hellre än "Malmö Redh…" — långa lagnamn får plats i mobilbredd. */}
+        <span className="line-clamp-2 text-left leading-[1.1]">{current?.name ?? currentSlug}</span>
         <ChevronDown aria-hidden className="h-5 w-5 shrink-0 text-muted-foreground" />
       </button>
 
