@@ -19,6 +19,7 @@ export function mapNewsFeedRow(a: {
   url_hash?: string | null;
   rights_status?: string | null;
   is_athopia_generated?: boolean | null;
+  teams?: Array<{ slug: string; name: string }> | null;
 }): FeedItem {
   const internal = articlePublicPath({
     slug: a.slug ?? a.url_hash,
@@ -50,5 +51,6 @@ export function mapNewsFeedRow(a: {
     sourceCount: a.source_count ?? null,
     storyClusterId: a.story_cluster_id ?? null,
     importanceTier: mapImportanceTier(a.importance_score ?? null, a.push_priority ?? null),
+    ...(a.teams?.length ? { teams: a.teams } : {}),
   };
 }

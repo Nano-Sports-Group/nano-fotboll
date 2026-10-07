@@ -31,6 +31,8 @@ export const FeedItemSchema = z.object({
   importanceTier: ImportanceTierSchema.nullable().optional(),
   /** Forum posts linked via forum_posts.article_id — omit when 0. */
   discussionCount: z.number().int().optional(),
+  /** Lagtaggar (högst tre). Utelämnas när inga är kända. */
+  teams: z.array(z.object({ slug: z.string(), name: z.string() })).optional(),
 });
 
 export const FeedModuleTypeSchema = z.enum([

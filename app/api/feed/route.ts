@@ -8,6 +8,7 @@ import { FeedResponseSchema } from "@/lib/api-schemas";
 import type { FeedItem } from "@/lib/types";
 import { interestsToNewsTags } from "@/lib/feed/content-preferences";
 import { mapNewsFeedRow } from "@/lib/feed/map-feed-row";
+import { enrichFeedRows } from "@/lib/feed/enrich-feed-rows";
 import { buildFeedModules } from "@/lib/feed/build-feed-modules";
 import { resolveFeedUserId } from "@/lib/feed/feed-usage";
 import { getUserPlan } from "@/lib/user-plan";
@@ -128,10 +129,11 @@ export async function GET(req: Request) {
   let items: FeedItem[] = [];
 
   try {
+    // Vyn saknar slug, rättighetsstatus och lagnamn — de hämtas i enrichFeedRows.
     let aq = db
       .from("news_feed_clustered")
       .select(
-        "id, title, source_name, url, published_at, summary, importance_score, feed_score, entity_ids, news_tag, source_count, story_cluster_id, push_priority, slug, rights_status, is_athopia_generated",
+        "id, title, source_name, url, published_at, summary, importance_score, feed_score, entity_ids, news_tag, source_count, story_cluster_id, push_priority",
       )
       .eq("sport", SPORT)
       .gte("published_at", contentCutoffIso())
@@ -151,37 +153,13 @@ export async function GET(req: Request) {
     }
 
     const { data: articleData, error } = await aq;
-    if (error) {
-      console.warn("[feed] clustered select fallback:", error.message);
-      let fallback = db
-        .from("news_feed_clustered")
-        .select(
-          "id, title, source_name, url, published_at, summary, importance_score, feed_score, entity_ids, news_tag, source_count, story_cluster_id, push_priority",
-        )
-        .eq("sport", SPORT)
-        .gte("published_at", contentCutoffIso())
-        .order(isPro ? "feed_score" : "published_at", { ascending: false, nullsFirst: false })
-        .range(offset, offset + effectiveLimit - 1);
-      if (filterTeamIds.length === 1) {
-        fallback = fallback.contains("entity_ids", [filterTeamIds[0]]);
-      } else if (filterTeamIds.length > 1) {
-        fallback = fallback.overlaps("entity_ids", filterTeamIds);
-      }
-      if (typeFilter) {
-        fallback = fallback.eq("news_tag", typeFilter);
-      } else if (contentTypeTags?.length) {
-        fallback = fallback.in("news_tag", contentTypeTags);
-      }
-      const { data: fb } = await fallback;
-      items = (fb ?? [])
-        .filter((a) => teamSlug || keepForNationalInterest(a, nationalInterest, nationalIds))
-        .map((a) => mapNewsFeedRow(a));
-    } else {
-      // Landslagets rum: användarens intresse avgör (lib/national-interest.ts). En lagsida visar allt.
-      items = (articleData ?? [])
-        .filter((a) => teamSlug || keepForNationalInterest(a, nationalInterest, nationalIds))
-        .map((a) => mapNewsFeedRow(a));
-    }
+    if (error) console.error("[feed] select föll:", error.message);
+
+    // Landslagets rum: användarens intresse avgör (lib/national-interest.ts). En lagsida visar allt.
+    const kept = (articleData ?? []).filter(
+      (a) => teamSlug || keepForNationalInterest(a, nationalInterest, nationalIds),
+    );
+    items = (await enrichFeedRows(db, kept)).map((a) => mapNewsFeedRow(a));
   } catch (err) {
     console.error("[feed] DB-fel:", err);
   }

@@ -94,6 +94,25 @@
                           },
                           "discussionCount": {
                             "type": "integer"
+                          },
+                          "teams": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "slug": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "slug",
+                                "name"
+                              ],
+                              "additionalProperties": false
+                            }
                           }
                         },
                         "required": [
@@ -1531,6 +1550,25 @@
                             },
                             "discussionCount": {
                               "type": "integer"
+                            },
+                            "teams": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "slug": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "slug",
+                                  "name"
+                                ],
+                                "additionalProperties": false
+                              }
                             }
                           },
                           "required": [
@@ -1619,6 +1657,25 @@
                           },
                           "discussionCount": {
                             "type": "integer"
+                          },
+                          "teams": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "slug": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "slug",
+                                "name"
+                              ],
+                              "additionalProperties": false
+                            }
                           }
                         },
                         "required": [

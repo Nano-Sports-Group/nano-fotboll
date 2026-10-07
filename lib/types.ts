@@ -278,6 +278,8 @@ export interface FeedItem {
   importanceTier?: "breaking" | "major" | "normal" | "noise" | null;
   /** Antal forum-inlägg kopplade till artikeln (valfritt). */
   discussionCount?: number;
+  /** Lagen nyheten handlar om (högst tre) — taggar i flödet. Utelämnas när inga är kända. */
+  teams?: Array<{ slug: string; name: string }>;
 }
 
 /** Publik podd-signal — ingen transkripttext, ingen enclosure-URL. */
