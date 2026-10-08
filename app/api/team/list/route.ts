@@ -31,11 +31,14 @@ export async function GET() {
           league: (meta.league as string | null) ?? null,
         };
       });
-    // Samma regel som webbens LeagueSwitcher: huvudligan alltid, övriga när en säsong finns.
     // Apparnas ligaväxlare ritas ur den här listan; `param` är värdet för ?liga= (null = huvudligan).
-    const leagues = vertical.leagues
-      .filter((l, i) => i === 0 || withData.includes(l.name))
-      .map((l) => ({ name: l.name, param: l.param }));
+    // Alla vertikalens ligor visas, även de som väntar på data (founderbeslut 2026-10-08) —
+    // `hasData` låter klienten visa "kommer snart" i stället för en tom tabell utan förklaring.
+    const leagues = vertical.leagues.map((l, i) => ({
+      name: l.name,
+      param: l.param,
+      hasData: i === 0 || withData.includes(l.name),
+    }));
     return jsonContract(TeamListResponseSchema, { teams, leagues }, { headers: { "Cache-Control": "s-maxage=600, stale-while-revalidate=1200" } });
   } catch (e) {
     Sentry.captureException(e);

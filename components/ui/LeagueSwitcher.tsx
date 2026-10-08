@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { MAIN_LEAGUE_PARAM, vertical } from "@/lib/vertical";
-import { fetchLeaguesWithData } from "@/lib/db/fixtures";
 
 /**
  * Växlar mellan vertikalens ligor på tabell/spelschema/resultat (hockey: SHL | HockeyAllsvenskan).
  * Server-renderade länkar med ?liga= — ingen klientstate. Renderas inte när vertikalen har en liga.
- * Bara ligor med data visas: huvudligan alltid, övriga när en säsong finns i DB (Superettan).
+ * Alla vertikalens ligor visas, även de som väntar på data (founderbeslut 2026-10-08): sidan
+ * under visar då sitt tomma läge. En ny liga är en rad i `lib/vertical.ts`.
  */
-export async function LeagueSwitcher({
+export function LeagueSwitcher({
   basePath,
   active,
   /** Tittarens hemliga är inte huvudligan: utan param hamnar hen i hemligan, så huvudlänken måste säga sitt. */
@@ -17,8 +17,7 @@ export async function LeagueSwitcher({
   active?: string;
   explicitMain?: boolean;
 }) {
-  const withData = new Set(await fetchLeaguesWithData());
-  const leagues = vertical.leagues.filter((l, i) => i === 0 || withData.has(l.name));
+  const leagues = vertical.leagues;
   if (leagues.length < 2) return null;
   const current = active ?? leagues[0].name;
   return (

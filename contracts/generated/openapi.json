@@ -1432,11 +1432,15 @@
                               "string",
                               "null"
                             ]
+                          },
+                          "hasData": {
+                            "type": "boolean"
                           }
                         },
                         "required": [
                           "name",
-                          "param"
+                          "param",
+                          "hasData"
                         ],
                         "additionalProperties": false
                       }
