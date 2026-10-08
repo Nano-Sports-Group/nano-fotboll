@@ -6,6 +6,7 @@ import { TRIAL_DAYS, proPriceLabel, listMonthlyKr } from "@/lib/pricing";
 const FEATURE_LABELS: Record<AccessFeature, string> = {
   basicFilter:        "grundfilter",
   advancedFilter:     "avancerade filter",
+  articles:           "Artiklar",
   aiSummaries:        "AI-sammanfattningar",
   smartRanking:       "smart ranking",
   crossSourceCluster: "cross-source clustering",

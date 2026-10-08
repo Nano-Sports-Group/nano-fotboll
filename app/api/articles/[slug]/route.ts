@@ -32,7 +32,7 @@ export async function GET(
     getUserPlan(),
     getArticleDiscussionCount(article.id),
   ]);
-  const unlocked = canAccess("aiSummaries", plan);
+  const unlocked = canAccess("articles", plan);
   const rights = article.rightsStatus ?? resolveRightsStatus(article);
   const publishable = canPublishBody(rights);
 
@@ -61,9 +61,9 @@ export async function GET(
       discussionCount,
     },
     access: {
-      feature: "aiSummaries",
+      feature: "articles",
       unlocked,
-      requiredPlan: requiredPlanFor("aiSummaries"),
+      requiredPlan: requiredPlanFor("articles"),
       upgradePath: "/prenumerera",
     },
   });

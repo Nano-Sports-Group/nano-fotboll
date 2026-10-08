@@ -13,7 +13,12 @@ export type Plan = "free" | "pro" | "elite";
 export const ACCESS = {
   basicFilter:        "free",
   advancedFilter:     "pro",
-  /** AI-artiklar / lag-sammanfattning / matchanalys-body */
+  /**
+   * Egna artiklar (/artikel/<slug>) — fria för alla. Founderbeslut 2026-10-08: priskatalogen lovar
+   * artiklar i Free, och en gäst som trycker på en egen text i flödet ska få läsa den.
+   */
+  articles:           "free",
+  /** Lag-sammanfattning / matchanalys-body (inte artiklar — se `articles`). */
   aiSummaries:        "pro",
   smartRanking:       "pro",
   crossSourceCluster: "elite",

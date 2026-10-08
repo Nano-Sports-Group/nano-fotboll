@@ -9,6 +9,7 @@
   "features": {
     "basicFilter": "free",
     "advancedFilter": "pro",
+    "articles": "free",
     "aiSummaries": "pro",
     "smartRanking": "pro",
     "crossSourceCluster": "elite",

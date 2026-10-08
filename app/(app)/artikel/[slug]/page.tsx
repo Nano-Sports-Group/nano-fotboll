@@ -13,9 +13,6 @@ import { notFound, redirect } from "next/navigation";
 import { MessageSquare } from "lucide-react";
 import type { Article } from "@/lib/types";
 import { ArticleScrollTracker } from "@/components/gamification/ArticleScrollTracker";
-import { getUserPlan } from "@/lib/user-plan";
-import { canAccess } from "@/lib/access-rules";
-import { BlurPaywall } from "@/components/BlurPaywall";
 import {
   articlePublicPath,
   canPublishBody,
@@ -135,18 +132,15 @@ export default async function ArtikelPage({
     redirect(`/nyhet/${slug}`);
   }
 
-  const [relatedArticles, discussionCount, plan] = await Promise.all([
+  const [relatedArticles, discussionCount] = await Promise.all([
     getRelatedArticles(article.id),
     getArticleDiscussionCount(article.id),
-    getUserPlan(),
   ]);
 
   const teamEntity = article.entities?.find((e) => e.type === "team" && e.slug);
   const forumHref = teamEntity
     ? `/forum/${teamEntity.slug}?artikel=${article.id}`
     : "/forum";
-  const unlockedAi = canAccess("aiSummaries", plan);
-  const teamName = teamEntity?.name;
   const readTime = calculateReadTime(article.content ?? article.summary);
   const source = byline(article);
 
@@ -189,25 +183,7 @@ export default async function ArtikelPage({
           />
         </div>
 
-        {article.content && unlockedAi ? (
-          <ArticleBody content={article.content} title={article.title} />
-        ) : article.content && !unlockedAi ? (
-          <BlurPaywall
-            feature="aiSummaries"
-            plan={plan}
-            teamName={teamName}
-            className="mb-8"
-            maxHeight="7rem"
-            tease="Full analys bakom PRO."
-            preview={
-              <p className="text-[1.0625rem] leading-7 text-foreground/90">
-                {(article.summary ?? article.title).slice(0, 180)}…
-              </p>
-            }
-          >
-            {null}
-          </BlurPaywall>
-        ) : null}
+        {article.content ? <ArticleBody content={article.content} title={article.title} /> : null}
 
         {relatedArticles.length > 0 && (
           <aside className="mt-12 space-y-3" aria-label="Läs också">
