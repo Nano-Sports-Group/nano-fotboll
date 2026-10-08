@@ -8,8 +8,8 @@ const UNIVERSAL_LINK_COMPONENTS = universalLinkPaths().map((path) => ({ "/": pat
 export function GET() {
   const teamId = process.env.APPLE_TEAM_ID;
   // En app för alla sporter (ADR-004): samma bundle-id på varje sports domän.
-  // Sätt APPLE_BUNDLE_ID=se.nanosport.app när det nya id:t är valt; tills dess det gamla.
-  const appId = `${teamId}.${process.env.APPLE_BUNDLE_ID || "se.athopia.app"}`;
+  // Samma standardvärde som BUNDLE_ID i lib/app-store.ts och bundle-id:t i nano-ios.
+  const appId = `${teamId}.${process.env.APPLE_BUNDLE_ID || "se.nanosport.app"}`;
   const details = teamId
     ? [
         {

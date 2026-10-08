@@ -10,7 +10,8 @@ import {
 } from "@apple/app-store-server-library";
 import { APP_STORE_PRODUCTS } from "@/lib/product-contract";
 
-const BUNDLE_ID = "se.athopia.app";
+// Appens bundle-id (ADR-004). Måste vara samma som i nano-ios project.pbxproj; går inte att byta efter första inskick.
+const BUNDLE_ID = process.env.APPLE_BUNDLE_ID || "se.nanosport.app";
 
 export type AppStorePlan = (typeof APP_STORE_PRODUCTS)[keyof typeof APP_STORE_PRODUCTS]["plan"];
 
