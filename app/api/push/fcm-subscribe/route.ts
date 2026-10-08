@@ -11,12 +11,26 @@ import { parseBody, z } from "@/lib/validation";
 // FCM-registreringstoken: URL-säkra tecken plus kolon, i praktiken 140–200 tecken.
 const fcmToken = z.string().regex(/^[A-Za-z0-9_:-]{100,512}$/);
 
-const SubscribeSchema = z.object({
-  deviceToken: fcmToken,
-  teamIds: z.array(z.string().min(1).max(100)).max(50).default([]),
-});
+// Android-appen skriver alla request-bodies i snake_case (Api.bodyJson), precis som den gör mot
+// forum, profil och flödesinställningar. Den här vägen läste bara camelCase och svarade 400 på
+// varje registrering. Båda formerna tas emot.
+const snakeToCamel = (raw: unknown) => {
+  if (!raw || typeof raw !== "object") return raw;
+  const b = raw as Record<string, unknown>;
+  return { ...b, deviceToken: b.deviceToken ?? b.device_token, teamIds: b.teamIds ?? b.team_ids };
+};
 
-const UnsubscribeSchema = z.object({ deviceToken: fcmToken });
+const SubscribeSchema = z.preprocess(
+  snakeToCamel,
+  z.object({
+    deviceToken: fcmToken,
+    teamIds: z.array(z.string().min(1).max(100)).max(50).default([]),
+  }),
+) as z.ZodType<{ deviceToken: string; teamIds: string[] }>;
+
+const UnsubscribeSchema = z.preprocess(snakeToCamel, z.object({ deviceToken: fcmToken })) as z.ZodType<{
+  deviceToken: string;
+}>;
 
 export async function POST(req: Request) {
   const { userId } = await auth();
