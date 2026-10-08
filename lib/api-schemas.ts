@@ -585,10 +585,14 @@ export const TeamListItemSchema = z.object({
   name: z.string(),
   slug: z.string(),
   logo_url: z.string().nullable(),
+  /** entities.metadata.league — apparna härleder hemligan ur favoritlagets liga. */
+  league: z.string().nullable(),
 });
 
 export const TeamListResponseSchema = z.object({
   teams: z.array(TeamListItemSchema),
+  /** Ligor att visa i växlaren, huvudligan först. `param` = värdet för ?liga= (null = huvudligan). */
+  leagues: z.array(z.object({ name: z.string(), param: z.string().nullable() })),
 });
 
 export const HeroResponseSchema = z.object({

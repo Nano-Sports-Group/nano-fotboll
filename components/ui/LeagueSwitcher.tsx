@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { vertical } from "@/lib/vertical";
+import { MAIN_LEAGUE_PARAM, vertical } from "@/lib/vertical";
 import { fetchLeaguesWithData } from "@/lib/db/fixtures";
 
 /**
@@ -7,7 +7,16 @@ import { fetchLeaguesWithData } from "@/lib/db/fixtures";
  * Server-renderade länkar med ?liga= — ingen klientstate. Renderas inte när vertikalen har en liga.
  * Bara ligor med data visas: huvudligan alltid, övriga när en säsong finns i DB (Superettan).
  */
-export async function LeagueSwitcher({ basePath, active }: { basePath: string; active?: string }) {
+export async function LeagueSwitcher({
+  basePath,
+  active,
+  /** Tittarens hemliga är inte huvudligan: utan param hamnar hen i hemligan, så huvudlänken måste säga sitt. */
+  explicitMain = false,
+}: {
+  basePath: string;
+  active?: string;
+  explicitMain?: boolean;
+}) {
   const withData = new Set(await fetchLeaguesWithData());
   const leagues = vertical.leagues.filter((l, i) => i === 0 || withData.has(l.name));
   if (leagues.length < 2) return null;
@@ -19,7 +28,7 @@ export async function LeagueSwitcher({ basePath, active }: { basePath: string; a
         return (
           <Link
             key={l.name}
-            href={l.param ? `${basePath}?liga=${l.param}` : basePath}
+            href={l.param ? `${basePath}?liga=${l.param}` : explicitMain ? `${basePath}?liga=${MAIN_LEAGUE_PARAM}` : basePath}
             aria-current={selected ? "page" : undefined}
             className={`min-h-11 inline-flex items-center rounded-full px-4 text-sm font-medium transition-colors ${
               selected ? "pitch-gradient text-white" : "text-muted-foreground hover:text-foreground"

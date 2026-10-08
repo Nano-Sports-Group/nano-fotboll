@@ -4,8 +4,9 @@ import Link from "next/link";
 import { fetchAllsvenskanFixtures } from "@/lib/db/fixtures";
 import type { SMFixture } from "@/lib/db/fixtures";
 import { AppBreadcrumbs } from "@/components/ui/AppBreadcrumbs";
-import { VERTICAL, leagueHref, vertical, leagueFromParam } from "@/lib/vertical";
+import { VERTICAL, leagueHref, vertical } from "@/lib/vertical";
 import { LeagueSwitcher } from "@/components/ui/LeagueSwitcher";
+import { resolveViewerLeague } from "@/lib/team/viewer-league";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 1800;
@@ -45,7 +46,7 @@ export default async function AllsvenskanSpelschemePage({
 }: {
   searchParams: Promise<{ liga?: string }>;
 }) {
-  const league = leagueFromParam((await searchParams).liga);
+  const { league, homeIsSecondary } = await resolveViewerLeague((await searchParams).liga);
   const leagueName = league ?? vertical.leagueName;
   const fixtures = await fetchAllsvenskanFixtures(league).catch(() => [] as SMFixture[]);
   const upcoming = fixtures
@@ -64,7 +65,7 @@ export default async function AllsvenskanSpelschemePage({
       </div>
 
       <h1 className="font-bold text-4xl sm:text-5xl text-foreground mb-2 text-balance">{VERTICAL === "hockey" ? `${leagueName.toUpperCase()} SPELSCHEMA 2026/27` : `${leagueName.toUpperCase()} SPELSCHEMA 2026`}</h1>
-      <LeagueSwitcher basePath={leagueHref("/spelschema")} active={league} />
+      <LeagueSwitcher basePath={leagueHref("/spelschema")} active={league} explicitMain={homeIsSecondary} />
       <p className="text-muted-foreground mb-8">{VERTICAL === "hockey" ? "Nästa omgångar i SHL 2026/27." : "Nästa omgångar i Allsvenskan 2026."}</p>
 
       {upcoming.length === 0 ? (

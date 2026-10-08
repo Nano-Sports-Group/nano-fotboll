@@ -7,6 +7,8 @@ export interface PrimaryTeam {
   id: string;
   slug: string;
   name: string;
+  /** entities.metadata.league — lagets serie, styr tittarens hemliga. */
+  league: string | null;
 }
 
 /**
@@ -22,11 +24,18 @@ export async function getPrimaryTeam(): Promise<PrimaryTeam | null> {
   const db = createServerClient();
   const { data } = await db
     .from("entities")
-    .select("id, slug, name")
+    .select("id, slug, name, metadata")
     .eq("type", "team")
     .eq("sport", SPORT)
     .eq("slug", slug)
     .maybeSingle();
 
-  return data ? { id: data.id as string, slug: data.slug as string, name: data.name as string } : null;
+  return data
+    ? {
+        id: data.id as string,
+        slug: data.slug as string,
+        name: data.name as string,
+        league: ((data.metadata ?? {}) as Record<string, unknown>).league as string | null ?? null,
+      }
+    : null;
 }

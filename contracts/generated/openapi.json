@@ -1401,20 +1401,50 @@
                               "string",
                               "null"
                             ]
+                          },
+                          "league": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
                           }
                         },
                         "required": [
                           "id",
                           "name",
                           "slug",
-                          "logo_url"
+                          "logo_url",
+                          "league"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "leagues": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "param": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "param"
                         ],
                         "additionalProperties": false
                       }
                     }
                   },
                   "required": [
-                    "teams"
+                    "teams",
+                    "leagues"
                   ],
                   "additionalProperties": false,
                   "$schema": "http://json-schema.org/draft-07/schema#"

@@ -233,9 +233,32 @@ export function leagueHref(subpath = ""): string {
   return leagueHrefFor(VERTICAL, subpath);
 }
 
+/**
+ * Huvudligans uttryckliga `?liga=`-värde (`shl`, `allsvenskan`). Utan param visas tittarens hemliga
+ * (favoritlagets liga), så den som har hemligan i en annan serie behöver ett sätt att be om huvudligan.
+ * leagueFromParam ger redan undefined (= huvudligan) för värdet.
+ */
+export const MAIN_LEAGUE_PARAM = vertical.leagueName.toLowerCase();
+
 /** `?liga=` → ligans namn (undefined = huvudligan). Okänt värde ger huvudligan, aldrig ett fel. */
 export function leagueFromParam(param: string | string[] | undefined): string | undefined {
   const value = Array.isArray(param) ? param[0] : param;
   if (!value) return undefined;
   return vertical.leagues.find((l) => l.param === value.toLowerCase())?.name;
+}
+
+/**
+ * Vilken serie en tittare ska se. Hemligan (favoritlagets liga) gäller när `?liga=` saknas; en uttrycklig
+ * param vinner alltid. En serie utan data är inget hem. `league: undefined` = huvudligan.
+ */
+export function pickViewerLeague(
+  param: string | string[] | undefined,
+  homeLeagueName: string | null | undefined,
+  leaguesWithData: readonly string[],
+): { league: string | undefined; homeIsSecondary: boolean } {
+  const home = vertical.leagues.find(
+    (l) => l.param && l.name === homeLeagueName && leaguesWithData.includes(l.name),
+  )?.name;
+  const explicit = Array.isArray(param) ? param[0] : param;
+  return { league: explicit ? leagueFromParam(explicit) : home, homeIsSecondary: Boolean(home) };
 }

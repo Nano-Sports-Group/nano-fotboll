@@ -1,14 +1,21 @@
 import { fetchLiveScores, fetchAllsvenskanFixtures, parseFixtureScore } from "@/lib/db/fixtures";
 import { jsonContract } from "@/lib/api-contract";
 import { ScoresResponseSchema } from "@/lib/api-schemas";
+import { leagueFromParam, vertical } from "@/lib/vertical";
+import type { NextRequest } from "next/server";
 
 export const revalidate = 60;
 
-export async function GET() {
-  const live = await fetchLiveScores();
+/** `?liga=superettan` / `?liga=hockeyallsvenskan` väljer serie. Utan param = huvudligan. */
+export async function GET(request: NextRequest) {
+  const league = leagueFromParam(request.nextUrl.searchParams.get("liga") ?? undefined);
+  const leagueName = league ?? vertical.leagueName;
+  // Livematcher hämtas för hela sporten; en match i den andra serien hör inte hemma här.
+  // Rader utan liga behålls (äldre fotbollsrader) — hellre en match för mycket än en tom lista.
+  const live = (await fetchLiveScores()).filter((f) => !f.league?.name || f.league.name === leagueName);
   let fixtures = live;
   if (live.length === 0) {
-    const all = await fetchAllsvenskanFixtures();
+    const all = await fetchAllsvenskanFixtures(league);
     const now = Date.now();
     const upcoming = all.filter((f) => new Date(f.starting_at).getTime() >= now);
     if (upcoming.length > 0) {

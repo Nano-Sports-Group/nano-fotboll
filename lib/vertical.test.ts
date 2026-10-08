@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { leagueHrefFor, resolveVertical, FOOTBALL, GOLF, HOCKEY } from "./vertical";
+import { leagueHrefFor, pickViewerLeague, resolveVertical, MAIN_LEAGUE_PARAM, FOOTBALL, GOLF, HOCKEY } from "./vertical";
 import { planForVertical } from "./plan-for-vertical";
 
 test("odefinierad vertikal är fotboll", () => {
@@ -49,4 +49,25 @@ test("hockeyplan läser inte fotbollens plan", () => {
   assert.equal(planForVertical("hockey", { plan: "elite" }), "free");
   assert.equal(planForVertical("hockey", { plan: "elite", plans: { hockey: "pro" } }), "pro");
   assert.equal(planForVertical("hockey", null), "free");
+});
+
+// Testerna kör som fotboll: Allsvenskan är huvudliga, Superettan den andra serien.
+test("hemligan gäller när ?liga= saknas, och bara om serien har data", () => {
+  assert.deepEqual(pickViewerLeague(undefined, "Superettan", ["Allsvenskan", "Superettan"]), {
+    league: "Superettan",
+    homeIsSecondary: true,
+  });
+  assert.deepEqual(pickViewerLeague(undefined, "Superettan", ["Allsvenskan"]), { league: undefined, homeIsSecondary: false });
+  assert.deepEqual(pickViewerLeague(undefined, "Allsvenskan", ["Allsvenskan", "Superettan"]), {
+    league: undefined,
+    homeIsSecondary: false,
+  });
+  assert.equal(pickViewerLeague(undefined, null, []).league, undefined);
+});
+
+test("uttrycklig ?liga= vinner över hemligan, även för huvudligan", () => {
+  const data = ["Allsvenskan", "Superettan"];
+  assert.equal(pickViewerLeague(MAIN_LEAGUE_PARAM, "Superettan", data).league, undefined);
+  assert.equal(pickViewerLeague("superettan", "Allsvenskan", data).league, "Superettan");
+  assert.equal(pickViewerLeague("påhitt", "Superettan", data).league, undefined);
 });

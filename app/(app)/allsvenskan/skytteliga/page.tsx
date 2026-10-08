@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getTopScorersFromDb, SEASON_IDS } from "@/lib/statistik";
 import { AppBreadcrumbs } from "@/components/ui/AppBreadcrumbs";
-import { VERTICAL, leagueFromParam, leagueHref, vertical } from "@/lib/vertical";
+import { VERTICAL, leagueHref, vertical } from "@/lib/vertical";
 import { fetchHockeyPointsLeaders, type HockeyPlayerStat } from "@/lib/db/fixtures";
 import { LeagueSwitcher } from "@/components/ui/LeagueSwitcher";
+import { resolveViewerLeague } from "@/lib/team/viewer-league";
 import { getSiteUrl } from "@/lib/site-url";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 
@@ -84,7 +85,10 @@ export default async function AllsvenskanSkytteligaPage({
 }: {
   searchParams: Promise<{ liga?: string }>;
 }) {
-  const league = VERTICAL === "hockey" ? leagueFromParam((await searchParams).liga) : undefined;
+  const { league, homeIsSecondary } =
+    VERTICAL === "hockey"
+      ? await resolveViewerLeague((await searchParams).liga)
+      : { league: undefined, homeIsSecondary: false };
   const hockeyRows = VERTICAL === "hockey" ? await fetchHockeyPointsLeaders(league) : [];
   // OBS: Object.values(SEASON_IDS)[0] ger "2025" pga JS:s heltalsnyckel-
   // sortering (numeriska nyckelsträngar ordnas alltid stigande, oavsett
@@ -109,7 +113,7 @@ export default async function AllsvenskanSkytteligaPage({
 
       {VERTICAL === "hockey" ? (
         <>
-          <LeagueSwitcher basePath={leagueHref("/skytteliga")} active={league} />
+          <LeagueSwitcher basePath={leagueHref("/skytteliga")} active={league} explicitMain={homeIsSecondary} />
           <HockeyPointsTable rows={hockeyRows} />
         </>
       ) : (

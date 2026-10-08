@@ -6,8 +6,9 @@ import type { SMStandingRow } from "@/lib/db/fixtures";
 import { AppBreadcrumbs } from "@/components/ui/AppBreadcrumbs";
 import { Target, CalendarDays, Flag, BarChart3, Sparkles } from "lucide-react";
 import { jsonLd } from "@/lib/json-ld";
-import { VERTICAL, leagueFromParam, leagueHref, vertical } from "@/lib/vertical";
+import { VERTICAL, leagueHref, vertical } from "@/lib/vertical";
 import { LeagueSwitcher } from "@/components/ui/LeagueSwitcher";
+import { resolveViewerLeague } from "@/lib/team/viewer-league";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 60;
@@ -68,7 +69,7 @@ export default async function AllsvenskanTabellPage({
 }: {
   searchParams: Promise<{ liga?: string }>;
 }) {
-  const league = leagueFromParam((await searchParams).liga);
+  const { league, homeIsSecondary } = await resolveViewerLeague((await searchParams).liga);
   const leagueName = league ?? vertical.leagueName;
   const [standings, coveredThrough] = await Promise.all([
     fetchStandingsFull(league).catch(() => [] as SMStandingRow[]),
@@ -100,7 +101,7 @@ export default async function AllsvenskanTabellPage({
       })}} />
 
       <h1 className="font-bold text-4xl sm:text-5xl text-foreground mb-2 text-balance">{VERTICAL === "hockey" ? `${leagueName.toUpperCase()} TABELL 2026/27` : `${leagueName.toUpperCase()} TABELL 2026`}</h1>
-      <LeagueSwitcher basePath={leagueHref("/tabell")} active={league} />
+      <LeagueSwitcher basePath={leagueHref("/tabell")} active={league} explicitMain={homeIsSecondary} />
       {notice ? (
         <p
           data-testid="standings-staleness"
