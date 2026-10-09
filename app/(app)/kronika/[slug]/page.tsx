@@ -10,6 +10,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { MessageSquare } from "lucide-react";
 import { BrandBadge } from "@/components/brand/BrandBadge";
 import { createServerClient } from "@/lib/supabase";
 import { getSiteUrl } from "@/lib/site-url";
@@ -55,6 +56,13 @@ async function getAuthor(clerkUserId: string): Promise<AuthorRow | null> {
   return (data as AuthorRow | null) ?? null;
 }
 
+async function getTeamSlug(teamEntityId: string | null): Promise<string | null> {
+  if (!teamEntityId) return null;
+  const db = createServerClient();
+  const { data } = await db.from("entities").select("slug").eq("id", teamEntityId).maybeSingle();
+  return (data?.slug as string | null) ?? null;
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const column = await getColumn(slug);
@@ -71,8 +79,12 @@ export default async function KronikaPage({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const column = await getColumn(slug);
   if (!column) notFound();
-  const author = await getAuthor(column.author_clerk_user_id);
+  const [author, teamSlug] = await Promise.all([
+    getAuthor(column.author_clerk_user_id),
+    getTeamSlug(column.team_entity_id),
+  ]);
   const authorName = author?.nickname ?? author?.display_name ?? "Krönikör";
+  const forumHref = teamSlug ? `/forum/${teamSlug}` : "/forum";
 
   return (
     <article className="mx-auto max-w-2xl px-4 sm:px-6 py-12">
@@ -123,7 +135,20 @@ export default async function KronikaPage({ params }: { params: Promise<{ slug: 
         </div>
       )}
 
-      <Link href="/nyheter" className="mt-8 inline-block text-sm text-muted-foreground hover:text-foreground">
+      {/* Diskussion i forumet — saknades helt på krönikor innan. Hampus 2026-10-09:
+          nyhets→community-länk. Ingen diskussionsräknare här (krönikor delar inte
+          articles.id med forum_posts.article_id), bara en riktig väg in. */}
+      <section className="mt-10 pt-6 border-t border-border">
+        <Link
+          href={forumHref}
+          className="flex min-h-11 items-center gap-3 text-foreground transition-colors hover:text-pitch-ink"
+        >
+          <MessageSquare className="size-[1em] text-pitch-ink" />
+          <span className="text-sm font-medium">Diskutera krönikan</span>
+        </Link>
+      </section>
+
+      <Link href="/nyheter" className="mt-6 inline-block text-sm text-muted-foreground hover:text-foreground">
         ← Fler nyheter på Nano Fotboll
       </Link>
     </article>

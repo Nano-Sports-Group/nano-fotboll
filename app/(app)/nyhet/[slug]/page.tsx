@@ -7,7 +7,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, MessageSquare } from "lucide-react";
 import { createServerClient } from "@/lib/supabase";
 import { SPORT } from "@/lib/vertical";
 import {
@@ -15,6 +15,7 @@ import {
   resolveRightsStatus,
   sourceDomain,
 } from "@/lib/provenance";
+import { getArticleDiscussionCount } from "@/lib/articles/public-article";
 import { getSiteUrl } from "@/lib/site-url";
 import { AppBreadcrumbs } from "@/components/ui/AppBreadcrumbs";
 import { getWebsiteSettings } from "@/lib/website-settings.server";
@@ -120,7 +121,10 @@ export default async function NyhetPage({
     redirect(`/artikel/${slug}`);
   }
 
-  const primary = await getPrimarySource(article.id);
+  const [primary, discussionCount] = await Promise.all([
+    getPrimarySource(article.id),
+    getArticleDiscussionCount(article.id),
+  ]);
   const sourceUrl = primary?.original_url ?? article.url;
   const sourceName = primary?.source_name ?? article.source_name ?? "Okänd källa";
   const domain = primary?.domain ?? sourceDomain(sourceUrl) ?? sourceName;
@@ -171,7 +175,21 @@ export default async function NyhetPage({
         <ExternalLink className="h-4 w-4" aria-hidden />
       </a>
 
-      <div className="mt-12">
+      {/* Diskussion i forumet — fanns bara på /artikel innan, inte på denna extern-källa-
+          varianten (majoriteten av flödet). Hampus 2026-10-09: nyhets→community-länk. */}
+      <section className="mt-10 pt-6 border-t border-border">
+        <Link
+          href="/forum"
+          className="flex min-h-11 items-center gap-3 text-foreground transition-colors hover:text-pitch-ink"
+        >
+          <MessageSquare className="size-[1em] text-pitch-ink" />
+          <span className="text-sm font-medium">
+            {discussionCount > 0 ? `Diskussion · ${discussionCount}` : "Starta en diskussion"}
+          </span>
+        </Link>
+      </section>
+
+      <div className="mt-6">
         <Link
           href="/nyheter"
           className="text-sm text-muted-foreground transition-colors hover:text-foreground"
