@@ -79,6 +79,8 @@ export type PlayerProfileMatch = {
 export type PlayerProfileResponse = {
   player: PlayerProfilePlayer | null;
   teamName: string | null;
+  /** entities.slug för spelarens lag — för getTeamColors(), aldrig ad-hoc slugify(). */
+  teamSlug: string | null;
   seasonStats: PlayerProfileSeasonStats | null;
   qualifyingMinutes: number;
   metrics: PlayerProfileMetric[];
@@ -251,6 +253,7 @@ export async function buildPlayerProfile(
     return {
       player: null,
       teamName: null,
+      teamSlug: null,
       seasonStats: null,
       qualifyingMinutes: QUALIFYING_MINUTES,
       metrics: [],
@@ -308,6 +311,7 @@ export async function buildPlayerProfile(
 
   let seasonStats: PlayerProfileSeasonStats | null = null;
   let teamName: string | null = null;
+  let teamSlug: string | null = null;
   if (seasonRow) {
     const teamId = n(seasonRow.team_id);
     seasonStats = {
@@ -338,6 +342,7 @@ export async function buildPlayerProfile(
       xaPer90: nNull(seasonRow.xa_per_90),
     };
     teamName = teamMap.get(teamId)?.name ?? null;
+    teamSlug = teamMap.get(teamId)?.slug ?? null;
   }
 
   const metrics =
@@ -417,6 +422,7 @@ export async function buildPlayerProfile(
   return {
     player,
     teamName,
+    teamSlug,
     seasonStats,
     qualifyingMinutes: QUALIFYING_MINUTES,
     metrics,

@@ -11,6 +11,7 @@ import { StatNumber } from "@/components/ui/StatNumber";
 import { PlayerProfileAnalytics } from "./PlayerProfileAnalytics";
 import { AppBreadcrumbs } from "@/components/ui/AppBreadcrumbs";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
+import { getTeamColors } from "@/lib/team-colors";
 
 export const revalidate = 60;
 
@@ -155,13 +156,20 @@ export default async function SpelarePage({ params }: { params: Promise<{ slug: 
           { label: player.fullname },
         ]}
       />
-      <div className="flex items-center gap-6">
+      <div className="relative flex items-center gap-6 overflow-hidden rounded-2xl p-2">
+        {/* Ambient lagfärgsglow — samma teknik som match/lag-headrarna, nu även
+            på spelarprofilen (Hampus 2026-10-09: "varje knapp, funktion bättre"). */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-10 top-1/2 h-40 w-40 -translate-y-1/2 rounded-full opacity-[0.16] blur-3xl"
+          style={{ backgroundColor: getTeamColors(profile.teamSlug).primary }}
+        />
         {!!player.image && (
-          <div className="relative w-20 h-20 rounded-full overflow-hidden bg-card border border-border shrink-0">
+          <div className="relative z-10 w-20 h-20 rounded-full overflow-hidden bg-card border border-border shrink-0">
             <PlayerAvatar src={player.image} alt={player.fullname} sizes="80px" />
           </div>
         )}
-        <div>
+        <div className="relative z-10">
           <h1 className="font-bold text-5xl text-foreground leading-none mb-1 text-balance">{player.fullname}</h1>
           <p className="text-muted-foreground text-sm">
             {POS_SV[player.position ?? ""] ?? player.position ?? "–"}
