@@ -548,6 +548,8 @@ export const TeamCompareResponseSchema = z.object({
   teamA: TeamCompareStatsSchema,
   teamB: TeamCompareStatsSchema,
   analysis: z.string().nullable(),
+  /** null när något av lagen saknar sportmonks-id/säsongsdata — ingen påhittad radar då. */
+  radar: z.object({ a: z.array(RadarPointSchema), b: z.array(RadarPointSchema) }).nullable(),
 });
 
 /** GET /api/scout — rå ScoutPlayer-rad (snake_case), PRO-gatead. */

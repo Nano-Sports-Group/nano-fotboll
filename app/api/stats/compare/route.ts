@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getTeamCompareAnalysis,
   getTeamCompareStats,
+  getTeamCompareRadar,
 } from "@/lib/statistik/team-compare";
 import { jsonContract } from "@/lib/api-contract";
 import { TeamCompareResponseSchema } from "@/lib/api-schemas";
@@ -22,10 +23,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Välj två olika lag." }, { status: 400 });
   }
 
-  const [teamA, teamB, analysis] = await Promise.all([
+  const [teamA, teamB, analysis, radar] = await Promise.all([
     getTeamCompareStats(teamASlug),
     getTeamCompareStats(teamBSlug),
     getTeamCompareAnalysis(teamASlug, teamBSlug),
+    getTeamCompareRadar(teamASlug, teamBSlug),
   ]);
 
   if (!teamA || !teamB) {
@@ -33,7 +35,7 @@ export async function GET(request: NextRequest) {
   }
 
   return jsonContract(TeamCompareResponseSchema,
-    { teamA, teamB, analysis },
+    { teamA, teamB, analysis, radar },
     { headers: { "Cache-Control": "public, max-age=3600, stale-while-revalidate=7200" } },
   );
 }

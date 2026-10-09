@@ -4,8 +4,11 @@ import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import {
   getTeamCompareAnalysis,
   getTeamCompareStats,
+  getTeamCompareRadar,
   type TeamCompareStats,
 } from "@/lib/statistik/team-compare";
+import { TeamCompareRadar } from "@/components/statistik/TeamCompareRadar";
+import { getTeamColors } from "@/lib/team-colors";
 import { TeamSearchBar } from "./TeamSearchBar";
 import { SPORT, vertical } from "@/lib/vertical";
 
@@ -109,14 +112,19 @@ export default async function JamforPage({ searchParams }: PageProps) {
   let statsA: TeamCompareStats | null = null;
   let statsB: TeamCompareStats | null = null;
   let aiAnalysis: string | null = null;
+  let radar: { a: { metric: string; value: number; raw: number }[]; b: { metric: string; value: number; raw: number }[] } | null = null;
 
   if (slugA && slugB && slugA !== slugB) {
-    [statsA, statsB, aiAnalysis] = await Promise.all([
+    [statsA, statsB, aiAnalysis, radar] = await Promise.all([
       getTeamCompareStats(slugA),
       getTeamCompareStats(slugB),
       getTeamCompareAnalysis(slugA, slugB),
+      getTeamCompareRadar(slugA, slugB),
     ]);
   }
+
+  const raw = (points: { metric: string; value: number; raw: number }[] | undefined, metric: string) =>
+    points?.find((p) => p.metric === metric)?.raw;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
@@ -189,8 +197,35 @@ export default async function JamforPage({ searchParams }: PageProps) {
             <StatRow label="Mål gjorda" a={statsA.goalsFor} b={statsB.goalsFor} />
             <StatRow label="Mål insläppta" a={statsA.goalsAgainst} b={statsB.goalsAgainst} higherIsBetter={false} />
             <StatRow label="Målskillnad" a={statsA.goalDiff} b={statsB.goalDiff} />
+            {raw(radar?.a, "Boll%") != null && raw(radar?.b, "Boll%") != null && (
+              <StatRow label="Bollinnehav %" a={raw(radar?.a, "Boll%")!} b={raw(radar?.b, "Boll%")!} />
+            )}
+            {raw(radar?.a, "xG skapat") != null && raw(radar?.b, "xG skapat") != null && (
+              <StatRow label="xG skapat" a={raw(radar?.a, "xG skapat")!} b={raw(radar?.b, "xG skapat")!} />
+            )}
+            {raw(radar?.a, "xG insläppt") != null && raw(radar?.b, "xG insläppt") != null && (
+              <StatRow label="xG insläppt" a={raw(radar?.a, "xG insläppt")!} b={raw(radar?.b, "xG insläppt")!} higherIsBetter={false} />
+            )}
             <FormRow label="Form (5 sista)" a={statsA.form} b={statsB.form} />
           </div>
+
+          {/* Profilradar — interaktiv (hovra/tryck en axel för exakta tal) */}
+          {radar && (
+            <div className="bg-card border border-border rounded-xl p-4">
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-1 text-balance">
+                Profil mot varandra
+              </h2>
+              <p className="text-xs text-muted-foreground mb-2">Normaliserat mot ligan (0–100). Tryck en punkt för exakta tal.</p>
+              <TeamCompareRadar
+                a={radar.a}
+                b={radar.b}
+                nameA={statsA.name}
+                nameB={statsB.name}
+                colorA={getTeamColors(slugA).primary}
+                colorB={getTeamColors(slugB).primary}
+              />
+            </div>
+          )}
 
           {/* AI-analys */}
           {aiAnalysis ? (

@@ -3,6 +3,13 @@ import "server-only";
 import { fetchStandingsFull } from "@/lib/db/fixtures";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import { SPORT, vertical } from "@/lib/vertical";
+import { getLeagueSeasonStats, normalizeAgainstLeague, seasonIdForTeam, RADAR_DEF } from "@/lib/team-hub/queries";
+
+export interface RadarPoint {
+  metric: string;
+  value: number;
+  raw: number;
+}
 
 export interface TeamCompareStats {
   name: string;
@@ -115,6 +122,55 @@ export async function getTeamCompareStats(slug: string): Promise<TeamCompareStat
     goalsAgainst,
     goalDiff: goalsFor - goalsAgainst,
     form: form.slice(-5),
+  };
+}
+
+/**
+ * Två lags radar-profiler normaliserade mot SAMMA liga-baslinje (samma säsong),
+ * så axlarna är jämförbara mellan lagen, inte bara mot ligasnittet var för sig.
+ * Saknas sportmonks-id eller säsongsdata för något av lagen: null, inte en
+ * halvfärdig/påhittad radar (samma "ingen placeholder"-princip som normalizeAgainstLeague).
+ */
+export async function getTeamCompareRadar(
+  slugA: string,
+  slugB: string,
+): Promise<{ a: RadarPoint[]; b: RadarPoint[] } | null> {
+  if (!isSupabaseConfigured()) return null;
+  const db = createServerClient();
+  const { data: entities } = await db
+    .from("entities")
+    .select("slug, sportmonks_id, sportsmonks_id")
+    .in("slug", [slugA, slugB])
+    .eq("type", "team")
+    .eq("sport", SPORT);
+
+  const rows = (entities ?? []) as { slug: string; sportmonks_id: number | null; sportsmonks_id: number | null }[];
+  const smIdOf = (slug: string) => {
+    const row = rows.find((r) => r.slug === slug);
+    const id = row?.sportmonks_id ?? row?.sportsmonks_id;
+    return id != null ? Number(id) : null;
+  };
+  const smIdA = smIdOf(slugA);
+  const smIdB = smIdOf(slugB);
+  if (!smIdA || !smIdB) return null;
+
+  const seasonId = await seasonIdForTeam(smIdA);
+  const league = await getLeagueSeasonStats(seasonId);
+  const teamA = league.find((t) => t.team_id === smIdA);
+  const teamB = league.find((t) => t.team_id === smIdB);
+  if (!teamA || !teamB) return null;
+
+  const a = normalizeAgainstLeague(league, teamA, RADAR_DEF);
+  const b = normalizeAgainstLeague(league, teamB, RADAR_DEF);
+  // Bara axlar båda lagen har data för: native klienterna (iOS/Android) ritar
+  // en enda polygon-radie per lag och antar samma antal/ordning av axlar för
+  // båda — en metrik som bara ett lag saknar måste bort på BÅDA, inte bara
+  // tunnas ut på den som saknar den (web filtrerar likadant i TeamCompareRadar.tsx).
+  const metricsInA = new Set(a.map((p) => p.metric));
+  const metricsInB = new Set(b.map((p) => p.metric));
+  return {
+    a: a.filter((p) => metricsInB.has(p.metric)),
+    b: b.filter((p) => metricsInA.has(p.metric)),
   };
 }
 

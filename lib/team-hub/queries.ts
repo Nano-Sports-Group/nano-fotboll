@@ -416,13 +416,15 @@ export function buildTeamFeed(input: {
   return items.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
 }
 
-const RADAR_DEF: { key: keyof TeamSeasonRow; label: string; invert?: boolean }[] = [
+export const RADAR_DEF: { key: keyof TeamSeasonRow; label: string; invert?: boolean }[] = [
   { key: "goals_for", label: "Anfall" },
   { key: "goals_against", label: "Försvar", invert: true },
   { key: "points", label: "Poäng" },
   { key: "possession", label: "Boll%" },
   { key: "goal_diff", label: "Målskillnad" },
   { key: "wins", label: "Vinster" },
+  { key: "xg_for", label: "xG skapat" },
+  { key: "xg_against", label: "xG insläppt", invert: true },
 ];
 
 /** Team-scoped news; optional news_tag filter from onboarding interests. */
