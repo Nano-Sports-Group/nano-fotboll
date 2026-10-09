@@ -206,7 +206,7 @@ export function NewsFilterPanel({ allSources, initialParams, totalCount }: Props
                 className={clsx(
                   "px-3 py-1 rounded-md text-sm font-medium transition-colors",
                   filter.visa === opt.value
-                    ? "bg-pitch text-white shadow-sm"
+                    ? "bg-white text-neutral-900 shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >

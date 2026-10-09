@@ -29,7 +29,7 @@ export default function TagFilter({ active, onChange }: { active: string; onChan
           onClick={() => select(tag.id)}
           className={`shrink-0 px-3.5 min-h-11 sm:min-h-8 inline-flex items-center rounded-full text-xs font-medium border transition-colors touch-manipulation ${
             active === tag.id
-              ? "bg-pitch text-white border-pitch"
+              ? "bg-white text-neutral-900 border-white shadow-sm"
               : "border-border/60 text-muted-foreground hover:border-pitch hover:text-pitch-ink"
           }`}
         >

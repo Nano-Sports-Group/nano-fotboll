@@ -65,14 +65,14 @@ export function StatistikTabs() {
                   aria-current={isActive ? "page" : undefined}
                   className={clsx(
                     "relative whitespace-nowrap rounded-full px-4 min-h-11 sm:min-h-9 inline-flex items-center text-sm font-medium transition-colors select-none touch-manipulation",
-                    isActive ? "text-pitch-ink" : "text-muted-foreground hover:text-foreground"
+                    isActive ? "text-neutral-900" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   {isActive && (
                     <motion.span
                       layoutId="statistik-tab-pill"
                       transition={transitions.snappy}
-                      className="absolute inset-0 rounded-full bg-pitch/10 border border-pitch/30"
+                      className="absolute inset-0 rounded-full bg-white shadow-sm"
                     />
                   )}
                   <span className="relative z-10">{tab.label}</span>
@@ -89,7 +89,7 @@ export function StatistikTabs() {
               className={clsx(
                 "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 min-h-11 sm:min-h-9 text-sm font-medium transition-colors touch-manipulation",
                 filterActive
-                  ? "border-pitch/40 bg-pitch/10 text-pitch-ink"
+                  ? "border-white bg-white text-neutral-900 shadow-sm"
                   : "border-border text-muted-foreground hover:text-foreground"
               )}
             >

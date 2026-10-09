@@ -92,7 +92,7 @@ export function FeedSortBar({
               // padding allena, trots rätt höjd.
               className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full px-3.5 text-xs font-medium transition-colors touch-manipulation ${
                 active
-                  ? "bg-pitch text-white"
+                  ? "bg-white text-neutral-900 shadow-sm"
                   : "bg-muted text-muted-foreground hover:text-foreground"
               }`}
             >

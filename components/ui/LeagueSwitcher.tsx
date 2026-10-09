@@ -30,7 +30,7 @@ export function LeagueSwitcher({
             href={l.param ? `${basePath}?liga=${l.param}` : explicitMain ? `${basePath}?liga=${MAIN_LEAGUE_PARAM}` : basePath}
             aria-current={selected ? "page" : undefined}
             className={`min-h-11 inline-flex items-center rounded-full px-4 text-sm font-medium transition-colors ${
-              selected ? "pitch-gradient text-white" : "text-muted-foreground hover:text-foreground"
+              selected ? "bg-white text-neutral-900 shadow-sm" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {l.name}
