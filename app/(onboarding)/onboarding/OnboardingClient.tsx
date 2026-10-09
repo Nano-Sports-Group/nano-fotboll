@@ -17,6 +17,7 @@ import { trackEvent } from "@/lib/track";
 import { getSiteHost } from "@/lib/site-url";
 import { FORUM_NAME_HINT, FORUM_NAME_PATTERN } from "@/lib/forum/display-name";
 import { FOUNDER_OFFER, PRICING, SELLS, TRIAL_DAYS, formatWeeklyKr, proPriceLabel } from "@/lib/pricing";
+import { ConfettiBurst } from "./ConfettiBurst";
 
 interface Team {
   id: string;
@@ -122,6 +123,7 @@ export function OnboardingClient({
   const [preview, setPreview] = useState<Preview | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewFailed, setPreviewFailed] = useState(false);
+  const [celebrated, setCelebrated] = useState(false);
   const [pushPending, setPushPending] = useState(false);
   const [pushFailed, setPushFailed] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -177,6 +179,13 @@ export function OnboardingClient({
     }
     headingRef.current?.focus();
   }, [step]);
+
+  // Konfetti en gång när den riktiga förhandsvisningen är klar — web-flödets
+  // "nu är det ditt lag"-ögonblick (porterad känsla från iOS steg 3, se ConfettiBurst.tsx).
+  // setState under render (Reacts eget "adjusting state"-mönster), inte i en effect —
+  // celebrated är monoton (sätts aldrig tillbaka till false), så ConfettiBurst monteras
+  // en gång och får spela ut sin engångsanimation ostört.
+  if (step === 1 && preview && !celebrated) setCelebrated(true);
 
   const teamObj = teams.find((t) => (t.slug ?? t.id) === selectedTeam);
 
@@ -386,6 +395,7 @@ export function OnboardingClient({
               transition={{ duration: 0.28 }}
               className="absolute inset-0 flex flex-col px-5 pb-8 overflow-y-auto"
             >
+              {preview && celebrated && <ConfettiBurst />}
               {heading(`Så här ser ${preview?.team.name ?? teamObj?.name ?? "ditt lag"} ut`)}
               <p className="text-sm text-muted-foreground mb-6">
                 Riktig data — ingen demo. Det här är din startsida.

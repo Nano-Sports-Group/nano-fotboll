@@ -10,32 +10,9 @@ import { VERTICAL, leagueHref, vertical } from "@/lib/vertical";
 import { LeagueSwitcher } from "@/components/ui/LeagueSwitcher";
 import { resolveViewerLeague } from "@/lib/team/viewer-league";
 import { getSiteUrl } from "@/lib/site-url";
+import { StandingsRows, ZONE_DOT, ZONE_LABEL } from "./StandingsRows";
 
 export const revalidate = 60;
-
-// Allsvenskan-kval/nedflyttningszoner (16 lag). Sportmonks levererar ingen
-// zon-flagga i vår standings-vy, så den härleds från placering (stabil regel).
-type Zone = "cl" | "el" | "playoff" | "relegation" | null;
-function zoneFor(position: number): Zone {
-  if (VERTICAL === "hockey") return null;
-  if (position === 1) return "cl";
-  if (position === 2 || position === 3) return "el";
-  if (position === 14) return "playoff";
-  if (position >= 15) return "relegation";
-  return null;
-}
-const ZONE_DOT: Record<Exclude<Zone, null>, string> = {
-  cl: "bg-success",
-  el: "bg-sky-500",
-  playoff: "bg-amber-500",
-  relegation: "bg-destructive",
-};
-const ZONE_LABEL: Record<Exclude<Zone, null>, string> = {
-  cl: "Champions League",
-  el: "Europa/Conference League",
-  playoff: "Kval",
-  relegation: "Nedflyttning",
-};
 
 const TABELL_TITLE =
   VERTICAL === "hockey"
@@ -166,53 +143,7 @@ export default async function AllsvenskanTabellPage({
                 </td>
               </tr>
             )}
-            {standings.map((row) => {
-              const zone = zoneFor(row.position);
-              return (
-              <tr key={row.team.name} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                <td className="py-3 px-4 text-muted-foreground font-mono tabular-nums">
-                  <span className="inline-flex items-center gap-1.5">
-                    {zone && (
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${ZONE_DOT[zone]}`}
-                        aria-hidden
-                      />
-                    )}
-                    {row.position}
-                    {row.trend != null && row.trend !== 0 && (
-                      <span
-                        className={`text-xs leading-none ${row.trend > 0 ? "text-success" : "text-red-400"}`}
-                        title={row.trend > 0 ? `Upp ${row.trend}` : `Ner ${Math.abs(row.trend)}`}
-                        aria-label={row.trend > 0 ? `Klättrat ${row.trend} placeringar` : `Tappat ${Math.abs(row.trend)} placeringar`}
-                      >
-                        {row.trend > 0 ? "▲" : "▼"}
-                      </span>
-                    )}
-                  </span>
-                </td>
-                <td className="py-3 px-4">
-                  <Link href={`/lag/${row.team.slug ?? row.team.name.toLowerCase().replace(/\s+/g, "-").replace(/[åä]/g, "a").replace(/ö/g, "o")}`} className="font-medium hover:text-pitch-ink transition-colors">
-                    {row.team.name}
-                  </Link>
-                </td>
-                <td className="py-3 px-3 text-center text-muted-foreground font-mono tabular-nums">{row.played}</td>
-                <td className="py-3 px-3 text-center text-muted-foreground font-mono tabular-nums">{row.wins}</td>
-                <td className="py-3 px-3 text-center text-muted-foreground font-mono tabular-nums">{row.draws}</td>
-                <td className="py-3 px-3 text-center text-muted-foreground font-mono tabular-nums">{row.losses}</td>
-                <td className="py-3 px-3 text-center text-muted-foreground hidden sm:table-cell font-mono tabular-nums">{row.goals_for}</td>
-                <td className="py-3 px-3 text-center text-muted-foreground hidden sm:table-cell font-mono tabular-nums">{row.goals_against}</td>
-                <td className="py-3 px-3 text-center text-muted-foreground font-mono tabular-nums">{row.goal_diff > 0 ? `+${row.goal_diff}` : row.goal_diff}</td>
-                <td className="py-3 px-4 text-center font-bold text-foreground font-mono tabular-nums">{row.points}</td>
-                <td className="py-3 px-3 text-center hidden md:table-cell">
-                  <span className="flex gap-0.5 justify-center">
-                    {row.form.map((r, fi) => (
-                      <span key={fi} className={`w-4 h-4 rounded-sm text-[9px] font-bold flex items-center justify-center ${r === "W" ? "bg-success/20 text-success" : r === "L" ? "bg-red-400/20 text-destructive-ink" : "bg-muted text-muted-foreground"}`}>{r === "W" ? "V" : r === "L" ? "F" : "O"}</span>
-                    ))}
-                  </span>
-                </td>
-              </tr>
-              );
-            })}
+            <StandingsRows standings={standings} />
           </tbody>
         </table>
       </div>

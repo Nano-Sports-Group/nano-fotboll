@@ -22,6 +22,8 @@ import { jsonLd } from "@/lib/json-ld";
 import { getWebsiteSettings } from "@/lib/website-settings.server";
 import { resolveShareMetadata, toNextMetadata } from "@/lib/website-settings";
 import { getSiteUrl } from "@/lib/site-url";
+import { getTeamColors } from "@/lib/team-colors";
+import { MatchScoreHeader } from "./MatchScoreHeader";
 
 export const revalidate = 60;
 
@@ -375,24 +377,19 @@ export default async function MatchPage({ params }: PageProps) {
           { label: `${homeName} – ${awayName}` },
         ]}
       />
-      {/* Resultat-header */}
-      <div className="bg-card border border-border rounded-2xl p-6">
-        <p className="text-xs text-muted-foreground text-center mb-3">
-          {String(fix.competition ?? vertical.leagueName)} {kickoff ? new Date(kickoff).toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm", weekday: "long", day: "numeric", month: "long" }) : ""}
-          {/* text-red-500 matte 3.81:1 pa vit yta — destructive-ink ar den
-              kontrastmatta valoren per tema (globals.css). Ett live-marke som
-              ar svarlast ar illa i en sportprodukt. */}
-          {isLive && <span className="ml-2 text-destructive-ink">● LIVE{(d?.live as { minute: number | null } | null)?.minute != null ? ` ${(d!.live as { minute: number }).minute}′` : ""}</span>}
-        </p>
-        <div className="flex items-center justify-center gap-6">
-          <p className="text-lg font-bold text-right flex-1">{homeName}</p>
-          <div className="text-center">
-            <p className="font-bold text-6xl font-mono tabular-nums text-foreground">{homeScore}–{awayScore}</p>
-            <p className="text-xs text-muted-foreground mt-1">{fix.status as string}</p>
-          </div>
-          <p className="text-lg font-bold text-left flex-1">{awayName}</p>
-        </div>
-      </div>
+      {/* Resultat-header: scroll-morph + lagfärgsglow, se MatchScoreHeader.tsx */}
+      <MatchScoreHeader
+        homeName={homeName}
+        awayName={awayName}
+        homeScore={homeScore}
+        awayScore={awayScore}
+        statusText={fix.status as string}
+        isLive={isLive}
+        liveLabel={(d?.live as { minute: number | null } | null)?.minute != null ? String((d!.live as { minute: number }).minute) : null}
+        competitionLine={`${String(fix.competition ?? vertical.leagueName)} ${kickoff ? new Date(kickoff).toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm", weekday: "long", day: "numeric", month: "long" }) : ""}`}
+        homeColor={getTeamColors(standings.find((r) => r.team.id === Number(fix.home_team_id))?.team.slug).primary}
+        awayColor={getTeamColors(standings.find((r) => r.team.id === Number(fix.away_team_id))?.team.slug).primary}
+      />
 
       {/* AI-sammanfattning — PRO; free får bara titel-teaser i DOM */}
       {summary && (
