@@ -117,8 +117,12 @@ export default async function AllsvenskanPage() {
         </Link>
       )}
 
+      {/* order-2/order-1 på mobil: bottennavens "Tabellen"-flik landar här, så tabellen
+          ska synas före nyheterna på den bredd de flesta faktiskt använder appen på
+          (audit-fynd 2026-10-09). Desktop behåller sitt tvåkolumns-läge oförändrat —
+          ingen ändring av lib/nav.ts eller det genererade kontraktet. */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
-        <section>
+        <section className="order-2 lg:order-none">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-semibold text-2xl text-foreground text-balance">NYHETER</h2>
             {/* Explicit scope: utan den defaultade /nyheter till "for-you" och
@@ -169,7 +173,7 @@ export default async function AllsvenskanPage() {
           )}
         </section>
 
-        <aside className="flex flex-col gap-8">
+        <aside className="order-1 flex flex-col gap-8 lg:order-none">
           <div>
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-semibold text-2xl text-foreground text-balance">TABELL</h2>
