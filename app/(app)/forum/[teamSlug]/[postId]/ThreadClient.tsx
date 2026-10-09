@@ -54,7 +54,7 @@ export default function ThreadClient({
     <div>
       {/* Root post */}
       <div className="pb-4 border-b border-border/30">
-        <PostItem post={root} depth={0} showThread={replies.length > 0} index={0} />
+        <PostItem post={root} depth={0} index={0} />
       </div>
 
       {/* Replies */}
@@ -65,7 +65,6 @@ export default function ThreadClient({
               <PostItem
                 post={reply}
                 depth={1}
-                showThread={(reply.reply_count ?? 0) > 0}
                 onReply={(newPost) =>
                   setReplies((prev) => [...prev, newPost])
                 }

@@ -31,7 +31,9 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const teamSlug = searchParams.get("teamSlug");
     const sport = searchParams.get("sport") ?? SPORT;
-    const sort = searchParams.get("sort") ?? "hot";
+    // Löpande flöde, inte "hett" sorterat forum — sort=new är förstavalet så att det
+    // senaste alltid hamnar överst (Hampus 2026-10-09: "inga trådar").
+    const sort = searchParams.get("sort") ?? "new";
     const rootId = searchParams.get("rootId");
     const postId = searchParams.get("postId");
     const articleId = searchParams.get("articleId");
@@ -46,9 +48,11 @@ export async function GET(req: NextRequest) {
     }
 
     const supabase = createServerClient();
+    // parent_post: samma self-join-mönster som quoted_post_id redan använder för
+    // QuoteBox — ett svar visar vad det svarar på utan att man behöver öppna en tråd.
     let q = supabase
       .from("forum_posts")
-      .select("*")
+      .select("*, parent_post:forum_posts!forum_posts_parent_id_fkey(*)")
       .eq("sport", sport)
       .eq("status", "published");
 
@@ -57,7 +61,9 @@ export async function GET(req: NextRequest) {
     } else if (rootId) {
       q = q.eq("root_id", rootId);
     } else {
-      q = q.is("parent_id", null);
+      // Löpande flöde: rot-inlägg OCH svar blandas i samma ström, inte nästlade
+      // under sitt ursprungsinlägg. Ett nytt svar hamnar överst precis som ett nytt
+      // inlägg — det är "trådar" skulle ha gjort, bara utan att behöva klicka in.
       if (teamSlug) q = q.eq("team_slug", teamSlug);
       if (articleId) q = q.eq("article_id", articleId);
     }

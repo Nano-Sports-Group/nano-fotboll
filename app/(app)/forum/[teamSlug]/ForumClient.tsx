@@ -30,7 +30,7 @@ export default function ForumClient({ teamSlug, sport, initialPosts, articlePref
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/forum/posts?teamSlug=${teamSlug}&sport=${sport}&sort=hot`
+        `/api/forum/posts?teamSlug=${teamSlug}&sport=${sport}&sort=new`
       );
       if (res.ok) {
         const json = (await res.json()) as { posts: ForumPost[] };
@@ -166,8 +166,8 @@ export default function ForumClient({ teamSlug, sport, initialPosts, articlePref
               key={post.id}
               post={post}
               depth={0}
-              showThread={post.reply_count > 0}
-              onReply={() => refresh()}
+              // Löpande flöde: ett svar hamnar överst i samma lista, inte nästlat.
+              onReply={(newPost) => setPosts((prev) => [newPost, ...prev])}
               index={i}
             />
           ))}

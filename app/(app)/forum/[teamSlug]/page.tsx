@@ -27,14 +27,15 @@ async function getPosts(teamSlug: string): Promise<ForumPost[]> {
   if (!isSupabaseConfigured()) return [];
   try {
     const supabase = createServerClient();
+    // Löpande flöde, inte trådar: inlägg och svar i samma ström, senaste överst.
+    // Samma modell som /api/forum/posts GET — se den routen för resonemanget.
     const { data } = await supabase
       .from("forum_posts")
-      .select("*")
+      .select("*, parent_post:forum_posts!forum_posts_parent_id_fkey(*)")
       .eq("team_slug", teamSlug)
       .eq("sport", SPORT)
       .eq("status", "published")
-      .is("parent_id", null)
-      .order("hot_score", { ascending: false })
+      .order("created_at", { ascending: false })
       .limit(50);
     return (data as ForumPost[]) ?? [];
   } catch {

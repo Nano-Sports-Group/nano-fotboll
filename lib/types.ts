@@ -259,6 +259,8 @@ export interface ForumPost {
   created_at: string;
   replies?: ForumPost[];
   quoted_post?: ForumPost | null;
+  /** Inläggets förälder i det löpande flödet — visas som QuoteBox, inte nästling. */
+  parent_post?: ForumPost | null;
 }
 
 export type FeedItemType = "news" | "forum" | "summary" | "podcast";

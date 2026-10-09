@@ -40,7 +40,6 @@ function initials(name: string): string {
 interface Props {
   post: ForumPost;
   depth?: number;
-  showThread?: boolean;
   onReply?: (post: ForumPost) => void;
   index?: number;
 }
@@ -48,7 +47,6 @@ interface Props {
 export default function PostItem({
   post,
   depth = 0,
-  showThread = false,
   onReply,
   index = 0,
 }: Props) {
@@ -80,8 +78,6 @@ export default function PostItem({
   const teamColors = teamShort ? getTeamColors(post.author_team) : null;
   const teamInk = getTeamInk(post.author_team);
   const isColumnist = post.author_role === "columnist" || post.author_role === "admin";
-  const hasReplies = (post.replies?.length ?? 0) > 0;
-  const showLine = showThread || depth > 0 || hasReplies;
 
   async function toggleLike() {
     if (!user) return;
@@ -212,9 +208,6 @@ export default function PostItem({
                 </div>
                 {isColumnist && <AvatarWriterBadge size="sm" />}
               </div>
-              {showLine && (
-                <div className="w-px flex-1 min-h-[16px] bg-border/40 mt-1.5" />
-              )}
             </div>
 
             <div className="flex-1 min-w-0 pt-0.5">
@@ -269,6 +262,14 @@ export default function PostItem({
               )}
 
               {/* Content */}
+              {/* Löpande flöde: ett svar visar vad det svarar på inline (QuoteBox),
+                  i stället för att nästlas under sitt ursprungsinlägg i en tråd. */}
+              {post.parent_post && (
+                <div className="mb-1.5 flex items-center gap-1 text-xs text-muted-foreground">
+                  <MessageCircle className="w-3 h-3" aria-hidden />
+                  Svar till {post.parent_post.author_name}
+                </div>
+              )}
               <Link
                 href={`/forum/${post.team_slug}/${post.id}`}
                 className="block"
@@ -278,6 +279,7 @@ export default function PostItem({
                   {displayContent}
                 </p>
               </Link>
+              {post.parent_post && <QuoteBox post={post.parent_post} />}
 
               {needsTruncation && (
                 <AnimatePresence initial={false}>
@@ -291,7 +293,7 @@ export default function PostItem({
                   ) : (
                     <motion.div key="expand-hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
                       <Link href={`/forum/${post.team_slug}/${post.id}`} className="mt-1 inline-block text-xs text-muted-foreground hover:text-foreground transition-colors">
-                        Öppna tråd →
+                        Visa inlägg →
                       </Link>
                     </motion.div>
                   )}
@@ -365,14 +367,6 @@ export default function PostItem({
               </div>
             </div>
           </div>
-
-          {post.replies && post.replies.length > 0 && depth < 2 && (
-            <div className="mt-1 space-y-0">
-              {post.replies.map((reply, i) => (
-                <PostItem key={reply.id} post={reply} depth={depth + 1} showThread={(reply.reply_count ?? 0) > 0} onReply={onReply} index={i} />
-              ))}
-            </div>
-          )}
         </div>
       </motion.div>
 
