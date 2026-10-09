@@ -63,9 +63,17 @@ export function TeamHubHeader({
   };
 
   const refresh = () => startTransition(() => router.refresh());
+  const teamColor = getTeamColors(currentSlug).primary;
 
   return (
-    <>
+    <div className="relative overflow-hidden">
+      {/* Ambient lagfärgsglow — samma 60fps x-nfl-games-tab-switch-teknik som
+          matchsidans MatchScoreHeader, nu på lag-hubben (saknades här innan). */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-16 -top-10 h-56 w-56 rounded-full opacity-[0.18] blur-3xl transition-colors duration-700"
+        style={{ backgroundColor: teamColor }}
+      />
       <LargeTitleHeader
         title={team.name}
         stickyOffset={HEADER_OFFSET}
@@ -126,7 +134,7 @@ export function TeamHubHeader({
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
 
