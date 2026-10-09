@@ -4,6 +4,29 @@ import useSWR from "swr";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
+// ── Sticky kompakt resultatrad ────────────────────────────────────────────────
+// 60fps x-nfl-game-pull-down-text-logo-morph: scoreboarden komprimeras till en
+// smal sticky rad när man scrollar förbi den, och expanderar tillbaka vid scroll
+// upp. IntersectionObserver på en sentinel, ingen scroll-listener per frame.
+
+function useIsScrolledPast(): [React.RefObject<HTMLDivElement | null>, boolean] {
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const [scrolledPast, setScrolledPast] = useState(false);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setScrolledPast(!entry.isIntersecting && entry.boundingClientRect.top < 0),
+      { threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return [sentinelRef, scrolledPast];
+}
+
 // ── Typer ─────────────────────────────────────────────────────────────────────
 
 interface MatchStats {
@@ -137,6 +160,7 @@ export function LiveMatchClient({ fixtureId, initialStats, isLive, teamIds }: Li
   );
 
   const match = stats ?? initialStats;
+  const [sentinelRef, isCompact] = useIsScrolledPast();
 
   if (!match) {
     return (
@@ -161,9 +185,33 @@ export function LiveMatchClient({ fixtureId, initialStats, isLive, teamIds }: Li
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Vänster: match-statistik */}
       <div className="lg:col-span-2 space-y-4">
+        {/* Sticky kompakt resultatrad — morphar in när huvud-headern scrollas förbi */}
+        <div
+          className={`sticky top-0 z-20 -mx-4 px-4 bg-card/95 backdrop-blur border-b border-border overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${
+            isCompact ? "max-height-[48px] opacity-100 py-2" : "max-h-0 opacity-0 py-0"
+          }`}
+          style={{ maxHeight: isCompact ? "48px" : "0px" }}
+          aria-hidden={!isCompact}
+        >
+          <div className="flex items-center justify-center gap-3 text-sm font-semibold text-foreground">
+            <span className="truncate">{match.home_team_name}</span>
+            <span className="tabular-nums">{match.home_score}–{match.away_score}</span>
+            <span className="truncate">{match.away_team_name}</span>
+            {isLive && <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />}
+          </div>
+        </div>
+
         {/* Resultat-header */}
-        <div className="bg-card border border-border rounded-xl p-6 text-center">
-          <div className="flex items-center justify-between gap-4">
+        <div ref={sentinelRef} className="relative bg-card border border-border rounded-xl p-6 text-center overflow-hidden">
+          {/* Ambient glow crossfadar accent → success när matchen går live — 60fps
+              x-nfl-games-tab-switch-tekniken, nyckel på verkligt matchläge, ingen fejkad lagfärg. */}
+          <div
+            aria-hidden
+            className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 rounded-full blur-3xl opacity-20 transition-colors duration-700 pointer-events-none ${
+              isLive ? "bg-success" : "bg-pitch"
+            }`}
+          />
+          <div className="relative flex items-center justify-between gap-4">
             <p className="text-lg font-bold text-foreground flex-1 text-right">
               {match.home_team_name}
             </p>
@@ -181,9 +229,9 @@ export function LiveMatchClient({ fixtureId, initialStats, isLive, teamIds }: Li
             </p>
           </div>
           {isLive && (
-            <div className="mt-3 flex items-center justify-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-xs text-destructive-ink font-medium uppercase tracking-wide">Live</span>
+            <div className="relative mt-3 flex items-center justify-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+              <span className="text-xs text-success font-medium uppercase tracking-wide">Live</span>
             </div>
           )}
         </div>
