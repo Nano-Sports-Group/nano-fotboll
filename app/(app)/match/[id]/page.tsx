@@ -24,6 +24,7 @@ import { resolveShareMetadata, toNextMetadata } from "@/lib/website-settings";
 import { getSiteUrl } from "@/lib/site-url";
 import { getTeamColors } from "@/lib/team-colors";
 import { MatchScoreHeader } from "./MatchScoreHeader";
+import { PerspectiveField } from "./PerspectiveField";
 
 export const revalidate = 60;
 
@@ -367,6 +368,9 @@ export default async function MatchPage({ params }: PageProps) {
     } : {}),
   };
 
+  const headerHomeColor = getTeamColors(standings.find((r) => r.team.id === Number(fix.home_team_id))?.team.slug).primary;
+  const headerAwayColor = getTeamColors(standings.find((r) => r.team.id === Number(fix.away_team_id))?.team.slug).primary;
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
       <ProductEventTracker event="match_page_view" props={{ fixture_id: fid }} />
@@ -387,9 +391,10 @@ export default async function MatchPage({ params }: PageProps) {
         isLive={isLive}
         liveLabel={(d?.live as { minute: number | null } | null)?.minute != null ? String((d!.live as { minute: number }).minute) : null}
         competitionLine={`${String(fix.competition ?? vertical.leagueName)} ${kickoff ? new Date(kickoff).toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm", weekday: "long", day: "numeric", month: "long" }) : ""}`}
-        homeColor={getTeamColors(standings.find((r) => r.team.id === Number(fix.home_team_id))?.team.slug).primary}
-        awayColor={getTeamColors(standings.find((r) => r.team.id === Number(fix.away_team_id))?.team.slug).primary}
+        homeColor={headerHomeColor}
+        awayColor={headerAwayColor}
       />
+      <PerspectiveField homeName={homeName} awayName={awayName} homeColor={headerHomeColor} awayColor={headerAwayColor} />
 
       {/* AI-sammanfattning — PRO; free får bara titel-teaser i DOM */}
       {summary && (
