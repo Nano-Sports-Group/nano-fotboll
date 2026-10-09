@@ -63,16 +63,21 @@ export function TeamHubHeader({
   };
 
   const refresh = () => startTransition(() => router.refresh());
-  const teamColor = getTeamColors(currentSlug).primary;
+  const teamColors = getTeamColors(currentSlug);
 
   return (
     <div className="relative overflow-hidden">
-      {/* Ambient lagfärgsglow — samma 60fps x-nfl-games-tab-switch-teknik som
-          matchsidans MatchScoreHeader, nu på lag-hubben (saknades här innan). */}
+      {/* Instagram-stil gradient-topp i lagets riktiga färger, fade ner mot ytan —
+          Hampus 2026-10-09 ("gradient top, som instagram kör"). Ersätter den
+          tidigare ensamma glow-cirkeln i hörnet med en fullbredds gradient-band. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-16 -top-10 h-56 w-56 rounded-full opacity-[0.18] blur-3xl transition-colors duration-700"
-        style={{ backgroundColor: teamColor }}
+        className="pointer-events-none absolute inset-x-0 top-0 h-36 opacity-70 transition-[background] duration-700"
+        style={{
+          background: `linear-gradient(135deg, ${teamColors.primary}, ${teamColors.secondary})`,
+          maskImage: "linear-gradient(to bottom, black, transparent)",
+          WebkitMaskImage: "linear-gradient(to bottom, black, transparent)",
+        }}
       />
       <LargeTitleHeader
         title={team.name}

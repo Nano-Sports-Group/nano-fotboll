@@ -53,15 +53,17 @@ export function MatchScoreHeader({
         style={{ scale, opacity, transformOrigin: "top center" }}
         className="relative overflow-hidden rounded-2xl border border-border bg-card p-6"
       >
+        {/* Instagram-stil gradient-topp: båda lagens riktiga färger diagonalt, fade
+            till kortets yta istället för en hård kant — Hampus 2026-10-09 ("gradient
+            top, som instagram kör"). Ersätter de två separata glow-cirklarna. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -left-10 top-1/2 h-48 w-48 -translate-y-1/2 rounded-full opacity-25 blur-3xl transition-colors duration-700"
-          style={{ backgroundColor: homeColor }}
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-10 top-1/2 h-48 w-48 -translate-y-1/2 rounded-full opacity-25 blur-3xl transition-colors duration-700"
-          style={{ backgroundColor: awayColor }}
+          className="pointer-events-none absolute inset-x-0 top-0 h-40 opacity-80 transition-[background] duration-700"
+          style={{
+            background: `linear-gradient(135deg, ${homeColor}, ${awayColor})`,
+            maskImage: "linear-gradient(to bottom, black, transparent)",
+            WebkitMaskImage: "linear-gradient(to bottom, black, transparent)",
+          }}
         />
         <p className="relative mb-3 text-center text-xs text-muted-foreground">
           {competitionLine}
