@@ -27,8 +27,11 @@ export function TeamSearchBar({ teams }: TeamSearchBarProps) {
     "w-full bg-background border border-border rounded-lg px-3 min-h-11 sm:min-h-9 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-pitch focus:border-transparent cursor-pointer";
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3 items-end">
-      <div className="flex-1">
+    // Hampus 2026-10-09: "jämförelse tabsen bredvid varandra, snarare än ovanpå
+    // varandra" — alltid flex-row, även på mobil (var sm:flex-row innan, staplade
+    // under den breakpointen). Samma layoutbeslut på iOS/Android i samma pass.
+    <div className="flex flex-row gap-3 items-end">
+      <div className="flex-1 min-w-0">
         <label className="block text-xs text-muted-foreground mb-1">Lag A</label>
         <select className={selectClass} value={a} onChange={(e) => setA(e.target.value)}>
           <option value="">Välj lag...</option>
@@ -40,9 +43,9 @@ export function TeamSearchBar({ teams }: TeamSearchBarProps) {
         </select>
       </div>
 
-      <div className="text-muted-foreground font-bold text-lg hidden sm:block pb-2">vs</div>
+      <div className="text-muted-foreground font-bold text-lg pb-2">vs</div>
 
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <label className="block text-xs text-muted-foreground mb-1">Lag B</label>
         <select className={selectClass} value={b} onChange={(e) => setB(e.target.value)}>
           <option value="">Välj lag...</option>

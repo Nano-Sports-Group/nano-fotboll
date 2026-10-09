@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useRef, useState } from "react";
+import { motion, useMotionValueEvent, useScroll } from "motion/react";
 import { Menu, Search } from "lucide-react";
 import { openSearchPalette, SEARCH_HREF } from "@/hooks/useCommandPalette";
 import { NavAuth } from "@/components/ui/NavAuth";
@@ -18,8 +20,39 @@ function openSearch(e: React.MouseEvent) {
 }
 
 export function Header({ clerkEnabled }: { clerkEnabled: boolean }) {
+  // Hampus 2026-10-09: "animeras så top-bar försvinner... likt NFL X-funktionen" —
+  // samma riktnings-ackumulator-princip som iOS athopiaScrollHidesTopBar()/Android
+  // ScrollHidesTopBar(): ett enstaka motsatt scroll-event (bounce, layoutskift)
+  // nollställer inte, bara ett verkligt riktningsbyte gör.
+  const [hidden, setHidden] = useState(false);
+  const accumulated = useRef(0);
+  const { scrollY } = useScroll();
+  useMotionValueEvent(scrollY, "change", (y) => {
+    if (y <= 8) {
+      accumulated.current = 0;
+      setHidden(false);
+      return;
+    }
+    const delta = y - (scrollY.getPrevious() ?? y);
+    if ((delta > 0 && accumulated.current < 0) || (delta < 0 && accumulated.current > 0)) {
+      accumulated.current = 0;
+    }
+    accumulated.current += delta;
+    if (accumulated.current > 48) {
+      setHidden(true);
+      accumulated.current = 0;
+    } else if (accumulated.current < -48) {
+      setHidden(false);
+      accumulated.current = 0;
+    }
+  });
+
   return (
-    <header className="glass-bar sticky top-0 z-50">
+    <motion.header
+      className="glass-bar sticky top-0 z-50"
+      animate={{ y: hidden ? "-100%" : 0 }}
+      transition={{ duration: 0.25, ease: "easeInOut" }}
+    >
       <div className="w-full px-3 sm:px-6 h-12 flex items-center justify-between gap-2 sm:gap-4">
         <div className="flex min-w-0 items-center gap-1">
           {/* Hamburger — mobile only, opens MobileNav drawer */}
@@ -66,6 +99,6 @@ export function Header({ clerkEnabled }: { clerkEnabled: boolean }) {
           <NavAuth clerkEnabled={clerkEnabled} />
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }
