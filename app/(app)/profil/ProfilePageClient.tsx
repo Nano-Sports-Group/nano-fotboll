@@ -86,6 +86,8 @@ export function ProfilePageClient({
   const [lastName, setLastName] = useState(initialLast ?? "");
   const [nickname, setNickname] = useState(initialProfile.nickname ?? "");
   const [bio, setBio] = useState(initialProfile.bio ?? "");
+  const [podcastPlayer, setPodcastPlayer] = useState(initialProfile.preferred_podcast_player ?? "");
+  const [podcastPlayerError, setPodcastPlayerError] = useState<string | null>(null);
 
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState(false);
@@ -172,6 +174,23 @@ export function ProfilePageClient({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ followed_team_ids: [team.id] }),
     }).catch(() => {});
+  }
+
+  async function changePodcastPlayer(next: string) {
+    const previous = podcastPlayer;
+    setPodcastPlayer(next);
+    setPodcastPlayerError(null);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preferred_podcast_player: next }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setPodcastPlayer(previous);
+      setPodcastPlayerError("Kunde inte spara — försök igen");
+    }
   }
 
   async function sendReset() {
@@ -353,6 +372,35 @@ export function ProfilePageClient({
           <KeyRound className="h-4 w-4" />
           {resetSent ? "Återställningsmail skickat" : "Återställ lösenord"}
         </button>
+      </section>
+
+      {/* Podd-preferens */}
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground text-balance">
+          Poddar
+        </h2>
+        <ListGroup>
+          {(
+            [
+              { value: "", label: "Ingen preferens", hint: "Spotify när tillgängligt, annars källans länk" },
+              { value: "spotify", label: "Spotify" },
+              { value: "apple", label: "Apple Podcasts" },
+              { value: "browser", label: "Öppna i webbläsaren" },
+            ] as const
+          ).map((opt) => (
+            <ListRow
+              key={opt.value || "none"}
+              title={opt.label}
+              subtitle={"hint" in opt ? opt.hint : undefined}
+              onClick={() => changePodcastPlayer(opt.value)}
+              trailing={podcastPlayer === opt.value ? <Check className="h-4 w-4 text-pitch-ink" /> : undefined}
+            />
+          ))}
+        </ListGroup>
+        {podcastPlayerError && <p className="text-xs text-destructive-ink">{podcastPlayerError}</p>}
+        <p className="text-xs text-muted-foreground">
+          Styr vilken app "Lyssna"-knappen på poddavsnitt öppnar i, när avsnittet finns där.
+        </p>
       </section>
 
       {/* Hantera konto */}

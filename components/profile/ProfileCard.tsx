@@ -15,6 +15,8 @@ export interface PublicProfile {
   /** entities.slug — favoritlag, driver lagfärgad ring + banner. */
   favourite_team_id?: string | null;
   created_at: string;
+  /** "spotify" | "apple" | "browser" | null — null = Spotify-först-fallback. */
+  preferred_podcast_player?: string | null;
 }
 
 function memberSince(iso: string): string {

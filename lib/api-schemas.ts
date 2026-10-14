@@ -679,7 +679,11 @@ export const PodcastEpisodeSchema = z.object({
   publishedAt: z.string().nullable(),
   durationSeconds: z.number().int().nullable(),
   mentionedTeams: z.array(z.string()),
+  /** Delmängd av mentionedTeams — lag avsnittet handlar om, inte bara nämner. Se nano-os podcast-processor.ts. */
+  discussedTeams: z.array(z.string()),
   listenUrl: z.string().nullable(),
+  /** Show-nivå Apple Podcasts-länk, null om showen inte är uppslagen/hittad där än. */
+  applePodcastUrl: z.string().nullable(),
 });
 
 export const PodcastListResponseSchema = z.object({
@@ -745,6 +749,8 @@ export const SessionProfileSchema = z.object({
   display_name: z.string().nullable().optional(),
   nickname: z.string().nullable().optional(),
   bio: z.string().nullable().optional(),
+  /** "spotify" | "apple" | "browser" | null — null = dagens Spotify-först-fallback. */
+  preferred_podcast_player: z.string().nullable().optional(),
 });
 
 export const SessionProfileResponseSchema = z.object({

@@ -10,6 +10,12 @@ interface EpisodeHit {
   showName: string | null;
   publishedAt: string | null;
   mentionedTeams: string[];
+  discussedTeams: string[];
+}
+
+/** Diskuterade lag är en delmängd av nämnda — prioritera dem i UI, fall tillbaka om tomt. */
+function contextTeams(hit: EpisodeHit): string[] {
+  return hit.discussedTeams.length > 0 ? hit.discussedTeams : hit.mentionedTeams;
 }
 
 interface ClipHit {
@@ -131,7 +137,7 @@ export function PodcastSearch() {
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {ep.showName}
                   {ep.publishedAt && ` · ${new Date(ep.publishedAt).toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm" })}`}
-                  {ep.mentionedTeams.length > 0 && ` · ${ep.mentionedTeams.slice(0, 3).join(", ")}`}
+                  {contextTeams(ep).length > 0 && ` · ${contextTeams(ep).slice(0, 3).join(", ")}`}
                 </p>
               </Link>
             ))

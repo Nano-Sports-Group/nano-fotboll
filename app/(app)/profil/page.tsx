@@ -43,6 +43,7 @@ export default async function ProfilPage() {
     role: (row?.role as PublicProfile["role"] | undefined) ?? "reader",
     favourite_team_id: (row?.favourite_team_id as string | null) ?? null,
     created_at: createdAt,
+    preferred_podcast_player: (row?.preferred_podcast_player as string | null) ?? null,
   };
 
   return (

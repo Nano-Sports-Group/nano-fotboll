@@ -12,6 +12,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ExternalLink, Mic } from "lucide-react";
+import { auth } from "@clerk/nextjs/server";
 import { createServerClient } from "@/lib/supabase";
 import { formatPodcastContextLine } from "@/lib/podcast/rights";
 import { PodcastEpisodeIntel } from "@/components/podcast/PodcastEpisodeIntel";
@@ -20,6 +21,7 @@ import {
   spotifyEpisodeEmbedUrl,
   spotifyShowEmbedUrl,
 } from "@/lib/podcast/spotify";
+import { applePodcastShowUrl } from "@/lib/podcast/apple";
 import { AppBreadcrumbs } from "@/components/ui/AppBreadcrumbs";
 import { jsonLd } from "@/lib/json-ld";
 import { getSiteUrl } from "@/lib/site-url";
@@ -37,14 +39,43 @@ type EpisodeRow = {
   metadata: Record<string, unknown> | null;
   audio_url: string | null;
   is_transcribed: boolean;
+  rss_sources: { apple_podcast_show_id: string | null } | { apple_podcast_show_id: string | null }[] | null;
 };
+
+function discussedTeamsFromMeta(metadata: Record<string, unknown> | null): string[] {
+  const raw = metadata?.discussed_teams;
+  return Array.isArray(raw) ? raw.filter((t): t is string => typeof t === "string") : [];
+}
+
+function appleShowIdFromRow(row: EpisodeRow): string | null {
+  const rel = row.rss_sources;
+  if (!rel) return null;
+  const source = Array.isArray(rel) ? rel[0] : rel;
+  return source?.apple_podcast_show_id ?? null;
+}
+
+/** null = ingen preference satt (inloggad eller inte) — dagens Spotify-först-fallback gäller. */
+async function getPreferredPodcastPlayer(): Promise<string | null> {
+  try {
+    const { userId } = await auth();
+    if (!userId) return null;
+    const { data } = await createServerClient()
+      .from("profiles")
+      .select("preferred_podcast_player")
+      .eq("clerk_user_id", userId)
+      .maybeSingle();
+    return (data?.preferred_podcast_player as string | null) ?? null;
+  } catch {
+    return null;
+  }
+}
 
 async function getEpisode(id: string): Promise<EpisodeRow | null> {
   try {
     const supabase = createServerClient();
     const { data } = await supabase
       .from("podcasts")
-      .select("id, title, show_name, published_at, duration_seconds, mentioned_teams, metadata, audio_url, is_transcribed, rss_sources!inner(sport)")
+      .select("id, title, show_name, published_at, duration_seconds, mentioned_teams, metadata, audio_url, is_transcribed, rss_sources!inner(sport,apple_podcast_show_id)")
       .eq("rss_sources.sport", SPORT)
       .eq("id", id)
       .maybeSingle();
@@ -100,7 +131,7 @@ export default async function PodcastEpisodePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const episode = await getEpisode(id);
+  const [episode, preferredPlayer] = await Promise.all([getEpisode(id), getPreferredPodcastPlayer()]);
   if (!episode) notFound();
 
   const supabase = createServerClient();
@@ -112,8 +143,15 @@ export default async function PodcastEpisodePage({
   const meta = (episode.metadata ?? {}) as Record<string, unknown>;
   const topics = Array.isArray(meta.topics) ? (meta.topics as string[]) : [];
   const listen = listenMetaFromRow(meta, null, episode.audio_url ?? null);
-  const context = formatPodcastContextLine(topics, episode.mentioned_teams ?? []);
+  const discussedTeams = discussedTeamsFromMeta(meta);
+  const contextTeams = discussedTeams.length > 0 ? discussedTeams : episode.mentioned_teams ?? [];
+  const context = formatPodcastContextLine(topics, contextTeams);
   const hasSource = episode.is_transcribed || (count ?? 0) > 0;
+  const appleUrl = applePodcastShowUrl(appleShowIdFromRow(episode));
+  // "apple" + en länk som faktiskt finns → visa Apple-knappen istället för Spotify-embeden.
+  // Allt annat (ingen preference, "spotify", eller "apple" utan träff) = dagens beteende.
+  const preferApple = preferredPlayer === "apple" && !!appleUrl;
+  const preferBrowser = preferredPlayer === "browser";
 
   return (
     <>
@@ -153,7 +191,27 @@ export default async function PodcastEpisodePage({
         </p>
 
         <div className="mb-8 space-y-4">
-          {listen.spotifyEpisodeId ? (
+          {preferApple && appleUrl ? (
+            <a
+              href={appleUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl border border-pitch/30 bg-pitch/10 px-5 py-3 text-sm font-medium text-pitch-ink hover:bg-pitch/15 transition-colors"
+            >
+              Lyssna i Apple Podcasts
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          ) : preferBrowser && listen.listenUrl ? (
+            <a
+              href={listen.listenUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl border border-pitch/30 bg-pitch/10 px-5 py-3 text-sm font-medium text-pitch-ink hover:bg-pitch/15 transition-colors"
+            >
+              Lyssna hos {episode.show_name ?? "källan"}
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          ) : listen.spotifyEpisodeId ? (
             <iframe
               src={spotifyEpisodeEmbedUrl(listen.spotifyEpisodeId)}
               width="100%"
@@ -190,12 +248,22 @@ export default async function PodcastEpisodePage({
               Ingen officiell lyssningslänk ännu — avsnittet indexeras internt för lagkontext.
             </p>
           )}
+          {!preferApple && appleUrl && (
+            <a
+              href={appleUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Öppna i Apple Podcasts istället
+            </a>
+          )}
         </div>
 
         <PodcastEpisodeIntel
           episodeId={episode.id}
           episodeTitle={episode.title}
-          mentionedTeams={episode.mentioned_teams ?? []}
+          mentionedTeams={contextTeams}
           hasSource={hasSource}
         />
 

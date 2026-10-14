@@ -4196,6 +4196,7 @@ export type Database = {
           feed_team_filter: string[] | null
           id: string
           nickname: string | null
+          preferred_podcast_player: string | null
           role: string
           updated_at: string
           verified: boolean
@@ -4210,6 +4211,7 @@ export type Database = {
           feed_team_filter?: string[] | null
           id?: string
           nickname?: string | null
+          preferred_podcast_player?: string | null
           role?: string
           updated_at?: string
           verified?: boolean
@@ -4224,6 +4226,7 @@ export type Database = {
           feed_team_filter?: string[] | null
           id?: string
           nickname?: string | null
+          preferred_podcast_player?: string | null
           role?: string
           updated_at?: string
           verified?: boolean
@@ -4648,6 +4651,7 @@ export type Database = {
       rss_sources: {
         Row: {
           active: boolean
+          apple_podcast_show_id: string | null
           category: string
           created_at: string
           error_count: number
@@ -4666,6 +4670,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          apple_podcast_show_id?: string | null
           category: string
           created_at?: string
           error_count?: number
@@ -4684,6 +4689,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          apple_podcast_show_id?: string | null
           category?: string
           created_at?: string
           error_count?: number

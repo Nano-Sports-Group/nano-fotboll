@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Send, Sparkles, X } from "lucide-react";
 import { Drawer } from "vaul";
 import { useDraft } from "@/hooks/useDraft";
+import { extractTextDeltas } from "@/lib/ai/ui-stream";
 
 type Msg = { role: "user" | "assistant"; text: string };
 
@@ -45,10 +46,9 @@ export function PodcastAskSheet({
       setLoading(true);
 
       try {
-        const history = [...messages, { role: "user" as const, text: q }].map((m) => ({
-          role: m.role,
-          content: m.text,
-        }));
+        // Samma protokoll som /ai och /api/elite/chat: UIMessage med parts in, UI message stream ut.
+        const toMsg = (role: Msg["role"], text: string) => ({ role, parts: [{ type: "text", text }] });
+        const history = [...messages, { role: "user" as const, text: q }].map((m) => toMsg(m.role, m.text));
         const res = await fetch("/api/elite/podcast-chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -73,10 +73,14 @@ export function PodcastAskSheet({
         setMessages((prev) => [...prev, { role: "assistant", text: "" }]);
         const reader = res.body!.getReader();
         const dec = new TextDecoder();
+        let pending = "";
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          const chunk = dec.decode(value, { stream: true });
+          const parsed = extractTextDeltas(pending + dec.decode(value, { stream: true }));
+          pending = parsed.rest;
+          const chunk = parsed.deltas.join("");
+          if (!chunk) continue;
           setMessages((prev) => {
             const next = [...prev];
             next[next.length - 1] = {

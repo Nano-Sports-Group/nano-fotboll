@@ -79,12 +79,16 @@ export async function GET(req: Request) {
     const safe = (episodes ?? []).map((ep) => {
       const meta = (ep.metadata ?? {}) as Record<string, unknown>;
       const listen = listenMetaFromRow(meta);
+      const discussedTeams = Array.isArray(meta.discussed_teams)
+        ? meta.discussed_teams.filter((t): t is string => typeof t === "string")
+        : [];
       return {
         id: ep.id,
         title: ep.title,
         showName: ep.show_name,
         publishedAt: ep.published_at,
         mentionedTeams: ep.mentioned_teams ?? [],
+        discussedTeams,
         topics: Array.isArray(meta.topics) ? meta.topics : [],
         listenUrl: listen.listenUrl,
         spotifyEpisodeId: listen.spotifyEpisodeId,

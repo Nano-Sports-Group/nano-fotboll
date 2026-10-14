@@ -70,6 +70,14 @@ export async function PATCH(req: Request) {
   const firstName = typeof body.firstName === "string" ? body.firstName.trim() : undefined;
   const lastName = typeof body.lastName === "string" ? body.lastName.trim() : undefined;
   const avatarUrl = typeof body.avatar_url === "string" ? body.avatar_url : undefined;
+  const preferredPodcastPlayer =
+    typeof body.preferred_podcast_player === "string" ? body.preferred_podcast_player : undefined;
+  if (preferredPodcastPlayer !== undefined && !["spotify", "apple", "browser", ""].includes(preferredPodcastPlayer)) {
+    return NextResponse.json(
+      { error: "Ogiltigt värde för preferred_podcast_player", field: "preferred_podcast_player" },
+      { status: 400 },
+    );
+  }
   const favouriteTeamInput =
     typeof body.favourite_team_id === "string"
       ? body.favourite_team_id.trim()
@@ -148,6 +156,7 @@ export async function PATCH(req: Request) {
   if (nickname !== undefined) update.nickname = nickname || null;
   if (bio !== undefined) update.bio = bio || null;
   if (avatarUrl !== undefined) update.avatar_url = avatarUrl;
+  if (preferredPodcastPlayer !== undefined) update.preferred_podcast_player = preferredPodcastPlayer || null;
   if (favouriteTeam !== undefined && VERTICAL === "football") {
     update.favourite_team_id = favouriteTeam?.id ?? null;
   }
