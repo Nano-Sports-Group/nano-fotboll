@@ -2,26 +2,36 @@
 
 import { useState } from "react";
 import { Share2, Check } from "lucide-react";
+import { VERTICAL } from "@/lib/vertical";
 
-/** Dela via native share sheet (mobil) med kopiera-länk-fallback (desktop). */
+/**
+ * Dela via native share sheet (mobil) med kopiera-länk-fallback (desktop).
+ * Länken taggas `utm_campaign=share_<sport>_<kind>_web` → proxy.ts sätter cookien
+ * och mottagarens besök/signup/trial hamnar i utm_events. Regler: docs/DELNING.md.
+ */
 export function ShareButton({
   title,
   url,
+  kind,
   variant = "label",
 }: {
   title: string;
   url: string;
+  kind: "article" | "match" | "team" | "player";
   variant?: "label" | "icon";
 }) {
   const [copied, setCopied] = useState(false);
 
   const share = async () => {
+    const tagged = new URL(url);
+    tagged.searchParams.set("utm_campaign", `share_${VERTICAL}_${kind}_web`);
+    const shared = tagged.toString();
     try {
       if (navigator.share) {
-        await navigator.share({ title, url });
+        await navigator.share({ title, url: shared });
         return;
       }
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(shared);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {

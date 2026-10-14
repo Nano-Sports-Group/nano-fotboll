@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { createServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import { buildPlayerProfile } from "@/lib/player/profile";
 import { getSiteUrl } from "@/lib/site-url";
+import { ShareButton } from "@/components/ui/ShareButton";
 import { ListGroup } from "@/components/ui/ListGroup";
 import { ListRow } from "@/components/ui/ListRow";
 import { StatNumber } from "@/components/ui/StatNumber";
@@ -178,6 +179,9 @@ export default async function SpelarePage({ params }: { params: Promise<{ slug: 
             {player.weight ? ` · ${player.weight} kg` : ""}
             {profile.teamName ? ` · ${profile.teamName}` : ""}
           </p>
+        </div>
+        <div className="relative z-10 ml-auto self-start">
+          <ShareButton title={player.fullname} url={`${getSiteUrl()}/spelare/${slug}`} kind="player" variant="icon" />
         </div>
       </div>
 

@@ -25,6 +25,7 @@ import { getSiteUrl } from "@/lib/site-url";
 import { getTeamColors } from "@/lib/team-colors";
 import { MatchScoreHeader } from "./MatchScoreHeader";
 import { PerspectiveField } from "./PerspectiveField";
+import { ShareButton } from "@/components/ui/ShareButton";
 
 export const revalidate = 60;
 
@@ -327,6 +328,8 @@ export default async function MatchPage({ params }: PageProps) {
   const awayName = fix.away_team_name as string;
   const homeScore = (fix.home_score as number) ?? 0;
   const awayScore = (fix.away_score as number) ?? 0;
+  // Inga mål registrerade = streck i rubriken, aldrig placeholder 0–0.
+  const hasScore = fix.home_score != null && fix.away_score != null;
   const kickoff = fix.kickoff_at as string | null;
   const isLive = isLiveNow(fix.status as string, kickoff);
 
@@ -385,8 +388,8 @@ export default async function MatchPage({ params }: PageProps) {
       <MatchScoreHeader
         homeName={homeName}
         awayName={awayName}
-        homeScore={homeScore}
-        awayScore={awayScore}
+        homeScore={hasScore ? homeScore : null}
+        awayScore={hasScore ? awayScore : null}
         statusText={fix.status as string}
         isLive={isLive}
         liveLabel={(d?.live as { minute: number | null } | null)?.minute != null ? String((d!.live as { minute: number }).minute) : null}
@@ -394,6 +397,9 @@ export default async function MatchPage({ params }: PageProps) {
         homeColor={headerHomeColor}
         awayColor={headerAwayColor}
       />
+      <div className="flex justify-center">
+        <ShareButton title={`${homeName} – ${awayName}`} url={`${getSiteUrl()}${resolved.path}`} kind="match" />
+      </div>
       <PerspectiveField homeName={homeName} awayName={awayName} homeColor={headerHomeColor} awayColor={headerAwayColor} />
 
       {/* AI-sammanfattning — PRO; free får bara titel-teaser i DOM */}

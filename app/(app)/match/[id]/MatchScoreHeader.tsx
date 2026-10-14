@@ -15,8 +15,9 @@ import { useRef, useState } from "react";
 interface MatchScoreHeaderProps {
   homeName: string;
   awayName: string;
-  homeScore: number;
-  awayScore: number;
+  /** null = inga mål registrerade (ej startad) → streck. */
+  homeScore: number | null;
+  awayScore: number | null;
   statusText: string;
   isLive: boolean;
   liveLabel: string | null;
@@ -75,7 +76,7 @@ export function MatchScoreHeader({
           <p className="flex-1 text-right text-lg font-bold">{homeName}</p>
           <div className="text-center">
             <p className="font-mono text-6xl font-bold tabular-nums text-foreground">
-              {homeScore}–{awayScore}
+              {homeScore != null && awayScore != null ? `${homeScore}–${awayScore}` : "–"}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">{statusText}</p>
           </div>
@@ -94,7 +95,7 @@ export function MatchScoreHeader({
           >
             <div className="flex items-center justify-center gap-3 text-sm font-semibold text-foreground">
               <span className="truncate">{homeName}</span>
-              <span className="tabular-nums">{homeScore}–{awayScore}</span>
+              <span className="tabular-nums">{homeScore != null && awayScore != null ? `${homeScore}–${awayScore}` : "–"}</span>
               <span className="truncate">{awayName}</span>
               {isLive && <span className="text-xs text-destructive-ink">●</span>}
             </div>

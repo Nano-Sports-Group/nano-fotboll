@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { FollowButton } from "@/components/golf/FollowButton";
+import { ShareButton } from "@/components/ui/ShareButton";
 import { StoryList } from "@/components/golf/StoryList";
 import { GolfSection, PlayerList, PlayerMark } from "@/components/golf/cards";
 import { GOLF_PLAYERS, getPlayer, getTour, playersOnTour } from "@/lib/golf/catalog";
@@ -77,7 +78,10 @@ export default async function GolfPlayerPage({ params }: { params: Params }) {
 
       <p className="mt-5 text-lg text-foreground">{player.merit}</p>
       <div className="mt-5">
-        <FollowButton kind="players" slug={player.slug} name={player.name} />
+        <div className="flex items-center gap-2">
+          <FollowButton kind="players" slug={player.slug} name={player.name} />
+          <ShareButton title={player.name} url={absoluteUrl(`/golf/spelare/${player.slug}`)} kind="player" />
+        </div>
       </div>
 
       {stories.length > 0 ? (

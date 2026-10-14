@@ -179,6 +179,7 @@ export default async function ArtikelPage({
           <ShareButton
             title={article.title}
             url={`${getSiteUrl()}/artikel/${article.slug}`}
+            kind="article"
             variant="icon"
           />
         </div>

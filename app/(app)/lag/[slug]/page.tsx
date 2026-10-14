@@ -39,6 +39,7 @@ import { jsonLd } from "@/lib/json-ld";
 import { getWebsiteSettings } from "@/lib/website-settings.server";
 import { resolveShareMetadata, toNextMetadata } from "@/lib/website-settings";
 import { getSiteUrl } from "@/lib/site-url";
+import { ShareButton } from "@/components/ui/ShareButton";
 
 export const revalidate = 60;
 
@@ -204,13 +205,14 @@ export default async function TeamHubPage({ params }: { params: Promise<{ slug: 
         props={{ team_slug: hub.team.slug, team_id: hub.team.id }}
       />
 
-      <div className="px-4 sm:px-6 pt-1.5 pb-0">
+      <div className="px-4 sm:px-6 pt-1.5 pb-0 flex items-center justify-between gap-2">
         <AppBreadcrumbs
           items={[
             { label: hub.team.league, href: leagueTableHref(hub.team.league) },
             { label: hub.team.name },
           ]}
         />
+        <ShareButton title={hub.team.name} url={`${getSiteUrl()}/lag/${hub.team.slug}`} kind="team" variant="icon" />
       </div>
 
       <TeamHubHeader

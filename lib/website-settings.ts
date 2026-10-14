@@ -83,7 +83,8 @@ export const DEFAULT_WEBSITE_SETTINGS: WebsiteSettings = {
     homeOgTitle: "Allsvenskan 2026 – Tabell, Resultat, Matcher & Statistik | Nano Fotboll",
     homeOgDescription:
       "Live-tabell, resultat, spelschema, skytteliga och djupstatistik för hela Allsvenskan 2026. Matchanalyser och forum för ditt lag.",
-    ogImageUrl: "/og-default.png",
+    // Genererad per vertikal (app/opengraph-image.tsx). Admin skriver över med en uppladdad bild.
+    ogImageUrl: "/opengraph-image",
     twitterCard: "summary_large_image",
     includeBrandInOgTitle: false,
     articleDescriptionFallback: "defaultDescription",
@@ -211,6 +212,8 @@ function twitterCard(value: unknown, fallback: TwitterCard): TwitterCard {
 
 function ogImageUrl(value: unknown, fallback: string): string {
   const raw = str(value, fallback, URL_MAX);
+  // Admins markör för "ingen bild uppladdad" — filen har aldrig funnits (404 på alla delningar).
+  if (raw === "/og-default.png") return fallback;
   if (raw.startsWith("/")) return raw;
   if (/^https:\/\//i.test(raw)) return raw;
   return fallback;
@@ -420,7 +423,8 @@ export function resolveShareMetadata(
     ogTitle: withBrand(title, settings, true),
     ogDescription: description,
     ogType: "article",
-    ogImageUrl: image,
+    // Matchens egen bild (lag, resultat/avspark) slår den generiska — app/(app)/match/[id]/og.
+    ogImageUrl: `${ctx.path}/og`,
     twitterCard: card,
     robots: { index: true, follow: true },
     canonicalPath: ctx.path,

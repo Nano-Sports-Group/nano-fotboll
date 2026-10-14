@@ -111,6 +111,15 @@ test("parse struntar i HTML och ogiltig bild-URL", () => {
   assert.equal(parsed.sharing.ogImageUrl, DEFAULT_WEBSITE_SETTINGS.sharing.ogImageUrl);
 });
 
+test("delningsbild: 'ingen uppladdad'-markören faller till den genererade, match har egen", () => {
+  const parsed = parseWebsiteSettings({ sharing: { ogImageUrl: "/og-default.png" } });
+  assert.equal(parsed.sharing.ogImageUrl, "/opengraph-image");
+  const match = resolveShareMetadata(settings, {
+    kind: "match", home: "AIK", away: "DIF", homeScore: null, awayScore: null, when: null, path: "/match/aik-dif",
+  });
+  assert.equal(match.ogImageUrl, "/match/aik-dif/og");
+});
+
 test("interpolate lämnar okända platshållare synliga", () => {
   assert.equal(interpolate("Hej {team} {nope}", { team: "AIK" }), "Hej AIK {nope}");
 });
