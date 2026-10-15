@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
     // QuoteBox — ett svar visar vad det svarar på utan att man behöver öppna en tråd.
     let q = supabase
       .from("forum_posts")
-      .select("*, parent_post:forum_posts!forum_posts_parent_id_fkey(*)")
+      .select("*, parent_post:parent_id(*)")
       .eq("sport", sport)
       .eq("status", "published");
 

@@ -31,7 +31,7 @@ async function getPosts(teamSlug: string): Promise<ForumPost[]> {
     // Samma modell som /api/forum/posts GET — se den routen för resonemanget.
     const { data } = await supabase
       .from("forum_posts")
-      .select("*, parent_post:forum_posts!forum_posts_parent_id_fkey(*)")
+      .select("*, parent_post:parent_id(*)")
       .eq("team_slug", teamSlug)
       .eq("sport", SPORT)
       .eq("status", "published")
