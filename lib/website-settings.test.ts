@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   DEFAULT_WEBSITE_SETTINGS,
+  HOCKEY_DEFAULT_WEBSITE_SETTINGS,
   interpolate,
   parseWebsiteSettings,
   resolveShareMetadata,
@@ -113,7 +114,9 @@ test("parse struntar i HTML och ogiltig bild-URL", () => {
 
 test("delningsbild: 'ingen uppladdad'-markören faller till den genererade, match har egen", () => {
   const parsed = parseWebsiteSettings({ sharing: { ogImageUrl: "/og-default.png" } });
-  assert.equal(parsed.sharing.ogImageUrl, "/opengraph-image");
+  assert.equal(parsed.sharing.ogImageUrl, "/og/fotboll.jpg");
+  const hockey = parseWebsiteSettings({ sharing: { ogImageUrl: "/og-default.png" } }, HOCKEY_DEFAULT_WEBSITE_SETTINGS);
+  assert.equal(hockey.sharing.ogImageUrl, "/opengraph-image");
   const match = resolveShareMetadata(settings, {
     kind: "match", home: "AIK", away: "DIF", homeScore: null, awayScore: null, when: null, path: "/match/aik-dif",
   });

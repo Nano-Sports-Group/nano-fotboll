@@ -83,8 +83,9 @@ export const DEFAULT_WEBSITE_SETTINGS: WebsiteSettings = {
     homeOgTitle: "Allsvenskan 2026 – Tabell, Resultat, Matcher & Statistik | Nano Fotboll",
     homeOgDescription:
       "Live-tabell, resultat, spelschema, skytteliga och djupstatistik för hela Allsvenskan 2026. Matchanalyser och forum för ditt lag.",
-    // Genererad per vertikal (app/opengraph-image.tsx). Admin skriver över med en uppladdad bild.
-    ogImageUrl: "/opengraph-image",
+    // Fotboll: förrenderad (public/og/fotboll.jpg, 1200x630). Hockey/golf: genererad per vertikal
+    // (app/opengraph-image.tsx). Admin skriver över med en uppladdad bild.
+    ogImageUrl: "/og/fotboll.jpg",
     twitterCard: "summary_large_image",
     includeBrandInOgTitle: false,
     articleDescriptionFallback: "defaultDescription",
@@ -117,6 +118,7 @@ export const HOCKEY_DEFAULT_WEBSITE_SETTINGS: WebsiteSettings = {
   },
   sharing: {
     ...DEFAULT_WEBSITE_SETTINGS.sharing,
+    ogImageUrl: "/opengraph-image",
     homeOgTitle: "SHL och HockeyAllsvenskan 2026/27 – Tabell, Resultat och Matcher | Nano Hockey",
     homeOgDescription:
       "Tabell, resultat, spelschema och nyheter för SHL och HockeyAllsvenskan. Matchsidor och forum för ditt lag.",
@@ -147,6 +149,7 @@ export const GOLF_DEFAULT_WEBSITE_SETTINGS: WebsiteSettings = {
   },
   sharing: {
     ...DEFAULT_WEBSITE_SETTINGS.sharing,
+    ogImageUrl: "/opengraph-image",
     homeOgTitle: "Nano Golf – svenska spelare, tourerna och majors",
     homeOgDescription: "Golf ur svenskt perspektiv: svenska spelare, tourerna och majors.",
     nyhetDescriptionTemplate: "Nano Golf följer händelsen. Originalet hos {source}.",
