@@ -12,6 +12,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Mic, Headphones } from "lucide-react";
 import { PodcastSearch } from "./PodcastSearch";
+import { NanoEpisodeList } from "@/components/podcast/NanoEpisodeList";
 import { latestEpisodes, listShows, teamNames } from "@/lib/podcast/nano-api";
 import { vertical } from "@/lib/vertical";
 
@@ -25,17 +26,6 @@ export const metadata: Metadata = {
     ? "SHL-poddarna samlade: TV4 Hockey, Klubben Hockey, lokaltidningarnas lagpoddar och fler — sök avsnitt per lag och ämne."
     : "Allsvenskans poddar samlade: Studio Allsvenskan, Lundh, klubbpoddarna och fler — sök avsnitt per lag och ämne.",
 };
-
-function relTime(iso: string | null): string {
-  if (!iso) return "";
-  const d = Math.round((Date.now() - new Date(iso).getTime()) / 86_400_000);
-  if (d <= 0) return "idag";
-  if (d === 1) return "igår";
-  if (d < 30) return `${d} dagar sedan`;
-  return new Date(iso).toLocaleDateString("sv-SE", {
-    timeZone: "Europe/Stockholm",
-  });
-}
 
 export default async function PodcastIndexPage({
   searchParams,
@@ -142,41 +132,7 @@ export default async function PodcastIndexPage({
             Inga avsnitt inlästa ännu — poddarna hämtas löpande.
           </div>
         ) : (
-          <div className="rounded-xl border border-border bg-card divide-y divide-border/60">
-            {episodes.map((ep) => (
-              <Link
-                key={ep.id}
-                href={`/podcast/avsnitt/${ep.id}`}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors"
-              >
-                {(ep.artworkUrl ?? ep.podcast.artworkUrl) ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- tredjeparts-CDN:er
-                  <img
-                    src={(ep.artworkUrl ?? ep.podcast.artworkUrl)!}
-                    alt=""
-                    width={40}
-                    height={40}
-                    loading="lazy"
-                    className="size-10 shrink-0 rounded-md object-cover"
-                  />
-                ) : null}
-                <span className="min-w-0">
-                  <span className="block text-sm font-medium text-foreground line-clamp-2">
-                    {ep.title}
-                  </span>
-                  <span className="block text-xs text-muted-foreground mt-0.5">
-                    {ep.podcast.title} · {relTime(ep.publishedAt)}
-                    {ep.teams.length > 0 &&
-                      ` · ${ep.teams
-                        .map((s) => names.get(s))
-                        .filter(Boolean)
-                        .slice(0, 3)
-                        .join(", ")}`}
-                  </span>
-                </span>
-              </Link>
-            ))}
-          </div>
+          <NanoEpisodeList episodes={episodes} teamNames={names} />
         )}
       </section>
     </div>
