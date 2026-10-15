@@ -14,7 +14,8 @@ function openSearch(e: React.MouseEvent) {
   // Direkt mot den delade storen: ett window-event når bara lyssnare som redan
   // hunnit monteras, och tappade klick i glappet mellan hydreringar.
   // Modifierade klick lämnas åt webbläsaren (öppna i ny flik).
-  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0)
+    return;
   e.preventDefault();
   openSearchPalette();
 }
@@ -58,11 +59,15 @@ export function Header({ clerkEnabled }: { clerkEnabled: boolean }) {
           {/* Hamburger — mobile only, opens MobileNav drawer */}
           <button
             aria-label="Öppna meny"
-            onClick={() => window.dispatchEvent(new CustomEvent("athopia:open-mobile-menu"))}
-            className="glass-button md:hidden -ml-2.5 size-11 flex items-center justify-center text-muted-foreground
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent("athopia:open-mobile-menu"))
+            }
+            className="group md:hidden -ml-2.5 size-11 flex items-center justify-center rounded-full text-muted-foreground
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pitch focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
-            <Menu className="w-5 h-5" />
+            <span className="glass-button flex size-8 items-center justify-center group-hover:text-foreground">
+              <Menu className="size-4" />
+            </span>
           </button>
           <Link
             href="/"
@@ -73,7 +78,9 @@ export function Header({ clerkEnabled }: { clerkEnabled: boolean }) {
             {/* Märket ärver textfärgen via currentColor — ett ljust/mörkt-läge
                 behöver ingen andra fil och ingen bildväxling. */}
             <NanoLogo size="md" decorative />
-            <span className="ml-2 tracking-[0.08em] sm:tracking-widest">{vertical.wordmark}</span>
+            <span className="ml-2 tracking-[0.08em] sm:tracking-widest">
+              {vertical.wordmark}
+            </span>
           </Link>
         </div>
 
@@ -86,10 +93,13 @@ export function Header({ clerkEnabled }: { clerkEnabled: boolean }) {
             onClick={openSearch}
             aria-label="Sök"
             title="Sök (⌘K)"
-            className="glass-button flex size-11 items-center justify-center text-muted-foreground
+            className="group flex size-11 items-center justify-center rounded-full text-muted-foreground
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pitch focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
-            <Search className="w-[18px] h-[18px]" />
+            {/* 44px klickyta, 32px synlig glasbubbla: i samma skala som logotypen (24px). */}
+            <span className="glass-button flex size-8 items-center justify-center group-hover:text-foreground">
+              <Search className="size-4" />
+            </span>
           </a>
           {/* Temaväxlaren finns redan i mobilmenyn ("Utseende") — att bära den
               även i headern dubblerar kontrollen och spräcker raden på 320px. */}

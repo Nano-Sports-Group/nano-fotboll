@@ -13,17 +13,25 @@ import { vertical } from "@/lib/vertical";
 /** Vertikaler utan pris (golf) har ingen prissida — då finns ingen PRO-knapp heller. */
 const SELLS = !vertical.hiddenRoutes.includes("/prenumerera");
 
-// ─── Fallback (ingen Clerk) ────────────────────────────────────────────────────
-function FallbackAuth() {
-  if (!SELLS) return null;
+// 44px klickyta, 32px synlig pill — samma visuella höjd som sökknappen och
+// logotypen i 48px-headern. En 44px-pill fyllde hela raden.
+function ProLink() {
   return (
     <Link
       href="/prenumerera"
-      className="inline-flex min-h-11 items-center text-sm px-4 rounded-full pitch-gradient text-white font-medium hover:opacity-90 transition-opacity"
+      className="group inline-flex min-h-11 items-center"
     >
-      PRO
+      <span className="inline-flex h-8 items-center rounded-full px-3.5 text-sm font-medium text-white pitch-gradient transition-opacity group-hover:opacity-90">
+        PRO
+      </span>
     </Link>
   );
+}
+
+// ─── Fallback (ingen Clerk) ────────────────────────────────────────────────────
+function FallbackAuth() {
+  if (!SELLS) return null;
+  return <ProLink />;
 }
 
 // ─── Clerk-baserad auth ────────────────────────────────────────────────────────
@@ -42,21 +50,17 @@ function ClerkAuth() {
             Logga in
           </button>
         </SignInButton>
-        {SELLS && (
-          <Link
-            href="/prenumerera"
-            className="inline-flex min-h-11 items-center text-sm px-4 rounded-full pitch-gradient text-white font-medium hover:opacity-90 transition-opacity"
-          >
-            PRO
-          </Link>
-        )}
+        {SELLS && <ProLink />}
       </div>
     );
   }
 
   return (
     <div className="flex items-center gap-3">
-      <Link href="/konto" className="inline-flex min-h-11 items-center px-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <Link
+        href="/konto"
+        className="inline-flex min-h-11 items-center px-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
         Konto
       </Link>
       <UserButton />
