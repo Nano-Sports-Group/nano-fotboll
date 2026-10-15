@@ -1,8 +1,9 @@
 /**
  * app/podcast/avsnitt/[id] — Avsnittssida på Nano Podcast API.
  * ─────────────────────────────────────────────────────────────────────────────
- * Rättighetspolicy: metadata + länk till originalet. Ingen ljudspelare på rå
- * enclosure, ingen RSS-beskrivning (tredjepartstext), inget transkript.
+ * Rättighetspolicy: metadata + länk till originalet, ingen RSS-beskrivning
+ * (tredjepartstext), inget transkript. Ljud spelas i apparnas poddspelare direkt
+ * från poddens egen källa; vi lagrar eller proxar aldrig ljud.
  * AI-delen (egen artikel + frågor) bara när podden godkänt AI-bearbetning.
  * Äldre avsnitt-id:n (nano-os) ligger kvar på /podcast/[id].
  * ─────────────────────────────────────────────────────────────────────────────
@@ -132,9 +133,9 @@ export default async function NanoEpisodePage({
       />
 
       <p className="text-xs text-muted-foreground/80 border-t border-border pt-6">
-        {vertical.productName} länkar till originalkällan. Våra artiklar är
-        egenskrivna med korta, exakta citat och angiven källa — vi publicerar
-        aldrig transkript eller strömmar ljudfiler.
+        Ljudet kommer alltid från poddens egen källa — vi lagrar aldrig
+        ljudfiler. Våra artiklar är egenskrivna med korta, exakta citat och
+        angiven källa, och vi publicerar aldrig transkript.
       </p>
     </div>
   );

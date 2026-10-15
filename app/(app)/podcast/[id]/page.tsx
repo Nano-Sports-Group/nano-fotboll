@@ -269,7 +269,7 @@ export default async function PodcastEpisodePage({
 
         <p className="text-xs text-muted-foreground/80 border-t border-border pt-6">
           {vertical.productName} länkar till originalkällan och använder Spotifys officiella spelare när det finns.
-          Vi publicerar inte transkript eller strömmar ljudfiler direkt. Se{" "}
+          Vi lagrar aldrig ljudfiler och publicerar aldrig transkript. Se{" "}
           <Link href="/podcast" className="text-pitch-ink hover:underline">
             alla avsnitt
           </Link>

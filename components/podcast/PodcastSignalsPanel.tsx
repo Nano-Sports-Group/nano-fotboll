@@ -99,7 +99,7 @@ function SignalCard({
       </div>
       <EpisodeListenBlock signal={signal} teamSlug={teamSlug} />
       <p className="text-xs text-muted-foreground/70">
-        Ljud spelas via Spotify eller hos originalkällan — Nano Fotboll publicerar inte transkript eller ljudfiler.
+        Ljud spelas via Spotify eller hos originalkällan — Nano Fotboll lagrar inga ljudfiler och publicerar inga transkript.
       </p>
     </article>
   )
