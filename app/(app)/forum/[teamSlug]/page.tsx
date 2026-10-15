@@ -122,7 +122,7 @@ export default async function ForumTeamPage({
       {/* Forumet ligger utanfor /lag-tradet men ar en lagsektion for anvandaren.
           Utan raden har forsvann navigationen sa fort man klickade "Forum" —
           flikraden ska vara stabil genom hela lagflodet. */}
-      <TeamNav slug={teamSlug} sticky={false} />
+      <TeamNav slug={teamSlug} sticky={false}>
       {/* 3-col grid: left 20% | center 60% | right 20% — collapses to single on mobile */}
       <div className="mx-auto w-full max-w-7xl px-4 xl:px-6">
         <div className="flex gap-6 items-start">
@@ -195,6 +195,7 @@ export default async function ForumTeamPage({
 
         </div>
       </div>
+      </TeamNav>
       <ForumSummaryPopupGate />
     </div>
   );

@@ -21,9 +21,9 @@ test("Hem ligger längst till vänster", () => {
   assert.equal(BOTTOM_NAV_ITEMS[0]?.label, "Hem");
 });
 
-test("Profil ligger längst till höger", () => {
-  assert.equal(BOTTOM_NAV_ITEMS.at(-1)?.label, "Profil");
-  assert.equal(BOTTOM_NAV_ITEMS.at(-1)?.href, "/profil");
+test("Profil nås via avataren och Mer, inte via bottenraden", () => {
+  assert.ok(!BOTTOM_NAV_ITEMS.some((i) => i.href === "/profil"));
+  assert.ok(SECONDARY_NAV_ITEMS.some((i) => i.href === "/profil"));
 });
 
 test("bottenraden har högst fem flikar", () => {

@@ -724,3 +724,50 @@ html[data-vertical="golf"].dark { --accent: #201A0F; }
 .dark .team-ink {
   color: var(--team-ink-dark, var(--foreground));
 }
+
+/* ── Lagsektioner: glidövergång vid svep/tryck i kapselraden (components/ui/SwipeTabs.tsx) ──
+   Nästa sektion glider in från höger, föregående från vänster. Kapselraden (team-nav) står still. */
+::view-transition-old(.tab-forward) {
+  --tab-from: 0;
+  --tab-to: -100%;
+}
+::view-transition-new(.tab-forward) {
+  --tab-from: 100%;
+  --tab-to: 0;
+}
+::view-transition-old(.tab-back) {
+  --tab-from: 0;
+  --tab-to: 100%;
+}
+::view-transition-new(.tab-back) {
+  --tab-from: -100%;
+  --tab-to: 0;
+}
+::view-transition-old(.tab-forward),
+::view-transition-new(.tab-forward),
+::view-transition-old(.tab-back),
+::view-transition-new(.tab-back) {
+  animation: 320ms cubic-bezier(0.32, 0.72, 0, 1) both tab-slide;
+}
+@keyframes tab-slide {
+  from { translate: var(--tab-from) 0; }
+  to { translate: var(--tab-to) 0; }
+}
+::view-transition-group(team-nav) {
+  animation: none;
+  z-index: 50;
+}
+::view-transition-old(team-nav) {
+  display: none;
+}
+::view-transition-new(team-nav) {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(.tab-forward),
+  ::view-transition-new(.tab-forward),
+  ::view-transition-old(.tab-back),
+  ::view-transition-new(.tab-back) {
+    animation-duration: 0s;
+  }
+}

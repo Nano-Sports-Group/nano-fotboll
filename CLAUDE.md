@@ -50,8 +50,8 @@ lib/supabase.ts           — createServerClient (service role, server-only) +
                             createBrowserClient (anon key); typer i types/supabase
 lib/access-rules.ts       — Plan + ACCESS-map (single source för feature-gating)
 lib/user-plan.ts          — getUserPlan() — ALLTID server-side
-lib/nav.ts                — EN nav-config för de 5 flikarna (Hem/Flöde/Matcher/
-                            Tabellen/Profil); `/ai` ligger under Mer. Se WEB-IA-STRUKTUR.md
+lib/nav.ts                — EN nav-config för bottenraden (Hem/Nyheter/Matcher/Lyssna, Figma
+                            2026-10-14); Profil via avataren, Tabellen i Matcher, `/ai` under Mer
 components/               — feature-mappar (feed, match, team-hub, news, landing, ui …)
                             PaywallGate.tsx + UpgradePrompt.tsx för gating-UI
 ```
@@ -151,7 +151,7 @@ Ny kod läggs i befintlig feature-mapp. Skapa inte parallella mönster —
   (`PullToRefreshShell` + `router.refresh()`; klientytor hakar på via `usePullRefresh`, de
   bygger aldrig en andra touch-hanterare) · kantsvep tillbaka (`EdgeSwipeBack`, PWA saknar
   webbläsarens gest) ·
-  bottenraden är Hem…Profil, max 5 flikar, **ändras bara i `lib/nav.ts` + `pnpm
+  bottenraden är Hem · Nyheter · Matcher · Lyssna (Profil via avataren), max 5 flikar, **ändras bara i `lib/nav.ts` + `pnpm
   contracts:generate`** · exakt en `data-cta="primary"` per vy · 44 px träffytor ·
   `X` stänger / `←` backar · snabbval i `TactileSheet`, aldrig centrerad dialog ·
   `loading.tsx` i varje route-segment · `useScrollRestoration` på flöden ·

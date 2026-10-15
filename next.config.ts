@@ -73,6 +73,8 @@ const nextConfig: NextConfig = {
   experimental: {
     // Tree-shake barrel-exporter för att minska klientbundlen
     optimizePackageImports: ["lucide-react", "sonner", "@clerk/nextjs"],
+    // Glidövergång mellan lagets sektioner (SwipeTabs). Animerar bara där <ViewTransition> används.
+    viewTransition: true,
   },
   images: {
     remotePatterns: [

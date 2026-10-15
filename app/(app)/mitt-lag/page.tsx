@@ -18,6 +18,7 @@ import { getUserPlan } from "@/lib/user-plan";
 import { TeamHubBriefRitual } from "@/components/team-hub/TeamHubBriefRitual";
 import { TeamBriefHome } from "@/components/mitt-lag/TeamBriefHome";
 import { getLatestTeamBrief } from "@/lib/newsletter/team-brief";
+import { TeamNav } from "@/components/team-hub/TeamNav";
 import { MatchdayBanner } from "@/components/team-hub/MatchdayBanner";
 import { FeedMatchHero } from "@/components/feed/FeedMatchHero";
 import { StatNumber } from "@/components/ui/StatNumber";
@@ -120,6 +121,9 @@ export default async function MittLagPage({
     // Sidan låg i en 768px-kolumn mitt på skärmen med ~340px tomt på varje sida
     // vid 1440px. Från xl delas den i två spalter: den dagliga ritualen till
     // vänster, stödytorna till höger. Under xl är layouten oförändrad.
+    // Hem = favoritlagets översikt. Samma kapselrad som på /lag, så ett svep vänster tar
+    // supportern till lagets Nyheter, Statistik, Trupp … utan att leta i Mer.
+    <TeamNav slug={hub.team.slug} overviewHref="/mitt-lag">
     <div className="max-w-3xl xl:max-w-6xl mx-auto px-4 sm:px-6 pb-10 pt-4">
       {user ? (
         <Suspense fallback={null}>
@@ -262,6 +266,7 @@ export default async function MittLagPage({
         />
       </nav>
     </div>
+    </TeamNav>
   );
 }
 

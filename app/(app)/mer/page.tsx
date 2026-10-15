@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   description: "Forum, statistik, konto och prenumeration.",
 };
 
-/** Overflow utanför bottenraden (Mitt lag · Flöde · Matcher · Tabellen). */
+/** Overflow utanför bottenraden (Hem · Nyheter · Matcher · Lyssna). */
 export default function MerPage() {
   return (
     <div className="mx-auto max-w-lg px-4 py-6 space-y-6 pb-24">

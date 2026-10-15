@@ -36,30 +36,30 @@ export interface NavItem {
 }
 
 /**
- * Mobil (+ alltid synlig) bottenrad. Ordningen är ett krav, inte en smaksak:
- * Hem först, Profil sist. `/mitt-lag` ÄR hemmet i ett supporter-OS — favoritlagets
- * dag är startskärmen, så Hem-fliken pekar dit i stället för på en tom aggregatsida.
+ * Mobil (+ alltid synlig) bottenrad, enligt Figma "iOS Master" (2026-10-14):
+ * Hem · Nyheter · Matcher · Lyssna. Sök är en egen roll bredvid raden (iOS sök-flik,
+ * webbens sökknapp i headern) och Profil nås via avataren uppe till höger, inte här.
+ * Tabellen bor i Matcher (segment Kommande · Resultat · Tabell) och finns kvar under Mer.
  *
- * Max 5 poster. Behöver en sjätte destination plats hör den under Mer.
+ * `/mitt-lag` ÄR hemmet i ett supporter-OS — favoritlagets dag är startskärmen.
+ * Max 5 poster. Behöver en femte destination plats hör den under Mer.
  */
 const TEAM_SPORT_NAV: NavItem[] = [
   { href: "/mitt-lag", label: "Hem", icon: House, iosSymbol: "house.fill" },
-  { href: "/nyheter", label: "Flöde", icon: Newspaper, iosSymbol: "newspaper.fill" },
-  { href: "/match", label: "Matcher", icon: CalendarDays, iosSymbol: "calendar" },
-  { href: leagueHref(), label: "Tabellen", icon: Trophy, iosSymbol: "trophy.fill" },
-  { href: "/profil", label: "Profil", icon: User, iosSymbol: "person.crop.circle.fill" },
+  { href: "/nyheter", label: "Nyheter", icon: Newspaper, iosSymbol: "newspaper.fill" },
+  { href: "/match", label: "Matcher", icon: CalendarDays, iosSymbol: "sportscourt.fill" },
+  { href: "/podcast", label: "Lyssna", icon: Headphones, iosSymbol: "headphones" },
 ];
 
 /**
- * Golf har varken lag, matcher eller tabell. Där fotbollen har Matcher och Tabellen har golfen
+ * Golf har varken lag, matcher eller tabell. Där fotbollen har Matcher och Lyssna har golfen
  * Spelare och Tourer — det man följer. Hem matchar bara exakt, annars lyser den på undersidorna.
  */
 const GOLF_NAV: NavItem[] = [
   { href: "/golf", label: "Hem", icon: House, iosSymbol: "house.fill", exact: true },
-  { href: "/nyheter", label: "Flöde", icon: Newspaper, iosSymbol: "newspaper.fill" },
+  { href: "/nyheter", label: "Nyheter", icon: Newspaper, iosSymbol: "newspaper.fill" },
   { href: "/golf/spelare", label: "Spelare", icon: Users, iosSymbol: "person.2.fill" },
   { href: "/golf/tourer", label: "Tourer", icon: Trophy, iosSymbol: "trophy.fill" },
-  { href: "/profil", label: "Profil", icon: User, iosSymbol: "person.crop.circle.fill" },
 ];
 
 export const BOTTOM_NAV_ITEMS: NavItem[] = vertical.id === "golf" ? GOLF_NAV : TEAM_SPORT_NAV;
@@ -99,6 +99,8 @@ export const SIDEBAR_NAV_ITEMS: NavItem[] = [
  * GlassNav-tummen tona ut (den gör det redan vid activeIndex === -1).
  */
 const ALL_SECONDARY_NAV_ITEMS: NavItem[] = [
+  { href: "/profil", label: "Profil", icon: User, iosSymbol: "person.crop.circle.fill" },
+  { href: leagueHref(), label: "Tabellen", icon: Trophy, iosSymbol: "trophy.fill" },
   { href: "/statistik", label: "Statistik", icon: BarChart3, iosSymbol: "chart.bar.fill" },
   { href: "/forum", label: "Forum", icon: MessageSquare, iosSymbol: "bubble.left.and.bubble.right.fill" },
   { href: "/analys", label: "Matchanalyser", icon: FileSearch, iosSymbol: "doc.text.magnifyingglass" },

@@ -21,8 +21,8 @@ export default async function LagLayout({
 
   return (
     <div>
-      <TeamNav slug={slug} />
-      {children}
+      {/* Svep på innehållet byter till grannsektionen (TeamNav → SwipeTabs). */}
+      <TeamNav slug={slug}>{children}</TeamNav>
     </div>
   );
 }

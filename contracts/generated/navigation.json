@@ -12,7 +12,7 @@
     {
       "id": "nyheter",
       "route": "/nyheter",
-      "label": "Flöde",
+      "label": "Nyheter",
       "iosSymbol": "newspaper.fill",
       "accessFeature": null
     },
@@ -20,25 +20,30 @@
       "id": "match",
       "route": "/match",
       "label": "Matcher",
-      "iosSymbol": "calendar",
+      "iosSymbol": "sportscourt.fill",
       "accessFeature": null
+    },
+    {
+      "id": "podcast",
+      "route": "/podcast",
+      "label": "Lyssna",
+      "iosSymbol": "headphones",
+      "accessFeature": null
+    }
+  ],
+  "secondary": [
+    {
+      "id": "profil",
+      "route": "/profil",
+      "label": "Profil",
+      "iosSymbol": "person.crop.circle.fill"
     },
     {
       "id": "allsvenskan",
       "route": "/allsvenskan",
       "label": "Tabellen",
-      "iosSymbol": "trophy.fill",
-      "accessFeature": null
+      "iosSymbol": "trophy.fill"
     },
-    {
-      "id": "profil",
-      "route": "/profil",
-      "label": "Profil",
-      "iosSymbol": "person.crop.circle.fill",
-      "accessFeature": null
-    }
-  ],
-  "secondary": [
     {
       "id": "statistik",
       "route": "/statistik",
@@ -62,12 +67,6 @@
       "route": "/daily",
       "label": "Nano Fotboll Daily",
       "iosSymbol": "headphones"
-    },
-    {
-      "id": "podcast",
-      "route": "/podcast",
-      "label": "Poddar",
-      "iosSymbol": "waveform"
     },
     {
       "id": "ai",
