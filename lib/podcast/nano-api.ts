@@ -21,6 +21,8 @@ export type PodEpisode = {
   durationMs: number | null;
   artworkUrl: string | null;
   episodeUrl: string | null;
+  /** Lag-slugs, samma som /lag/[slug]. Poddens klubb + lag som nämns i titel/beskrivning. */
+  teams: string[];
   processing: {
     state: string;
     transcriptAvailable: boolean;
@@ -79,12 +81,25 @@ async function getPublic<T>(path: string, revalidate = 300): Promise<T | null> {
   }
 }
 
-export async function latestEpisodes(limit = 40): Promise<PodLatestEpisode[]> {
+export async function latestEpisodes(
+  limit = 40,
+  team?: string,
+): Promise<PodLatestEpisode[]> {
+  const t = team ? `&team=${encodeURIComponent(team)}` : "";
   const r = await getPublic<{ items: PodLatestEpisode[] }>(
-    `/v1/episodes?sport=${SPORT}&limit=${limit}`,
+    `/v1/episodes?sport=${SPORT}&limit=${limit}${t}`,
     120,
   );
   return r?.items ?? [];
+}
+
+/** slug → namn för sportens lag. */
+export async function teamNames(): Promise<Map<string, string>> {
+  const r = await getPublic<{ items: Array<{ slug: string; name: string }> }>(
+    `/v1/teams?sport=${SPORT}`,
+    3600,
+  );
+  return new Map((r?.items ?? []).map((t) => [t.slug, t.name]));
 }
 
 export async function listShows(): Promise<PodShow[]> {

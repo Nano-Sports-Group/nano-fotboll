@@ -12,7 +12,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Mic, Headphones } from "lucide-react";
 import { PodcastSearch } from "./PodcastSearch";
-import { latestEpisodes, listShows } from "@/lib/podcast/nano-api";
+import { latestEpisodes, listShows, teamNames } from "@/lib/podcast/nano-api";
 import { vertical } from "@/lib/vertical";
 
 const HOCKEY = vertical.id === "hockey";
@@ -37,11 +37,24 @@ function relTime(iso: string | null): string {
   });
 }
 
-export default async function PodcastIndexPage() {
-  const [episodes, shows] = await Promise.all([
+export default async function PodcastIndexPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ team?: string }>;
+}) {
+  const team = (await searchParams).team?.trim() || undefined;
+  const [latest, shows, names] = await Promise.all([
     latestEpisodes(40),
     listShows(),
+    teamNames(),
   ]);
+  // Okänt lag i URL:en (gammal länk med lagnamn i stället för slug) = inget filter.
+  const activeTeam = team && names.has(team) ? team : undefined;
+  const episodes = activeTeam ? await latestEpisodes(40, activeTeam) : latest;
+  // Filterknapparna räknas ur samma 40-fönster som listan: bara lag som faktiskt hörs just nu.
+  const chips = [...new Set(latest.flatMap((e) => e.teams))]
+    .filter((s) => names.has(s))
+    .sort((a, b) => names.get(a)!.localeCompare(names.get(b)!, "sv"));
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
@@ -64,6 +77,28 @@ export default async function PodcastIndexPage() {
       </header>
 
       <PodcastSearch />
+
+      {chips.length > 0 && (
+        <nav className="mt-4 flex flex-wrap gap-2" aria-label="Filtrera på lag">
+          {chips.map((slug) => {
+            const active = slug === activeTeam;
+            return (
+              <Link
+                key={slug}
+                href={active ? "/podcast" : `/podcast?team=${slug}`}
+                aria-current={active ? "page" : undefined}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  active
+                    ? "border-pitch bg-pitch/15 text-pitch-ink"
+                    : "border-border bg-card text-muted-foreground hover:border-pitch/40 hover:text-foreground"
+                }`}
+              >
+                {names.get(slug)}
+              </Link>
+            );
+          })}
+        </nav>
+      )}
 
       {shows.length > 0 && (
         <section className="mt-8" aria-label="Poddar">
@@ -97,7 +132,9 @@ export default async function PodcastIndexPage() {
 
       <section className="mt-8">
         <h2 className="text-sm font-semibold text-foreground mb-3 text-balance">
-          Senaste avsnitten
+          {activeTeam
+            ? `Avsnitt om ${names.get(activeTeam)}`
+            : "Senaste avsnitten"}
         </h2>
         {episodes.length === 0 ? (
           <div className="rounded-xl border border-border bg-card px-4 py-10 text-center text-sm text-muted-foreground">
@@ -129,6 +166,12 @@ export default async function PodcastIndexPage() {
                   </span>
                   <span className="block text-xs text-muted-foreground mt-0.5">
                     {ep.podcast.title} · {relTime(ep.publishedAt)}
+                    {ep.teams.length > 0 &&
+                      ` · ${ep.teams
+                        .map((s) => names.get(s))
+                        .filter(Boolean)
+                        .slice(0, 3)
+                        .join(", ")}`}
                   </span>
                 </span>
               </Link>
