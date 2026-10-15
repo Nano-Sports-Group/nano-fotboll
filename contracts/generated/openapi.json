@@ -3733,12 +3733,76 @@
                         "string",
                         "null"
                       ]
+                    },
+                    "radar": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "a": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "metric": {
+                                    "type": "string"
+                                  },
+                                  "value": {
+                                    "type": "number"
+                                  },
+                                  "raw": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "metric",
+                                  "value",
+                                  "raw"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "b": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "metric": {
+                                    "type": "string"
+                                  },
+                                  "value": {
+                                    "type": "number"
+                                  },
+                                  "raw": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "metric",
+                                  "value",
+                                  "raw"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "a",
+                            "b"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
                   },
                   "required": [
                     "teamA",
                     "teamB",
-                    "analysis"
+                    "analysis",
+                    "radar"
                   ],
                   "additionalProperties": false,
                   "$schema": "http://json-schema.org/draft-07/schema#"
@@ -4366,7 +4430,19 @@
                               "type": "string"
                             }
                           },
+                          "discussedTeams": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
                           "listenUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "applePodcastUrl": {
                             "type": [
                               "string",
                               "null"
@@ -4380,7 +4456,9 @@
                           "publishedAt",
                           "durationSeconds",
                           "mentionedTeams",
-                          "listenUrl"
+                          "discussedTeams",
+                          "listenUrl",
+                          "applePodcastUrl"
                         ],
                         "additionalProperties": false
                       }
@@ -4805,6 +4883,12 @@
                               ]
                             },
                             "bio": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "preferred_podcast_player": {
                               "type": [
                                 "string",
                                 "null"
