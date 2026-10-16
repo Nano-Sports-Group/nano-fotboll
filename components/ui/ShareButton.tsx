@@ -11,11 +11,14 @@ import { VERTICAL } from "@/lib/vertical";
  */
 export function ShareButton({
   title,
+  text,
   url,
   kind,
   variant = "label",
 }: {
   title: string;
+  /** Kort hook till native share sheet. */
+  text?: string;
   url: string;
   kind: "article" | "match" | "team" | "player";
   variant?: "label" | "icon";
@@ -28,7 +31,7 @@ export function ShareButton({
     const shared = tagged.toString();
     try {
       if (navigator.share) {
-        await navigator.share({ title, url: shared });
+        await navigator.share({ title, text, url: shared });
         return;
       }
       await navigator.clipboard.writeText(shared);

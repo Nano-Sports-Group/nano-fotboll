@@ -166,6 +166,12 @@ export default async function ArtikelPage({
           {article.title}
         </h1>
 
+        {article.summary ? (
+          <p className="mt-3 text-lg leading-snug text-muted-foreground text-pretty">
+            {article.summary}
+          </p>
+        ) : null}
+
         <div className="mt-4 mb-8 flex items-center justify-between gap-3">
           <p className="text-[13px] leading-5 tracking-ui text-muted-foreground">
             <span className="font-medium text-foreground">{source}</span>
@@ -178,6 +184,7 @@ export default async function ArtikelPage({
           </p>
           <ShareButton
             title={article.title}
+            text={article.hook ?? undefined}
             url={`${getSiteUrl()}/artikel/${article.slug}`}
             kind="article"
             variant="icon"
