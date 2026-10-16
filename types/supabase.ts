@@ -638,6 +638,7 @@ export type Database = {
           feed_score: number
           fingerprint: string | null
           generated_kind: string | null
+          hook: string | null
           id: string
           importance_score: number | null
           is_athopia_generated: boolean
@@ -688,6 +689,7 @@ export type Database = {
           feed_score?: number
           fingerprint?: string | null
           generated_kind?: string | null
+          hook?: string | null
           id?: string
           importance_score?: number | null
           is_athopia_generated?: boolean
@@ -738,6 +740,7 @@ export type Database = {
           feed_score?: number
           fingerprint?: string | null
           generated_kind?: string | null
+          hook?: string | null
           id?: string
           importance_score?: number | null
           is_athopia_generated?: boolean

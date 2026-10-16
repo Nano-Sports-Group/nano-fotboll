@@ -188,6 +188,7 @@ export function mapArticle(row: DbRow): Article {
     slug,
     title: String(row.title ?? ""),
     summary: canBody ? String(row.summary ?? "") : "",
+    hook: canBody ? optStr(row.hook) : null,
     content: canBody ? optStr(row.content) : null,
     sourceUrl,
     url: optStr(row.url) ?? sourceUrl,

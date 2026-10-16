@@ -25,6 +25,8 @@ export interface Article {
   slug: string;
   title: string;
   summary: string;
+  /** Kort hook (≤60 tecken) för delning/push. Aldrig källnamn. */
+  hook?: string | null;
   content: string | null;
   sourceUrl?: string | null;
   url?: string | null;
